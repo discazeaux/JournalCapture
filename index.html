@@ -3,347 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Supabase - Thème Noir et Jaune</title>
+    <title>Suivi Frelons</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap');
+
         :root {
-            --bg-dark: #121212;
-            --bg-darker: #0a0a0a;
-            --text-primary: #ffffff;
-            --text-secondary: #e0e0e0;
-            --accent-yellow: #ffd700;
-            --accent-yellow-dark: #cc9900;
-            --border-color: #333333;
-            --input-bg: #1e1e1e;
-            --input-border: #444444;
-            --button-bg: #ffd700;
-            --button-hover: #e6c200;
-            --error-color: #ff5555;
+            --bg: #0e0e0e;
+            --card: #181818;
+            --yellow: #ffd700;
+            --yellow-dim: rgba(255, 215, 0, 0.12);
+            --text: #ffffff;
+            --muted: #888;
+            --border: #2a2a2a;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background-color: var(--bg-dark);
-            color: var(--text-primary);
-            line-height: 1.6;
-            padding: 20px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
         }
 
-        h2 {
-            color: var(--accent-yellow);
-            margin-bottom: 20px;
-            font-size: 28px;
+        /* Ambient glow */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(255, 215, 0, 0.07) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero {
             text-align: center;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            margin-bottom: 56px;
         }
 
-        #captureForm {
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: var(--bg-darker);
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-color);
-        }
-
-        p {
+        .bee {
+            font-size: 64px;
+            line-height: 1;
             margin-bottom: 20px;
-        }
-
-        label {
             display: block;
-            margin-bottom: 8px;
-            color: var(--text-secondary);
-            font-weight: 500;
-            font-size: 14px;
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.4));
         }
 
-        input[type="date"],
-        input[type="time"],
-        input[type="text"],
-        input[type="number"],
-        textarea,
-        select {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--input-bg);
-            border: 1px solid var(--input-border);
-            border-radius: 6px;
-            color: var(--text-primary);
+        h1 {
+            font-size: clamp(28px, 6vw, 48px);
+            font-weight: 700;
+            color: var(--yellow);
+            letter-spacing: -0.5px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--muted);
             font-size: 16px;
-            transition: border-color 0.3s ease;
+            font-weight: 400;
+            letter-spacing: 0.3px;
         }
 
-        input[type="date"]:focus,
-        input[type="time"]:focus,
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        textarea:focus,
-        select:focus {
-            outline: none;
-            border-color: var(--accent-yellow);
-            box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.2);
-        }
-
-        select {
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffd700' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 1em;
-            padding-right: 36px;
-        }
-
-        select option {
-            background-color: var(--bg-darker);
-            color: var(--text-primary);
-            padding: 8px 12px;
-        }
-
-        select option:hover {
-            background-color: var(--input-border);
-        }
-
-        select option:checked {
-            background-color: var(--accent-yellow-dark);
-            color: var(--bg-dark);
-        }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        button[type="submit"] {
+        .nav {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
             width: 100%;
-            padding: 14px;
-            background-color: var(--button-bg);
-            color: var(--bg-dark);
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
+            max-width: 560px;
+        }
+
+        .nav-card {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px 24px;
+            text-decoration: none;
+            color: var(--text);
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: border-color 0.2s, background 0.2s, transform 0.15s;
+            position: relative;
+            overflow: hidden;
         }
 
-        button[type="submit"]:hover {
-            background-color: var(--button-hover);
-            transform: translateY(-2px);
+        .nav-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--yellow-dim);
+            opacity: 0;
+            transition: opacity 0.2s;
+            border-radius: 14px;
         }
 
-        button[type="submit"]:active {
+        .nav-card:hover {
+            border-color: var(--yellow);
+            transform: translateY(-3px);
+        }
+
+        .nav-card:hover::after {
+            opacity: 1;
+        }
+
+        .nav-card:active {
             transform: translateY(0);
         }
 
-        button[type="submit"]:disabled {
-            background-color: var(--input-border);
-            color: var(--text-secondary);
-            cursor: not-allowed;
-            transform: none;
+        .card-icon {
+            font-size: 32px;
+            line-height: 1;
+            position: relative;
+            z-index: 1;
         }
 
-        .required-field::after {
-            content: " *";
-            color: var(--error-color);
+        .card-label {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--yellow);
+            position: relative;
+            z-index: 1;
         }
 
-        @media (max-width: 600px) {
-            body {
-                padding: 15px;
+        .card-desc {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.5;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-arrow {
+            margin-top: auto;
+            font-size: 20px;
+            color: var(--yellow);
+            opacity: 0;
+            transform: translateX(-6px);
+            transition: opacity 0.2s, transform 0.2s;
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-card:hover .card-arrow {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        footer {
+            margin-top: 56px;
+            color: var(--border);
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 480px) {
+            .nav {
+                grid-template-columns: 1fr;
             }
-
-            #captureForm {
+            .nav-card {
+                flex-direction: row;
+                align-items: center;
+                gap: 16px;
                 padding: 20px;
             }
-        }
-        #startChrono,
-        #stopChrono {
-            width:48%;
-            padding:10px;
-            border:none;
-            border-radius:6px;
-            cursor:pointer;
-            background:#ffd700;
-            color:#121212;
-            font-weight:bold;
-        }
-
-        #stopChrono:disabled {
-            opacity:0.4;
-            cursor:not-allowed;
+            .card-content {
+                flex: 1;
+            }
+            .card-arrow {
+                opacity: 1;
+                transform: none;
+            }
         }
     </style>
 </head>
 <body>
 
-    <h2>Nouvelle capture</h2>
+    <div class="hero">
+        <span class="bee">🐝</span>
+        <h1>Suivi Frelons</h1>
+        <p class="subtitle">Enregistrez vos captures et consultez les statistiques</p>
+    </div>
 
-    <form id="captureForm">
-
-        <p>
-            <label class="required-field">Date</label>
-            <input type="date" id="date_capture" required>
-        </p>
-
-        <p>
-            <label class="required-field">Heure</label>
-            <input type="time" id="heure_capture" required>
-        </p>
-
-        <p>
-            <label class="required-field">Méthode</label>
-            <select id="methode" required>
-                <option value="" disabled>Sélectionnez une méthode</option>
-                <option value="PDR">DPR</option>
-                <option value="Piége">Piége</option>
-                <option value="Raquette électrique" selected>Raquette électrique</option>
-                <option value="Harpe">Harpe</option>
-            </select>
-        </p>
-        <p>
-           <label>Durée de capture</label>
-
-            <div id="chrono" style="
-                font-size:28px;
-                color:#ffd700;
-                text-align:center;
-                margin-bottom:10px;
-            ">
-                00:00
+    <nav class="nav">
+        <a class="nav-card" href="nouvelleCapture.html">
+            <span class="card-icon">📋</span>
+            <div class="card-content">
+                <div class="card-label">Nouvelle capture</div>
+                <p class="card-desc">Saisir une session, démarrer le chrono et enregistrer</p>
             </div>
+            <span class="card-arrow">→</span>
+        </a>
 
-            <button type="button" id="startChrono">
-                Démarrer
-            </button>
+        <a class="nav-card" href="stat.html">
+            <span class="card-icon">📊</span>
+            <div class="card-content">
+                <div class="card-label">Statistiques</div>
+                <p class="card-desc">Consulter les graphiques, totaux et efficacité par méthode</p>
+            </div>
+            <span class="card-arrow">→</span>
+        </a>
+    </nav>
 
-            <button type="button" id="stopChrono" disabled>
-                Arrêter
-            </button>
-        </p>
-        <p>
-            <label>Nombre</label>
-            <input type="number" id="nombre" value="1" min="1">
-        </p>
+    <footer>suivi-frelons</footer>
 
-        <p>
-            <label>Lieu</label>
-            <input type="text" id="lieu" value="maison">
-        </p>
-
-        <p>
-            <label>Notes</label>
-            <textarea id="notes"></textarea>
-        </p>
-
-        <button type="submit">
-            Enregistrer
-        </button>
-
-    </form>
-
-    <script type="module">
-        let chronoInterval;
-        let secondes = 0;
-
-        const chronoDisplay = document.getElementById("chrono");
-        const startButton = document.getElementById("startChrono");
-        const stopButton = document.getElementById("stopChrono");
-
-
-        function afficherChrono() {
-
-            let minutes = Math.floor(secondes / 60);
-            let sec = secondes % 60;
-
-            chronoDisplay.textContent =
-                String(minutes).padStart(2, '0') + ":" +
-                String(sec).padStart(2, '0');
-        }
-
-
-        startButton.addEventListener("click", () => {
-
-            secondes = 0;
-            afficherChrono();
-
-            chronoInterval = setInterval(() => {
-                secondes++;
-                afficherChrono();
-            }, 1000);
-
-
-            startButton.disabled = true;
-            stopButton.disabled = false;
-        });
-
-
-        stopButton.addEventListener("click", () => {
-
-            clearInterval(chronoInterval);
-
-            startButton.disabled = false;
-            stopButton.disabled = true;
-
-        });
-
-        import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-        const supabase = createClient(
-            "https://pvqfwozqfndlpfzypbza.supabase.co",
-            "sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
-        );
-
-        // Initialiser les valeurs par défaut pour date, heure et lieu
-        window.addEventListener('DOMContentLoaded', () => {
-            const now = new Date();
-            const formattedDate = now.toISOString().split('T')[0];
-            const formattedTime = now.toTimeString().split(' ')[0].substring(0, 5);
-
-            document.getElementById('date_capture').value = formattedDate;
-            document.getElementById('heure_capture').value = formattedTime;
-            document.getElementById('lieu').value = 'maison';
-        });
-
-        document.getElementById("captureForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            const submitButton = e.target.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.textContent = "Enregistrement en cours...";
-
-            const { error } = await supabase
-                .from("captures")
-                .insert({
-                    date_capture: document.getElementById("date_capture").value,
-                    heure_capture: document.getElementById("heure_capture").value,
-                    methode: document.getElementById("methode").value,
-                    duree: secondes,
-                    nombre: Number(document.getElementById("nombre").value),
-                    lieu: document.getElementById("lieu").value,
-                    notes: document.getElementById("notes").value
-                });
-
-            if (error) {
-                alert(error.message);
-                console.error(error);
-            } else {
-                alert("Capture enregistrée !");
-                document.getElementById("captureForm").reset();
-            }
-
-            submitButton.disabled = false;
-            submitButton.textContent = "Enregistrer";
-        });
-
-    </script>
 </body>
 </html>

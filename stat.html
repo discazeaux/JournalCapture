@@ -237,6 +237,30 @@ Durée moyenne par session
 
 <div class="stat">
 
+<h2>📅 Captures par semaine par méthode</h2>
+
+<canvas id="capturesSemaineMethode"></canvas>
+
+<table id="tableSemaine">
+
+<thead>
+<tr id="tableSemaineHeader">
+<th>Semaine</th>
+</tr>
+</thead>
+
+<tbody>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+
+<div class="stat">
+
 <h2>📈 Captures par jour</h2>
 
 <canvas id="capturesJour"></canvas>
@@ -564,6 +588,91 @@ formaterTemps(dureeMoyenne);
 
 
 
+
+// =======================
+// Captures par semaine par méthode
+// =======================
+
+function getNumeroSemaine(dateStr) {
+    const date = new Date(dateStr);
+    const debut = new Date(date.getFullYear(), 0, 1);
+    const diff = date - debut;
+    const unJour = 86400000;
+    const joursDepuisDebut = Math.floor(diff / unJour);
+    const semaine = Math.ceil((joursDepuisDebut + debut.getDay() + 1) / 7);
+    return date.getFullYear() + "-S" + String(semaine).padStart(2, "0");
+}
+
+let parSemaineMethode = {};
+let toutesMethodes = new Set();
+
+data.forEach(capture => {
+    const semaine = getNumeroSemaine(capture.date_capture);
+    const methode = capture.methode || "Inconnue";
+
+    toutesMethodes.add(methode);
+
+    if (!parSemaineMethode[semaine]) {
+        parSemaineMethode[semaine] = {};
+    }
+    if (!parSemaineMethode[semaine][methode]) {
+        parSemaineMethode[semaine][methode] = 0;
+    }
+    parSemaineMethode[semaine][methode] += capture.nombre || 0;
+});
+
+const semaines = Object.keys(parSemaineMethode).sort();
+const methodes = [...toutesMethodes];
+
+const couleurs = [
+    "#ffd700", "#ff6b6b", "#4ecdc4", "#a29bfe",
+    "#fd79a8", "#55efc4", "#fdcb6e", "#74b9ff"
+];
+
+const datasetsMethode = methodes.map((methode, i) => ({
+    label: methode,
+    data: semaines.map(s => parSemaineMethode[s][methode] || 0),
+    backgroundColor: couleurs[i % couleurs.length]
+}));
+
+new Chart(document.getElementById("capturesSemaineMethode"), {
+    type: "bar",
+    data: {
+        labels: semaines,
+        datasets: datasetsMethode
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { labels: { color: "#fff" } }
+        },
+        scales: {
+            x: { ticks: { color: "#ccc" }, grid: { color: "#333" } },
+            y: { ticks: { color: "#ccc" }, grid: { color: "#333" }, beginAtZero: true }
+        }
+    }
+});
+
+// Tableau semaine par méthode
+const headerRow = document.getElementById("tableSemaineHeader");
+methodes.forEach(m => {
+    const th = document.createElement("th");
+    th.textContent = m;
+    headerRow.appendChild(th);
+});
+
+const tbodySemaine = document.querySelector("#tableSemaine tbody");
+tbodySemaine.innerHTML = "";
+
+semaines.forEach(semaine => {
+    const ligne = document.createElement("tr");
+    let html = `<td><strong>${semaine}</strong></td>`;
+    methodes.forEach(m => {
+        html += `<td>${parSemaineMethode[semaine][m] || 0}</td>`;
+    });
+    ligne.innerHTML = html;
+    tbodySemaine.appendChild(ligne);
+});
 
 // =======================
 // Captures par jour
