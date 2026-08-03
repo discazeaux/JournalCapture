@@ -2,381 +2,104 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Journal de capture — Frelon asiatique</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg: #171310;
-    --bg-raised: #201a15;
-    --bg-card: #221c17;
-    --hornet: #e8a33d;
-    --hornet-deep: #c1440e;
-    --ink: #f2e9dc;
-    --ink-dim: #b8ab98;
-    --line: #3a3025;
-    --good: #7a9a5f;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;background:transparent;color:var(--ink);}
-  body{
-    font-family:'Inter', system-ui, sans-serif;
-    background:var(--bg);
-    min-height:100vh;
-    -webkit-font-smoothing:antialiased;
-  }
-  .wrap{max-width:640px;margin:0 auto;padding:20px 16px 80px;}
-
-  header{padding:8px 0 20px; border-bottom:1px solid var(--line); margin-bottom:20px;}
-  .eyebrow{
-    font-family:'JetBrains Mono', monospace;
-    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
-    color:var(--hornet); margin-bottom:6px; display:flex; align-items:center; gap:8px;
-  }
-  .eyebrow svg{width:14px;height:14px;flex-shrink:0;}
-  h1{
-    font-family:'Fraunces', serif; font-weight:600; font-size:28px; margin:0 0 6px;
-    letter-spacing:-0.01em; line-height:1.15;
-  }
-  .sub{color:var(--ink-dim); font-size:13.5px; line-height:1.5; margin:0;}
-
-  .card{
-    background:var(--bg-card); border:1px solid var(--line); border-radius:14px;
-    padding:18px; margin-bottom:16px;
-  }
-  .card h2{
-    font-family:'Fraunces', serif; font-size:15px; font-weight:600; margin:0 0 14px;
-    color:var(--hornet); text-transform:uppercase; letter-spacing:.05em;
-  }
-
-  form{display:grid; gap:12px;}
-  .row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
-  label{
-    display:block; font-size:11.5px; color:var(--ink-dim); margin-bottom:5px;
-    font-family:'JetBrains Mono', monospace; text-transform:uppercase; letter-spacing:.05em;
-  }
-  input, select, textarea{
-    width:100%; background:var(--bg-raised); border:1px solid var(--line); color:var(--ink);
-    border-radius:8px; padding:10px 11px; font-size:15px; font-family:'Inter', sans-serif;
-  }
-  input:focus, select:focus, textarea:focus{
-    outline:none; border-color:var(--hornet);
-  }
-  textarea{resize:vertical; min-height:44px;}
-
-  #methodeAutreWrap{display:none;}
-
-  button.submit{
-    background:var(--hornet); color:#1a1410; border:none; border-radius:9px;
-    padding:13px; font-size:15px; font-weight:600; cursor:pointer; font-family:'Inter', sans-serif;
-    margin-top:4px; transition:transform .08s ease, background .15s ease;
-  }
-  button.submit:hover{background:#f0b352;}
-  button.submit:active{transform:scale(0.98);}
-
-  /* Stats */
-  .stats-top{display:flex; gap:12px; margin-bottom:14px;}
-  .stat-total{
-    background:var(--bg-raised); border:1px solid var(--line); border-radius:10px;
-    padding:12px 16px; flex:1;
-  }
-  .stat-total .num{font-family:'Fraunces', serif; font-size:30px; font-weight:700; color:var(--hornet); line-height:1;}
-  .stat-total .lbl{font-size:12px; color:var(--ink-dim); margin-top:4px;}
-
-  .comb{display:flex; flex-wrap:wrap; gap:8px;}
-  .cell{
-    position:relative; width:84px; height:76px;
-    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    background:var(--bg-raised); border:1px solid var(--line);
-    font-family:'JetBrains Mono', monospace;
-  }
-  .cell .n{font-size:19px; font-weight:700; color:var(--ink);}
-  .cell .m{font-size:8.5px; color:var(--ink-dim); text-align:center; padding:0 6px; line-height:1.2; margin-top:2px;}
-
-  /* Journal list */
-  .empty{
-    text-align:center; color:var(--ink-dim); font-size:14px; padding:30px 10px;
-    font-family:'JetBrains Mono', monospace;
-  }
-  .day-group{margin-bottom:4px;}
-  .day-label{
-    font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--ink-dim);
-    text-transform:uppercase; letter-spacing:.06em; margin:16px 0 8px;
-  }
-  .entry{
-    display:flex; align-items:flex-start; gap:12px;
-    padding:12px 0; border-bottom:1px solid var(--line);
-  }
-  .entry:last-child{border-bottom:none;}
-  .entry-time{
-    font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--hornet);
-    min-width:44px; padding-top:1px;
-  }
-  .entry-main{flex:1; min-width:0;}
-  .entry-method{font-size:14.5px; font-weight:600;}
-  .entry-meta{font-size:12.5px; color:var(--ink-dim); margin-top:2px;}
-  .entry-notes{font-size:12.5px; color:var(--ink-dim); margin-top:4px; font-style:italic;}
-  .del-btn{
-    background:none; border:none; color:var(--ink-dim); cursor:pointer; padding:4px;
-    font-size:16px; line-height:1; flex-shrink:0;
-  }
-  .del-btn:hover{color:var(--hornet-deep);}
-
-  .footnote{
-    text-align:center; font-size:11.5px; color:var(--ink-dim); margin-top:24px;
-    font-family:'JetBrains Mono', monospace;
-  }
-
-  @media (max-width:420px){
-    .row2{grid-template-columns:1fr;}
-    .cell{width:76px; height:68px;}
-  }
-</style>
+<title>Test Supabase</title>
 </head>
 <body>
-<div class="wrap">
 
-  <header>
-    <div class="eyebrow">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/></svg>
-      Vespa velutina · suivi de terrain
-    </div>
-    <h1>Journal de capture</h1>
-    <p class="sub">Chaque capture notée ici, c'est une colonie d'abeilles protégée en plus.</p>
-  </header>
+<h2>Nouvelle capture</h2>
 
-  <div class="card">
-    <h2>Nouvelle capture</h2>
-    <form id="captureForm">
-      <div class="row2">
-        <div>
-          <label for="fDate">Date</label>
-          <input type="date" id="fDate" required>
-        </div>
-        <div>
-          <label for="fHeure">Heure</label>
-          <input type="time" id="fHeure" required>
-        </div>
-      </div>
-      <div>
-        <label for="fMethode">Méthode de capture</label>
-        <select id="fMethode" required>
-          <option value="">— Choisir —</option>
-          <option value="Piège bière/jus">Piège bière / jus</option>
-          <option value="Piège sélectif">Piège sélectif à entonnoir</option>
-          <option value="Filet / raquette">Filet / raquette</option>
-          <option value="Destruction manuelle">Destruction manuelle</option>
-          <option value="Destruction de nid">Destruction de nid</option>
-          <option value="Autre">Autre</option>
-        </select>
-      </div>
-      <div id="methodeAutreWrap">
-        <label for="fMethodeAutre">Préciser la méthode</label>
-        <input type="text" id="fMethodeAutre" placeholder="ex. capture au vol">
-      </div>
-      <div>
-        <label for="fNombre">Nombre de frelons</label>
-        <input type="number" id="fNombre" min="1" step="1" value="1" required>
-      </div>
-      <div>
-        <label for="fLieu">Lieu (optionnel)</label>
-        <input type="text" id="fLieu" placeholder="ex. jardin, rucher, verger…">
-      </div>
-      <div>
-        <label for="fNotes">Notes (optionnel)</label>
-        <textarea id="fNotes" placeholder="observations, nombre d'individus…"></textarea>
-      </div>
-      <button type="submit" class="submit">Enregistrer la capture</button>
-    </form>
-  </div>
+<form id="captureForm">
 
-  <div class="card">
-    <h2>Statistiques</h2>
-    <div class="stats-top">
-      <div class="stat-total">
-        <div class="num" id="statTotal">0</div>
-        <div class="lbl">capture(s) enregistrée(s)</div>
-      </div>
-      <div class="stat-total">
-        <div class="num" id="statFrelons">0</div>
-        <div class="lbl">frelon(s) capturé(s)</div>
-      </div>
-    </div>
-    <div class="comb" id="combGrid"></div>
-  </div>
+    <p>
+        <label>Date</label><br>
+        <input type="date" id="date_capture" required>
+    </p>
 
-  <div class="card">
-    <h2>Historique</h2>
-    <div id="journalList"><div class="empty">Chargement…</div></div>
-  </div>
+    <p>
+        <label>Heure</label><br>
+        <input type="time" id="heure_capture" required>
+    </p>
 
-  <p class="footnote">Données stockées sur Firebase — visibles en temps réel par toute personne ayant accès à cette page.</p>
-</div>
+    <p>
+        <label>Méthode</label><br>
+        <input type="text" id="methode" required>
+    </p>
+
+    <p>
+        <label>Nombre</label><br>
+        <input type="number" id="nombre" value="1" min="1">
+    </p>
+
+    <p>
+        <label>Lieu</label><br>
+        <input type="text" id="lieu">
+    </p>
+
+    <p>
+        <label>Notes</label><br>
+        <textarea id="notes"></textarea>
+    </p>
+
+    <button type="submit">
+        Enregistrer
+    </button>
+
+</form>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-import {
-  getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-// ── 1. Configuration Firebase ─────────────────────────────────────
-// À récupérer sur https://console.firebase.google.com
-// (créer un projet > icône </> "Ajouter une appli web" > copier l'objet firebaseConfig)
-const firebaseConfig = {
-  apiKey: "REMPLACE_MOI",
-  authDomain: "REMPLACE_MOI.firebaseapp.com",
-  projectId: "REMPLACE_MOI",
-  storageBucket: "REMPLACE_MOI.appspot.com",
-  messagingSenderId: "REMPLACE_MOI",
-  appId: "REMPLACE_MOI"
-};
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const capturesRef = collection(db, "captures");
-// ───────────────────────────────────────────────────────────────────
+const supabase = createClient(
 
-let captures = [];
+    "https://pvqfwozqfndlpfzypbza.supabase.co",
 
-const $ = id => document.getElementById(id);
+    "sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
 
-function todayISO(){
-  const d = new Date();
-  return d.toISOString().slice(0,10);
-}
-function nowHM(){
-  const d = new Date();
-  return d.toTimeString().slice(0,5);
-}
+);
 
-// Écoute en temps réel : toute personne qui ajoute une capture met à jour
-// automatiquement l'affichage chez tout le monde, sans recharger la page.
-onSnapshot(capturesRef, (snapshot) => {
-  captures = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-  render();
-}, (err) => {
-  console.error('Erreur de lecture Firestore', err);
-  $('journalList').innerHTML = '<div class="empty">Impossible de charger les données. Vérifie la configuration Firebase.</div>';
+document.getElementById("captureForm").addEventListener("submit", async (e)=>{
+
+    e.preventDefault();
+
+    const { error } = await supabase
+
+        .from("captures")
+
+        .insert({
+
+            date_capture: document.getElementById("date_capture").value,
+
+            heure_capture: document.getElementById("heure_capture").value,
+
+            methode: document.getElementById("methode").value,
+
+            nombre: Number(document.getElementById("nombre").value),
+
+            lieu: document.getElementById("lieu").value,
+
+            notes: document.getElementById("notes").value
+
+        });
+
+    if(error){
+
+        alert(error.message);
+
+        console.error(error);
+
+    }
+
+    else{
+
+        alert("Capture enregistrée !");
+
+        document.getElementById("captureForm").reset();
+
+    }
+
 });
 
-async function addCapture(entry){
-  try{
-    await addDoc(capturesRef, entry);
-  }catch(e){
-    console.error('Erreur de sauvegarde', e);
-    alert("La sauvegarde a échoué, réessaie dans un instant.");
-  }
-}
-
-async function removeCapture(id){
-  try{
-    await deleteDoc(doc(db, "captures", id));
-  }catch(e){
-    console.error('Erreur de suppression', e);
-    alert("La suppression a échoué, réessaie dans un instant.");
-  }
-}
-
-function formatDateLabel(iso){
-  const d = new Date(iso + 'T00:00:00');
-  return d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-}
-
-function render(){
-  // stats
-  $('statTotal').textContent = captures.length;
-  const totalFrelons = captures.reduce((sum, c) => sum + (parseInt(c.nombre, 10) || 0), 0);
-  $('statFrelons').textContent = totalFrelons;
-
-  const byMethod = {};
-  captures.forEach(c => { byMethod[c.methode] = (byMethod[c.methode]||0) + (parseInt(c.nombre, 10) || 0); });
-  const combGrid = $('combGrid');
-  const methods = Object.keys(byMethod).sort((a,b)=>byMethod[b]-byMethod[a]);
-  combGrid.innerHTML = methods.length
-    ? methods.map(m => `<div class="cell"><div class="n">${byMethod[m]}</div><div class="m">${m}</div></div>`).join('')
-    : '<div class="empty" style="padding:10px 0;">Aucune donnée pour le moment</div>';
-
-  // list grouped by date, most recent first
-  const listEl = $('journalList');
-  if(captures.length === 0){
-    listEl.innerHTML = '<div class="empty">Aucune capture enregistrée. La première entrée apparaîtra ici.</div>';
-    return;
-  }
-
-  const sorted = [...captures].sort((a,b) => (b.date+b.heure).localeCompare(a.date+a.heure));
-  const groups = {};
-  sorted.forEach(c => {
-    if(!groups[c.date]) groups[c.date] = [];
-    groups[c.date].push(c);
-  });
-
-  listEl.innerHTML = Object.keys(groups).map(date => `
-    <div class="day-group">
-      <div class="day-label">${formatDateLabel(date)}</div>
-      ${groups[date].map(c => `
-        <div class="entry">
-          <div class="entry-time">${c.heure}</div>
-          <div class="entry-main">
-            <div class="entry-method">${escapeHtml(c.methode)} <span style="color:var(--hornet); font-weight:700;">× ${c.nombre}</span></div>
-            ${c.lieu ? `<div class="entry-meta">📍 ${escapeHtml(c.lieu)}</div>` : ''}
-            ${c.notes ? `<div class="entry-notes">${escapeHtml(c.notes)}</div>` : ''}
-          </div>
-          <button class="del-btn" data-id="${c.id}" title="Supprimer">✕</button>
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
-
-  listEl.querySelectorAll('.del-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-id');
-      removeCapture(id); // onSnapshot met à jour l'affichage automatiquement
-    });
-  });
-}
-
-function escapeHtml(str){
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-$('fMethode').addEventListener('change', e => {
-  $('methodeAutreWrap').style.display = e.target.value === 'Autre' ? 'block' : 'none';
-});
-
-$('captureForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const methodeSel = $('fMethode').value;
-  const methode = methodeSel === 'Autre' ? ($('fMethodeAutre').value.trim() || 'Autre') : methodeSel;
-
-  const entry = {
-    date: $('fDate').value,
-    heure: $('fHeure').value,
-    methode,
-    nombre: parseInt($('fNombre').value, 10) || 1,
-    lieu: $('fLieu').value.trim(),
-    notes: $('fNotes').value.trim()
-  };
-  await addCapture(entry); // onSnapshot met à jour l'affichage automatiquement
-
-  // reset for next quick entry, keep date/time fresh
-  $('fMethode').value = '';
-  $('fMethodeAutre').value = '';
-  $('methodeAutreWrap').style.display = 'none';
-  $('fNombre').value = '1';
-  $('fLieu').value = '';
-  $('fNotes').value = '';
-  $('fDate').value = todayISO();
-  $('fHeure').value = nowHM();
-});
-
-// init
-$('fDate').value = todayISO();
-$('fHeure').value = nowHM();
-render();
 </script>
 </body>
 </html>
