@@ -330,22 +330,24 @@
         <p>
             <label>Durée de capture</label>
 
-        <div id="chrono" style="
+            <div id="chrono" style="
                 font-size:28px;
                 color:#ffd700;
                 text-align:center;
                 margin-bottom:10px;
             ">
-            00:00
-        </div>
+                00:00
+            </div>
 
-        <button type="button" id="startChrono">
-            Démarrer
-        </button>
+            <input id="duree_capture" type="text" value="00:00" placeholder="mm:ss" style="width:100%; padding:10px; margin-bottom:12px; background:#1e1e1e; border:1px solid #444; border-radius:6px; color:#fff;" />
 
-        <button type="button" id="stopChrono" disabled>
-            Arrêter
-        </button>
+            <button type="button" id="startChrono">
+                Démarrer
+            </button>
+
+            <button type="button" id="stopChrono" disabled>
+                Arrêter
+            </button>
         </p>
         <p>
             <label>Nombre</label>
@@ -373,18 +375,42 @@
         let secondes = 0;
 
         const chronoDisplay = document.getElementById("chrono");
+        const dureeInput = document.getElementById("duree_capture");
         const startButton = document.getElementById("startChrono");
         const stopButton = document.getElementById("stopChrono");
 
 
+        function formatDuree(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const sec = seconds % 60;
+            return String(minutes).padStart(2, '0') + ":" + String(sec).padStart(2, '0');
+        }
+
+        function parseDuree(value) {
+            const raw = String(value || '').trim();
+            if (!raw) return null;
+            const parts = raw.split(':').map(part => part.trim());
+            if (parts.length === 2) {
+                const minutes = Number(parts[0]);
+                const secondsPart = Number(parts[1]);
+                if (Number.isInteger(minutes) && minutes >= 0 && Number.isInteger(secondsPart) && secondsPart >= 0 && secondsPart < 60) {
+                    return minutes * 60 + secondsPart;
+                }
+            }
+            if (parts.length === 1) {
+                const secondsOnly = Number(parts[0]);
+                if (Number.isInteger(secondsOnly) && secondsOnly >= 0) {
+                    return secondsOnly;
+                }
+            }
+            return null;
+        }
+
         function afficherChrono() {
-
-            let minutes = Math.floor(secondes / 60);
-            let sec = secondes % 60;
-
-            chronoDisplay.textContent =
-                String(minutes).padStart(2, '0') + ":" +
-                String(sec).padStart(2, '0');
+            chronoDisplay.textContent = formatDuree(secondes);
+            if (dureeInput) {
+                dureeInput.value = formatDuree(secondes);
+            }
         }
 
 
@@ -411,6 +437,24 @@
             startButton.disabled = false;
             stopButton.disabled = true;
 
+            if (dureeInput) {
+                const parsed = parseDuree(dureeInput.value);
+                if (parsed !== null) {
+                    secondes = parsed;
+                    afficherChrono();
+                }
+            }
+
+        });
+
+        dureeInput.addEventListener("change", () => {
+            const parsed = parseDuree(dureeInput.value);
+            if (parsed !== null) {
+                secondes = parsed;
+                afficherChrono();
+            } else {
+                dureeInput.value = formatDuree(secondes);
+            }
         });
 
         import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -435,19 +479,21 @@
 
             const { data: profil, error: errorProfil } = await supabase
                 .from("profils")
-                .select("pseudo")
+                .select("pseudo, codePostal")
                 .eq("id", session.user.id)
                 .single();
 
             console.log("Profil:", profil, "Erreur:", errorProfil);
 
             const pseudo = profil?.pseudo || session.user.email;
+            const lieuDefaut = profil?.codePostal || 'maison';
 
             bar.innerHTML = `
                 <span class="bee-small">🐝</span>
                 <span class="pseudo">${pseudo}</span>
                 <button id="btnDeconnexion">Se déconnecter</button>
             `;
+            document.getElementById('lieu').value = lieuDefaut;
 
             document.getElementById("btnDeconnexion").addEventListener("click", async () => {
                 await supabase.auth.signOut();
@@ -464,15 +510,22 @@
         }
 
         // Initialiser les valeurs par défaut pour date, heure et lieu
-        window.addEventListener('DOMContentLoaded', () => {
+        function initialiserValeursParDefaut() {
             const now = new Date();
             const formattedDate = now.toISOString().split('T')[0];
             const formattedTime = now.toTimeString().split(' ')[0].substring(0, 5);
+            const lieuInput = document.getElementById('lieu');
 
             document.getElementById('date_capture').value = formattedDate;
             document.getElementById('heure_capture').value = formattedTime;
-            document.getElementById('lieu').value = 'maison';
-        });
+            if (lieuInput && !lieuInput.value.trim()) {
+                lieuInput.value = 'maison';
+            }
+        }
+
+        initialiserValeursParDefaut();
+
+        document.addEventListener('DOMContentLoaded', initialiserValeursParDefaut);
 
         document.getElementById("captureForm").addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -486,7 +539,7 @@
                 .insert({
                     date_capture: document.getElementById("date_capture").value,
                     heure_capture: document.getElementById("heure_capture").value,
-                    methode: document.getElementById("methode").value,
+                            methode: document.getElementById("methode").value,
                     duree: secondes,
                     nombre: Number(document.getElementById("nombre").value),
                     lieu: document.getElementById("lieu").value,

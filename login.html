@@ -234,6 +234,10 @@
                 <p class="pseudo-hint">Ce nom sera affiché sur vos captures</p>
             </div>
             <div class="form-group">
+                <label>Code postal</label>
+                <input type="text" id="inscriptionCodePostal" placeholder="ex: 75001" maxlength="10">
+            </div>
+            <div class="form-group">
                 <label>Email</label>
                 <input type="email" id="inscriptionEmail" placeholder="votre@email.com" autocomplete="email">
             </div>
@@ -294,6 +298,7 @@
 
         window.sInscrire = async function () {
             const pseudo = document.getElementById('inscriptionPseudo').value.trim();
+            const codePostal = document.getElementById('inscriptionCodePostal').value.trim();
             const email = document.getElementById('inscriptionEmail').value.trim();
             const password = document.getElementById('inscriptionPassword').value;
             const btn = document.getElementById('btnInscription');
@@ -316,7 +321,7 @@
             // Sauvegarder le pseudo dans la table profils
             const { error: errorProfil } = await supabase
                 .from('profils')
-                .insert({ id: data.user.id, pseudo });
+                .insert({ id: data.user.id, pseudo, codePostal });
 
             if (errorProfil) {
                 afficherMessage('Compte créé mais erreur sur le pseudo : ' + errorProfil.message, 'error');
