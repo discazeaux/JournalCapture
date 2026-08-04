@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion — Suivi Frelons</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap');
+
+        :root {
+            --bg: #0e0e0e;
+            --card: #181818;
+            --yellow: #ffd700;
+            --yellow-dim: rgba(255, 215, 0, 0.12);
+            --text: #ffffff;
+            --muted: #888;
+            --border: #2a2a2a;
+            --input-bg: #1e1e1e;
+            --input-border: #444;
+            --error: #ff5555;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(255,215,0,0.07) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .bee {
+            font-size: 56px;
+            display: block;
+            text-align: center;
+            margin-bottom: 16px;
+            filter: drop-shadow(0 0 20px rgba(255,215,0,0.4));
+        }
+
+        h1 {
+            color: var(--yellow);
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 36px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 32px;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 28px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: var(--yellow);
+            color: #0e0e0e;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 15px;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--yellow);
+            box-shadow: 0 0 0 2px rgba(255,215,0,0.15);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--yellow);
+            color: #0e0e0e;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.2s, transform 0.15s;
+        }
+
+        .btn:hover { background: #e6c200; transform: translateY(-2px); }
+        .btn:active { transform: translateY(0); }
+        .btn:disabled { background: var(--input-border); color: var(--muted); cursor: not-allowed; transform: none; }
+
+        .message {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.error { background: rgba(255,85,85,0.15); color: var(--error); display: block; }
+        .message.success { background: rgba(100,200,100,0.15); color: #6fcf6f; display: block; }
+
+        .pseudo-hint {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <span class="bee">🐝</span>
+    <h1>Suivi Frelons</h1>
+    <p class="subtitle">Connectez-vous pour accéder à l'application</p>
+
+    <div class="card">
+        <div class="tabs">
+            <button class="tab active" id="tabConnexion" onclick="afficherOnglet('connexion')">Connexion</button>
+            <button class="tab" id="tabInscription" onclick="afficherOnglet('inscription')">Créer un compte</button>
+        </div>
+
+        <!-- Formulaire connexion -->
+        <div id="formConnexion">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="votre@email.com" autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label>Mot de passe</label>
+                <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+            </div>
+            <button class="btn" id="btnConnexion" onclick="seConnecter()">Se connecter</button>
+        </div>
+
+        <!-- Formulaire inscription -->
+        <div id="formInscription" style="display:none">
+            <div class="form-group">
+                <label>Pseudo visible par l'équipe</label>
+                <input type="text" id="inscriptionPseudo" placeholder="ex: Marie, Jean-Pierre…" maxlength="30">
+                <p class="pseudo-hint">Ce nom sera affiché sur vos captures</p>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="inscriptionEmail" placeholder="votre@email.com" autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label>Mot de passe</label>
+                <input type="password" id="inscriptionPassword" placeholder="Minimum 6 caractères" autocomplete="new-password">
+            </div>
+            <button class="btn" id="btnInscription" onclick="sInscrire()">Créer mon compte</button>
+        </div>
+
+        <div class="message" id="message"></div>
+    </div>
+
+    <script type="module">
+        import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+        const supabase = createClient(
+            "https://pvqfwozqfndlpfzypbza.supabase.co",
+            "sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
+        );
+
+        window.afficherOnglet = function(onglet) {
+            document.getElementById('formConnexion').style.display = onglet === 'connexion' ? 'block' : 'none';
+            document.getElementById('formInscription').style.display = onglet === 'inscription' ? 'block' : 'none';
+            document.getElementById('tabConnexion').classList.toggle('active', onglet === 'connexion');
+            document.getElementById('tabInscription').classList.toggle('active', onglet === 'inscription');
+            document.getElementById('message').className = 'message';
+        };
+
+        function afficherMessage(texte, type) {
+            const el = document.getElementById('message');
+            el.textContent = texte;
+            el.className = 'message ' + type;
+        }
+
+        window.seConnecter = async function() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('btnConnexion');
+
+            if (!email || !password) { afficherMessage('Veuillez remplir tous les champs.', 'error'); return; }
+
+            btn.disabled = true;
+            btn.textContent = 'Connexion…';
+
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                afficherMessage('Email ou mot de passe incorrect.', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Se connecter';
+            } else {
+                afficherMessage('Connexion réussie, redirection…', 'success');
+                setTimeout(() => window.location.href = 'index.html', 1000);
+            }
+        };
+
+        window.sInscrire = async function() {
+            const pseudo = document.getElementById('inscriptionPseudo').value.trim();
+            const email = document.getElementById('inscriptionEmail').value.trim();
+            const password = document.getElementById('inscriptionPassword').value;
+            const btn = document.getElementById('btnInscription');
+
+            if (!pseudo || !email || !password) { afficherMessage('Veuillez remplir tous les champs.', 'error'); return; }
+            if (password.length < 6) { afficherMessage('Le mot de passe doit faire au moins 6 caractères.', 'error'); return; }
+
+            btn.disabled = true;
+            btn.textContent = 'Création…';
+
+            const { data, error } = await supabase.auth.signUp({ email, password });
+
+            if (error) {
+                afficherMessage(error.message, 'error');
+                btn.disabled = false;
+                btn.textContent = 'Créer mon compte';
+                return;
+            }
+
+            // Sauvegarder le pseudo dans la table profils
+            const { error: errorProfil } = await supabase
+                .from('profils')
+                .insert({ id: data.user.id, pseudo });
+
+            if (errorProfil) {
+                afficherMessage('Compte créé mais erreur sur le pseudo : ' + errorProfil.message, 'error');
+            } else {
+                afficherMessage('Compte créé ! Vous pouvez vous connecter.', 'success');
+                setTimeout(() => afficherOnglet('connexion'), 2000);
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Créer mon compte';
+        };
+
+        // Vérifier si déjà connecté (une seule fois, sans boucle)
+        let dejaRedirige = false;
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && !dejaRedirige) {
+            dejaRedirige = true;
+            window.location.href = 'index.html';
+        }
+
+        // Écouter les changements d'état uniquement pour la connexion réussie
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session && !dejaRedirige) {
+                dejaRedirige = true;
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Connexion avec Entrée
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const ongletActif = document.getElementById('formConnexion').style.display !== 'none';
+                if (ongletActif) window.seConnecter();
+                else window.sInscrire();
+            }
+        });
+    </script>
+
+</body>
+</html>

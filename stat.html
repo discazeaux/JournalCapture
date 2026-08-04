@@ -117,6 +117,46 @@ td {
     border-bottom:1px solid #333;
 
 }
+.navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto 24px auto;
+            padding: 10px 16px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+        }
+
+        .navbar a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .navbar a:hover {
+            background: rgba(255, 215, 0, 0.12);
+            color: var(--accent-yellow);
+        }
+
+        .navbar .active {
+            color: var(--accent-yellow);
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            #captureForm {
+                padding: 20px;
+            }
+        }
 </style>
 
 
@@ -126,10 +166,16 @@ td {
 <body>
 
 
+<nav class="navbar">
+    <a href="index.html">🐝 Accueil</a>
+    <a href="nouvelleCapture.html" class="active">📋 Nouvelle capture</a>
+    <a href="stat.html">📊 Statistiques</a>
+</nav>
+
 <div class="container">
 
 
-<h1>🐝 Statistiques captures</h1>
+<h2>🐝 Statistiques captures</h2>
 
 
 
