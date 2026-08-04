@@ -6,6 +6,13 @@
     <title>Statistiques sur le frelon</title>
     <style>
         :root {
+            --bg: #0e0e0e;
+            --card: #181818;
+            --yellow: #ffd700;
+            --yellow-dim: rgba(255, 215, 0, 0.12);
+            --text: #ffffff;
+            --muted: #888;
+            --border: #2a2a2a;
             --bg-dark: #121212;
             --bg-darker: #0a0a0a;
             --text-primary: #ffffff;
@@ -187,15 +194,7 @@
             color: var(--accent-yellow);
         }
 
-        @media (max-width: 600px) {
-            body {
-                padding: 15px;
-            }
-
-            #captureForm {
-                padding: 20px;
-            }
-        }
+        
         #startChrono,
         #stopChrono {
             width:48%;
@@ -212,9 +211,83 @@
             opacity:0.4;
             cursor:not-allowed;
         }
+        .user-bar {
+            position: fixed;
+            top: 16px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 99px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 10;
+        }
+
+        .user-bar .pseudo {
+            color: var(--yellow);
+        }
+
+        .user-bar .bee-small {
+            font-size: 18px;
+        }
+
+        .user-bar button, .user-bar a {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 10px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .user-bar button:hover, .user-bar a:hover {
+            border-color: var(--yellow);
+            color: var(--yellow);
+        }
+
+        @media (max-width: 480px) {
+            .user-bar {
+                top: 10px;
+                right: 10px;
+                padding: 6px 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav {
+                grid-template-columns: 1fr;
+            }
+            .nav-card {
+                flex-direction: row;
+                align-items: center;
+                gap: 16px;
+                padding: 20px;
+            }
+            .card-content {
+                flex: 1;
+            }
+            .card-arrow {
+                opacity: 1;
+                transform: none;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="user-bar" id="userBar">
+        <!-- rempli par JS -->
+    </div>
+
+   
 
     <nav class="navbar">
         <a href="index.html">🐝 Accueil</a>
@@ -338,6 +411,49 @@
             "https://pvqfwozqfndlpfzypbza.supabase.co",
             "sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
         );
+
+        const bar = document.getElementById("userBar");
+
+        const { data: { session } } = await supabase.auth.getSession();
+
+        console.log("Session:", session);
+
+        if (!session) {
+            document.getElementById("cardCapture").style.display = "none";
+        }
+
+        if (session) {
+            console.log("User ID:", session.user.id);
+
+            const { data: profil, error: errorProfil } = await supabase
+                .from("profils")
+                .select("pseudo")
+                .eq("id", session.user.id)
+                .single();
+
+            console.log("Profil:", profil, "Erreur:", errorProfil);
+
+            const pseudo = profil?.pseudo || session.user.email;
+
+            bar.innerHTML = `
+                <span class="bee-small">🐝</span>
+                <span class="pseudo">${pseudo}</span>
+                <button id="btnDeconnexion">Se déconnecter</button>
+            `;
+
+            document.getElementById("btnDeconnexion").addEventListener("click", async () => {
+                await supabase.auth.signOut();
+                window.location.href = "login.html";
+            });
+
+        } else {
+            bar.innerHTML = `
+                <button id="btnConnexion">Se connecter</button>
+            `;
+            document.getElementById("btnConnexion").addEventListener("click", () => {
+                window.location.href = "login.html";
+            });
+        }
 
         // Initialiser les valeurs par défaut pour date, heure et lieu
         window.addEventListener('DOMContentLoaded', () => {

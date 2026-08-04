@@ -18,6 +18,11 @@
     --bg-card:#1e1e1e;
     --yellow:#ffd700;
     --text:#ffffff;
+    --text-secondary:#e0e0e0;
+    --accent-yellow:#ffd700;
+    --border:#2a2a2a;
+    --card:#1a1a1a;
+    --muted:#888;
 }
 
 
@@ -148,6 +153,51 @@ td {
             color: var(--accent-yellow);
         }
 
+        .user-bar {
+            position: fixed;
+            top: 16px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 99px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 10;
+        }
+
+        .user-bar .pseudo {
+            color: var(--yellow);
+        }
+
+        .user-bar .bee-small {
+            font-size: 18px;
+        }
+
+        .user-bar button,
+        .user-bar a {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 10px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .user-bar button:hover,
+        .user-bar a:hover {
+            border-color: var(--yellow);
+            color: var(--yellow);
+        }
+
         @media (max-width: 600px) {
             body {
                 padding: 15px;
@@ -165,11 +215,14 @@ td {
 
 <body>
 
+<div class="user-bar" id="userBar">
+    <!-- rempli par JS -->
+</div>
 
 <nav class="navbar">
     <a href="index.html">🐝 Accueil</a>
-    <a href="nouvelleCapture.html" class="active">📋 Nouvelle capture</a>
-    <a href="stat.html">📊 Statistiques</a>
+    <a id="navCapture" href="nouvelleCapture.html">📋 Nouvelle capture</a>
+    <a href="stat.html" class="active">📊 Statistiques</a>
 </nav>
 
 <div class="container">
@@ -348,6 +401,42 @@ const supabase = createClient(
 "sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
 
 );
+
+const bar = document.getElementById("userBar");
+const { data: { session } } = await supabase.auth.getSession();
+
+if (session) {
+    const { data: profil, error: errorProfil } = await supabase
+        .from("profils")
+        .select("pseudo")
+        .eq("id", session.user.id)
+        .single();
+
+    const pseudo = profil?.pseudo || session.user.email;
+
+    bar.innerHTML = `
+        <span class="bee-small">🐝</span>
+        <span class="pseudo">${pseudo}</span>
+        <button id="btnDeconnexion">Se déconnecter</button>
+    `;
+
+    document.getElementById("btnDeconnexion").addEventListener("click", async () => {
+        await supabase.auth.signOut();
+        window.location.href = "login.html";
+    });
+} else {
+    bar.innerHTML = `
+        <button id="btnConnexion">Se connecter</button>
+    `;
+    document.getElementById("btnConnexion").addEventListener("click", () => {
+        window.location.href = "login.html";
+    });
+
+    const navCapture = document.getElementById("navCapture");
+    if (navCapture) {
+        navCapture.style.display = "none";
+    }
+}
 
 
 

@@ -239,6 +239,7 @@
                 transform: none;
             }
         }
+        
     </style>
 </head>
 <body>
@@ -254,7 +255,7 @@
     </div>
 
     <nav class="nav">
-        <a class="nav-card" href="nouvelleCapture.html">
+        <a class="nav-card" href="nouvelleCapture.html" id="cardCapture">
             <span class="card-icon">📋</span>
             <div class="card-content">
                 <div class="card-label">Nouvelle capture</div>
@@ -288,6 +289,10 @@
         const { data: { session } } = await supabase.auth.getSession();
 
         console.log("Session:", session);
+
+        if (!session) {
+            document.getElementById("cardCapture").style.display = "none";
+        }
 
         if (session) {
             console.log("User ID:", session.user.id);
