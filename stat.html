@@ -3,126 +3,126 @@
 
 <head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Statistiques captures</title>
+    <title>Statistiques captures</title>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
-<style>
-
-:root {
-    --bg-dark:#121212;
-    --bg-card:#1e1e1e;
-    --yellow:#ffd700;
-    --text:#ffffff;
-    --text-secondary:#e0e0e0;
-    --accent-yellow:#ffd700;
-    --border:#2a2a2a;
-    --card:#1a1a1a;
-    --muted:#888;
-}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 
-* {
-    box-sizing:border-box;
-    font-family:'Segoe UI', sans-serif;
-}
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-card: #1e1e1e;
+            --yellow: #ffd700;
+            --text: #ffffff;
+            --text-secondary: #e0e0e0;
+            --accent-yellow: #ffd700;
+            --border: #2a2a2a;
+            --card: #1a1a1a;
+            --muted: #888;
+        }
 
 
-body {
-
-    background:var(--bg-dark);
-    color:var(--text);
-    padding:20px;
-
-}
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
 
 
-h1 {
+        body {
 
-    color:var(--yellow);
-    text-align:center;
-    margin-bottom:30px;
+            background: var(--bg-dark);
+            color: var(--text);
+            padding: 20px;
 
-}
+        }
 
 
+        h1 {
 
-.container {
+            color: var(--yellow);
+            text-align: center;
+            margin-bottom: 30px;
 
-    max-width:900px;
-    margin:auto;
-
-}
+        }
 
 
 
-.stat {
+        .container {
 
-    background:var(--bg-card);
-    padding:20px;
-    border-radius:10px;
-    margin-bottom:20px;
+            max-width: 900px;
+            margin: auto;
 
-}
+        }
 
 
 
-.stat-title {
+        .stat {
 
-    color:#ccc;
-    font-size:16px;
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
 
-}
-
-
-.valeur {
-
-    color:var(--yellow);
-    font-size:32px;
-    font-weight:bold;
-
-}
+        }
 
 
 
-canvas {
+        .stat-title {
 
-    background:#151515;
-    border-radius:10px;
-    padding:10px;
+            color: #ccc;
+            font-size: 16px;
 
-}
-
-table {
-
-    width:100%;
-    border-collapse:collapse;
-    margin-top:20px;
-
-}
+        }
 
 
-th {
+        .valeur {
 
-    color:#ffd700;
-    padding:10px;
-    border-bottom:1px solid #444;
+            color: var(--yellow);
+            font-size: 32px;
+            font-weight: bold;
 
-}
+        }
 
 
-td {
 
-    text-align:center;
-    padding:10px;
-    border-bottom:1px solid #333;
+        canvas {
 
-}
-.navbar {
+            background: #151515;
+            border-radius: 10px;
+            padding: 10px;
+
+        }
+
+        table {
+
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+
+        }
+
+
+        th {
+
+            color: #ffd700;
+            padding: 10px;
+            border-bottom: 1px solid #444;
+
+        }
+
+
+        td {
+
+            text-align: center;
+            padding: 10px;
+            border-bottom: 1px solid #333;
+
+        }
+
+        .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -207,7 +207,7 @@ td {
                 padding: 20px;
             }
         }
-</style>
+    </style>
 
 
 </head>
@@ -215,342 +215,342 @@ td {
 
 <body>
 
-<div class="user-bar" id="userBar">
-    <!-- rempli par JS -->
-</div>
+    <div class="user-bar" id="userBar">
+        <!-- rempli par JS -->
+    </div>
 
-<nav class="navbar">
-    <a href="index.html">🐝 Accueil</a>
-    <a id="navCapture" href="nouvelleCapture.html">📋 Nouvelle capture</a>
-    <a href="stat.html" class="active">📊 Statistiques</a>
-</nav>
+    <nav class="navbar">
+        <a href="index.html">🐝 Accueil</a>
+        <a id="navCapture" href="nouvelleCapture.html">📋 Nouvelle capture</a>
+        <a href="stat.html" class="active">📊 Statistiques</a>
+    </nav>
 
-<div class="container">
+    <div class="container">
 
 
-<h2>🐝 Statistiques captures</h2>
+        <h2>🐝 Statistiques captures</h2>
 
 
 
-<div class="stat">
+        <div class="stat">
 
-<div class="stat-title">
-Total captures
-</div>
+            <div class="stat-title">
+                Total captures
+            </div>
 
-<div class="valeur" id="totalCaptures">
-0
-</div>
+            <div class="valeur" id="totalCaptures">
+                0
+            </div>
 
-</div>
+        </div>
 
 
 
 
-<div class="stat">
+        <div class="stat">
 
-<div class="stat-title">
-Total individus capturés
-</div>
+            <div class="stat-title">
+                Total individus capturés
+            </div>
 
-<div class="valeur" id="totalNombre">
-0
-</div>
+            <div class="valeur" id="totalNombre">
+                0
+            </div>
 
-</div>
+        </div>
 
-<div class="stat">
+        <div class="stat">
 
-<h2>⚡ Efficacité par méthode</h2>
+            <h2>⚡ Efficacité par méthode</h2>
 
-<canvas id="efficaciteMethode"></canvas>
+            <canvas id="efficaciteMethode"></canvas>
 
 
-<table id="tableMethode">
+            <table id="tableMethode">
 
-<thead>
-<tr>
-<th>Méthode</th>
-<th>Sessions</th>
-<th>Frelons</th>
-<th>Moyenne/session</th>
-</tr>
-</thead>
+                <thead>
+                    <tr>
+                        <th>Méthode</th>
+                        <th>Sessions</th>
+                        <th>Frelons</th>
+                        <th>Moyenne/session</th>
+                    </tr>
+                </thead>
 
-<tbody>
+                <tbody>
 
-</tbody>
+                </tbody>
 
-</table>
+            </table>
 
-</div>
+        </div>
 
 
 
-<div class="stat">
+        <div class="stat">
 
-<div class="stat-title">
-Moyenne de frelons par session
-</div>
+            <div class="stat-title">
+                Moyenne de frelons par session
+            </div>
 
-<div class="valeur" id="moyenneSession">
-0
-</div>
+            <div class="valeur" id="moyenneSession">
+                0
+            </div>
 
-</div>
+        </div>
 
 
 
 
 
-<div class="stat">
+        <div class="stat">
 
-<div class="stat-title">
-Durée totale d'observation
-</div>
+            <div class="stat-title">
+                Durée totale d'observation
+            </div>
 
-<div class="valeur" id="dureeTotale">
-0
-</div>
+            <div class="valeur" id="dureeTotale">
+                0
+            </div>
 
-</div>
+        </div>
 
 
 
 
-<div class="stat">
+        <div class="stat">
 
-<div class="stat-title">
-Durée moyenne par session
-</div>
+            <div class="stat-title">
+                Durée moyenne par session
+            </div>
 
-<div class="valeur" id="dureeMoyenne">
-0
-</div>
+            <div class="valeur" id="dureeMoyenne">
+                0
+            </div>
 
-</div>
+        </div>
 
 
 
 
 
-<div class="stat">
+        <div class="stat">
 
-<h2>📅 Captures par semaine par méthode</h2>
+            <h2>📅 Captures par semaine par méthode</h2>
 
-<canvas id="capturesSemaineMethode"></canvas>
+            <canvas id="capturesSemaineMethode"></canvas>
 
-<table id="tableSemaine">
+            <table id="tableSemaine">
 
-<thead>
-<tr id="tableSemaineHeader">
-<th>Semaine</th>
-</tr>
-</thead>
+                <thead>
+                    <tr id="tableSemaineHeader">
+                        <th>Semaine</th>
+                    </tr>
+                </thead>
 
-<tbody>
+                <tbody>
 
-</tbody>
+                </tbody>
 
-</table>
+            </table>
 
-</div>
+        </div>
 
 
 
-<div class="stat">
+        <div class="stat">
 
-<h2>📈 Captures par jour</h2>
+            <h2>📈 Captures par jour</h2>
 
-<canvas id="capturesJour"></canvas>
+            <canvas id="capturesJour"></canvas>
 
-</div>
+        </div>
 
 
 
 
 
-<div class="stat">
+        <div class="stat">
 
-<h2>🕒 Heures des captures</h2>
+            <h2>🕒 Heures des captures</h2>
 
-<canvas id="capturesHeure"></canvas>
+            <canvas id="capturesHeure"></canvas>
 
-</div>
+        </div>
 
 
 
-</div>
+    </div>
 
 
 
 
 
-<script type="module">
+    <script type="module">
 
 
-import { createClient }
-from "https://esm.sh/@supabase/supabase-js@2";
+        import { createClient }
+            from "https://esm.sh/@supabase/supabase-js@2";
 
 
 
-const supabase = createClient(
+        const supabase = createClient(
 
-"https://pvqfwozqfndlpfzypbza.supabase.co",
+            "https://pvqfwozqfndlpfzypbza.supabase.co",
 
-"sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
+            "sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
 
-);
+        );
 
-const bar = document.getElementById("userBar");
-const { data: { session } } = await supabase.auth.getSession();
+        const bar = document.getElementById("userBar");
+        const { data: { session } } = await supabase.auth.getSession();
 
-if (session) {
-    const { data: profil, error: errorProfil } = await supabase
-        .from("profils")
-        .select("pseudo")
-        .eq("id", session.user.id)
-        .single();
+        if (session) {
+            const { data: profil, error: errorProfil } = await supabase
+                .from("profils")
+                .select("pseudo")
+                .eq("id", session.user.id)
+                .single();
 
-    const pseudo = profil?.pseudo || session.user.email;
+            const pseudo = profil?.pseudo || session.user.email;
 
-    bar.innerHTML = `
+            bar.innerHTML = `
         <span class="bee-small">🐝</span>
         <span class="pseudo">${pseudo}</span>
         <button id="btnDeconnexion">Se déconnecter</button>
     `;
 
-    document.getElementById("btnDeconnexion").addEventListener("click", async () => {
-        await supabase.auth.signOut();
-        window.location.href = "login.html";
-    });
-} else {
-    bar.innerHTML = `
+            document.getElementById("btnDeconnexion").addEventListener("click", async () => {
+                await supabase.auth.signOut();
+                window.location.href = "login.html";
+            });
+        } else {
+            bar.innerHTML = `
         <button id="btnConnexion">Se connecter</button>
     `;
-    document.getElementById("btnConnexion").addEventListener("click", () => {
-        window.location.href = "login.html";
-    });
+            document.getElementById("btnConnexion").addEventListener("click", () => {
+                window.location.href = "login.html";
+            });
 
-    const navCapture = document.getElementById("navCapture");
-    if (navCapture) {
-        navCapture.style.display = "none";
-    }
-}
+            const navCapture = document.getElementById("navCapture");
+            if (navCapture) {
+                navCapture.style.display = "none";
+            }
+        }
 
 
 
 
 
-async function chargerStats(){
+        async function chargerStats() {
 
 
 
-    const { data, error } = await supabase
+            const { data, error } = await supabase
 
-    .from("captures")
+                .from("captures")
 
-    .select("*")
+                .select("*")
 
-    .order("date_capture", { ascending:true });
+                .order("date_capture", { ascending: true });
 
 
 
 
-    if(error){
+            if (error) {
 
-    console.error(error);
+                console.error(error);
 
-    alert(error.message);
+                alert(error.message);
 
-    return;
+                return;
 
-}
-// =======================
-// Efficacité par méthode
-// =======================
+            }
+            // =======================
+            // Efficacité par méthode
+            // =======================
 
 
-let parMethode={};
+            let parMethode = {};
 
 
 
-data.forEach(capture=>{
+            data.forEach(capture => {
 
 
-let methode=capture.methode || "Inconnue";
+                let methode = capture.methode || "Inconnue";
 
 
-if(!parMethode[methode]){
+                if (!parMethode[methode]) {
 
 
-    parMethode[methode]={
+                    parMethode[methode] = {
 
-        sessions:0,
-        nombre:0
+                        sessions: 0,
+                        nombre: 0
 
-    };
+                    };
 
 
-}
+                }
 
 
 
-parMethode[methode].sessions++;
+                parMethode[methode].sessions++;
 
-parMethode[methode].nombre += capture.nombre || 0;
+                parMethode[methode].nombre += capture.nombre || 0;
 
 
 
-});
+            });
 
 
 
 
 
 
-let labelsMethode=[];
+            let labelsMethode = [];
 
-let valeursMethode=[];
+            let valeursMethode = [];
 
 
 
 
-let tbody=document.querySelector("#tableMethode tbody");
+            let tbody = document.querySelector("#tableMethode tbody");
 
 
-tbody.innerHTML="";
+            tbody.innerHTML = "";
 
 
 
 
 
-Object.keys(parMethode).forEach(methode=>{
+            Object.keys(parMethode).forEach(methode => {
 
 
-let stats=parMethode[methode];
+                let stats = parMethode[methode];
 
 
 
-let moyenne=
+                let moyenne =
 
-(stats.nombre / stats.sessions).toFixed(2);
+                    (stats.nombre / stats.sessions).toFixed(2);
 
 
 
-labelsMethode.push(methode);
+                labelsMethode.push(methode);
 
 
-valeursMethode.push(stats.nombre);
+                valeursMethode.push(stats.nombre);
 
 
 
 
-let ligne=document.createElement("tr");
+                let ligne = document.createElement("tr");
 
 
 
-ligne.innerHTML=`
+                ligne.innerHTML = `
 
 <td>${methode}</td>
 
@@ -564,11 +564,11 @@ ligne.innerHTML=`
 
 
 
-tbody.appendChild(ligne);
+                tbody.appendChild(ligne);
 
 
 
-});
+            });
 
 
 
@@ -576,112 +576,112 @@ tbody.appendChild(ligne);
 
 
 
-new Chart(
+            new Chart(
 
-document.getElementById("efficaciteMethode"),
+                document.getElementById("efficaciteMethode"),
 
-{
+                {
 
 
-type:"bar",
+                    type: "bar",
 
 
-data:{
+                    data: {
 
 
-labels:labelsMethode,
+                        labels: labelsMethode,
 
 
-datasets:[{
+                        datasets: [{
 
 
-label:"Frelons capturés",
+                            label: "Frelons capturés",
 
-data:valeursMethode
+                            data: valeursMethode
 
 
-}]
+                        }]
 
 
-},
+                    },
 
 
-options:{
+                    options: {
 
 
-responsive:true
+                        responsive: true
 
 
-}
+                    }
 
 
-}
+                }
 
 
-);
+            );
 
 
-console.log(data);
+            console.log(data);
 
 
 
 
 
-let totalCaptures=data.length;
+            let totalCaptures = data.length;
 
 
 
 
-let totalNombre=data.reduce(
+            let totalNombre = data.reduce(
 
-(total,capture)=>total+(capture.nombre || 0),
+                (total, capture) => total + (capture.nombre || 0),
 
-0
+                0
 
-);
+            );
 
 
 
 
-let dureeTotale=data.reduce(
+            let dureeTotale = data.reduce(
 
-(total,capture)=>total+(capture.duree || 0),
+                (total, capture) => total + (capture.duree || 0),
 
-0
+                0
 
-);
+            );
 
 
 
 
 
-let dureeMoyenne=
+            let dureeMoyenne =
 
-totalCaptures>0
+                totalCaptures > 0
 
-?
+                    ?
 
-Math.round(dureeTotale/totalCaptures)
+                    Math.round(dureeTotale / totalCaptures)
 
-:
+                    :
 
-0;
+                    0;
 
 
 
 
 
-let moyenneSession=
+            let moyenneSession =
 
-totalCaptures>0
+                totalCaptures > 0
 
-?
+                    ?
 
-(totalNombre/totalCaptures).toFixed(2)
+                    (totalNombre / totalCaptures).toFixed(2)
 
-:
+                    :
 
-0;
+                    0;
 
 
 
@@ -689,33 +689,33 @@ totalCaptures>0
 
 
 
-document.getElementById("totalCaptures").textContent=
+            document.getElementById("totalCaptures").textContent =
 
-totalCaptures;
+                totalCaptures;
 
 
 
-document.getElementById("totalNombre").textContent=
+            document.getElementById("totalNombre").textContent =
 
-totalNombre;
+                totalNombre;
 
 
 
-document.getElementById("moyenneSession").textContent=
+            document.getElementById("moyenneSession").textContent =
 
-moyenneSession;
+                moyenneSession;
 
 
 
-document.getElementById("dureeTotale").textContent=
+            document.getElementById("dureeTotale").textContent =
 
-formaterTemps(dureeTotale);
+                formaterTemps(dureeTotale);
 
 
 
-document.getElementById("dureeMoyenne").textContent=
+            document.getElementById("dureeMoyenne").textContent =
 
-formaterTemps(dureeMoyenne);
+                formaterTemps(dureeMoyenne);
 
 
 
@@ -724,301 +724,301 @@ formaterTemps(dureeMoyenne);
 
 
 
-// =======================
-// Captures par semaine par méthode
-// =======================
+            // =======================
+            // Captures par semaine par méthode
+            // =======================
 
-function getNumeroSemaine(dateStr) {
-    const date = new Date(dateStr);
-    const debut = new Date(date.getFullYear(), 0, 1);
-    const diff = date - debut;
-    const unJour = 86400000;
-    const joursDepuisDebut = Math.floor(diff / unJour);
-    const semaine = Math.ceil((joursDepuisDebut + debut.getDay() + 1) / 7);
-    return date.getFullYear() + "-S" + String(semaine).padStart(2, "0");
-}
+            function getNumeroSemaine(dateStr) {
+                const date = new Date(dateStr);
+                const debut = new Date(date.getFullYear(), 0, 1);
+                const diff = date - debut;
+                const unJour = 86400000;
+                const joursDepuisDebut = Math.floor(diff / unJour);
+                const semaine = Math.ceil((joursDepuisDebut + debut.getDay() + 1) / 7);
+                return date.getFullYear() + "-S" + String(semaine).padStart(2, "0");
+            }
 
-let parSemaineMethode = {};
-let toutesMethodes = new Set();
+            let parSemaineMethode = {};
+            let toutesMethodes = new Set();
 
-data.forEach(capture => {
-    const semaine = getNumeroSemaine(capture.date_capture);
-    const methode = capture.methode || "Inconnue";
+            data.forEach(capture => {
+                const semaine = getNumeroSemaine(capture.date_capture);
+                const methode = capture.methode || "Inconnue";
 
-    toutesMethodes.add(methode);
+                toutesMethodes.add(methode);
 
-    if (!parSemaineMethode[semaine]) {
-        parSemaineMethode[semaine] = {};
-    }
-    if (!parSemaineMethode[semaine][methode]) {
-        parSemaineMethode[semaine][methode] = 0;
-    }
-    parSemaineMethode[semaine][methode] += capture.nombre || 0;
-});
+                if (!parSemaineMethode[semaine]) {
+                    parSemaineMethode[semaine] = {};
+                }
+                if (!parSemaineMethode[semaine][methode]) {
+                    parSemaineMethode[semaine][methode] = 0;
+                }
+                parSemaineMethode[semaine][methode] += capture.nombre || 0;
+            });
 
-const semaines = Object.keys(parSemaineMethode).sort();
-const methodes = [...toutesMethodes];
+            const semaines = Object.keys(parSemaineMethode).sort();
+            const methodes = [...toutesMethodes];
 
-const couleurs = [
-    "#ffd700", "#ff6b6b", "#4ecdc4", "#a29bfe",
-    "#fd79a8", "#55efc4", "#fdcb6e", "#74b9ff"
-];
+            const couleurs = [
+                "#ffd700", "#ff6b6b", "#4ecdc4", "#a29bfe",
+                "#fd79a8", "#55efc4", "#fdcb6e", "#74b9ff"
+            ];
 
-const datasetsMethode = methodes.map((methode, i) => ({
-    label: methode,
-    data: semaines.map(s => parSemaineMethode[s][methode] || 0),
-    backgroundColor: couleurs[i % couleurs.length]
-}));
+            const datasetsMethode = methodes.map((methode, i) => ({
+                label: methode,
+                data: semaines.map(s => parSemaineMethode[s][methode] || 0),
+                backgroundColor: couleurs[i % couleurs.length]
+            }));
 
-new Chart(document.getElementById("capturesSemaineMethode"), {
-    type: "bar",
-    data: {
-        labels: semaines,
-        datasets: datasetsMethode
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: { labels: { color: "#fff" } }
-        },
-        scales: {
-            x: { ticks: { color: "#ccc" }, grid: { color: "#333" } },
-            y: { ticks: { color: "#ccc" }, grid: { color: "#333" }, beginAtZero: true }
+            new Chart(document.getElementById("capturesSemaineMethode"), {
+                type: "bar",
+                data: {
+                    labels: semaines,
+                    datasets: datasetsMethode
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { labels: { color: "#fff" } }
+                    },
+                    scales: {
+                        x: { ticks: { color: "#ccc" }, grid: { color: "#333" } },
+                        y: { ticks: { color: "#ccc" }, grid: { color: "#333" }, beginAtZero: true }
+                    }
+                }
+            });
+
+            // Tableau semaine par méthode
+            const headerRow = document.getElementById("tableSemaineHeader");
+            methodes.forEach(m => {
+                const th = document.createElement("th");
+                th.textContent = m;
+                headerRow.appendChild(th);
+            });
+
+            const tbodySemaine = document.querySelector("#tableSemaine tbody");
+            tbodySemaine.innerHTML = "";
+
+            semaines.forEach(semaine => {
+                const ligne = document.createElement("tr");
+                let html = `<td><strong>${semaine}</strong></td>`;
+                methodes.forEach(m => {
+                    html += `<td>${parSemaineMethode[semaine][m] || 0}</td>`;
+                });
+                ligne.innerHTML = html;
+                tbodySemaine.appendChild(ligne);
+            });
+
+            // =======================
+            // Captures par jour
+            // =======================
+
+
+            let parJour = {};
+
+
+
+            data.forEach(capture => {
+
+
+                let jour = capture.date_capture;
+
+
+
+                if (!parJour[jour]) {
+
+                    parJour[jour] = 0;
+
+                }
+
+
+                parJour[jour] += capture.nombre || 0;
+
+
+
+            });
+
+
+
+
+
+
+            new Chart(
+
+                document.getElementById("capturesJour"),
+
+                {
+
+
+                    type: "bar",
+
+
+                    data: {
+
+
+                        labels: Object.keys(parJour),
+
+
+                        datasets: [{
+
+
+                            label: "Nombre de frelons",
+
+                            data: Object.values(parJour)
+
+                        }]
+
+
+                    },
+
+
+                    options: {
+
+                        responsive: true
+
+                    }
+
+
+                }
+
+
+
+            );
+
+
+
+
+
+
+
+            // =======================
+            // Captures par heure
+            // =======================
+
+
+            let parHeure = {};
+
+
+
+            data.forEach(capture => {
+
+
+                let heure =
+
+                    capture.heure_capture.substring(0, 2);
+
+
+
+                if (!parHeure[heure]) {
+
+                    parHeure[heure] = 0;
+
+                }
+
+
+                parHeure[heure]++;
+
+
+
+            });
+
+
+
+
+
+            new Chart(
+
+                document.getElementById("capturesHeure"),
+
+                {
+
+
+                    type: "line",
+
+
+                    data: {
+
+
+                        labels: Object.keys(parHeure),
+
+
+                        datasets: [{
+
+
+                            label: "Nombre de sessions",
+
+                            data: Object.values(parHeure)
+
+                        }]
+
+
+                    },
+
+
+                    options: {
+
+                        responsive: true
+
+                    }
+
+
+                }
+
+
+
+            );
+
+
+
+
+
         }
-    }
-});
 
-// Tableau semaine par méthode
-const headerRow = document.getElementById("tableSemaineHeader");
-methodes.forEach(m => {
-    const th = document.createElement("th");
-    th.textContent = m;
-    headerRow.appendChild(th);
-});
 
-const tbodySemaine = document.querySelector("#tableSemaine tbody");
-tbodySemaine.innerHTML = "";
 
-semaines.forEach(semaine => {
-    const ligne = document.createElement("tr");
-    let html = `<td><strong>${semaine}</strong></td>`;
-    methodes.forEach(m => {
-        html += `<td>${parSemaineMethode[semaine][m] || 0}</td>`;
-    });
-    ligne.innerHTML = html;
-    tbodySemaine.appendChild(ligne);
-});
 
-// =======================
-// Captures par jour
-// =======================
 
+        function formaterTemps(secondes) {
 
-let parJour={};
 
+            let heures = Math.floor(secondes / 3600);
 
 
-data.forEach(capture=>{
+            let minutes = Math.floor(
 
+                (secondes % 3600) / 60
 
-let jour=capture.date_capture;
+            );
 
 
 
-if(!parJour[jour]){
+            let sec = secondes % 60;
 
-parJour[jour]=0;
 
-}
 
+            if (heures > 0) {
 
-parJour[jour]+=capture.nombre || 0;
+                return heures + "h " + minutes + "min " + sec + "s";
 
+            }
 
 
-});
+            return minutes + "min " + sec + "s";
 
 
+        }
 
 
 
 
-new Chart(
 
-document.getElementById("capturesJour"),
 
-{
 
+        chargerStats();
 
-type:"bar",
 
 
-data:{
-
-
-labels:Object.keys(parJour),
-
-
-datasets:[{
-
-
-label:"Nombre de frelons",
-
-data:Object.values(parJour)
-
-}]
-
-
-},
-
-
-options:{
-
-responsive:true
-
-}
-
-
-}
-
-
-
-);
-
-
-
-
-
-
-
-// =======================
-// Captures par heure
-// =======================
-
-
-let parHeure={};
-
-
-
-data.forEach(capture=>{
-
-
-let heure=
-
-capture.heure_capture.substring(0,2);
-
-
-
-if(!parHeure[heure]){
-
-parHeure[heure]=0;
-
-}
-
-
-parHeure[heure]++;
-
-
-
-});
-
-
-
-
-
-new Chart(
-
-document.getElementById("capturesHeure"),
-
-{
-
-
-type:"line",
-
-
-data:{
-
-
-labels:Object.keys(parHeure),
-
-
-datasets:[{
-
-
-label:"Nombre de sessions",
-
-data:Object.values(parHeure)
-
-}]
-
-
-},
-
-
-options:{
-
-responsive:true
-
-}
-
-
-}
-
-
-
-);
-
-
-
-
-
-}
-
-
-
-
-
-function formaterTemps(secondes){
-
-
-let heures=Math.floor(secondes/3600);
-
-
-let minutes=Math.floor(
-
-(secondes%3600)/60
-
-);
-
-
-
-let sec=secondes%60;
-
-
-
-if(heures>0){
-
-return heures+"h "+minutes+"min "+sec+"s";
-
-}
-
-
-return minutes+"min "+sec+"s";
-
-
-}
-
-
-
-
-
-
-
-chargerStats();
-
-
-
-</script>
+    </script>
 
 
 </body>

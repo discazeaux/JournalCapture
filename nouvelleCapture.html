@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -194,23 +195,24 @@
             color: var(--accent-yellow);
         }
 
-        
+
         #startChrono,
         #stopChrono {
-            width:48%;
-            padding:10px;
-            border:none;
-            border-radius:6px;
-            cursor:pointer;
-            background:#ffd700;
-            color:#121212;
-            font-weight:bold;
+            width: 48%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #ffd700;
+            color: #121212;
+            font-weight: bold;
         }
 
         #stopChrono:disabled {
-            opacity:0.4;
-            cursor:not-allowed;
+            opacity: 0.4;
+            cursor: not-allowed;
         }
+
         .user-bar {
             position: fixed;
             top: 16px;
@@ -235,7 +237,8 @@
             font-size: 18px;
         }
 
-        .user-bar button, .user-bar a {
+        .user-bar button,
+        .user-bar a {
             background: none;
             border: 1px solid var(--border);
             border-radius: 6px;
@@ -249,7 +252,8 @@
             transition: border-color 0.2s, color 0.2s;
         }
 
-        .user-bar button:hover, .user-bar a:hover {
+        .user-bar button:hover,
+        .user-bar a:hover {
             border-color: var(--yellow);
             color: var(--yellow);
         }
@@ -266,15 +270,18 @@
             .nav {
                 grid-template-columns: 1fr;
             }
+
             .nav-card {
                 flex-direction: row;
                 align-items: center;
                 gap: 16px;
                 padding: 20px;
             }
+
             .card-content {
                 flex: 1;
             }
+
             .card-arrow {
                 opacity: 1;
                 transform: none;
@@ -282,12 +289,13 @@
         }
     </style>
 </head>
+
 <body>
     <div class="user-bar" id="userBar">
         <!-- rempli par JS -->
     </div>
 
-   
+
 
     <nav class="navbar">
         <a href="index.html">🐝 Accueil</a>
@@ -320,24 +328,24 @@
             </select>
         </p>
         <p>
-           <label>Durée de capture</label>
+            <label>Durée de capture</label>
 
-            <div id="chrono" style="
+        <div id="chrono" style="
                 font-size:28px;
                 color:#ffd700;
                 text-align:center;
                 margin-bottom:10px;
             ">
-                00:00
-            </div>
+            00:00
+        </div>
 
-            <button type="button" id="startChrono">
-                Démarrer
-            </button>
+        <button type="button" id="startChrono">
+            Démarrer
+        </button>
 
-            <button type="button" id="stopChrono" disabled>
-                Arrêter
-            </button>
+        <button type="button" id="stopChrono" disabled>
+            Arrêter
+        </button>
         </p>
         <p>
             <label>Nombre</label>

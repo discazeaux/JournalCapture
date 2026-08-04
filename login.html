@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +21,11 @@
             --error: #ff5555;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             background: var(--bg);
@@ -42,7 +47,7 @@
             transform: translateX(-50%);
             width: 600px;
             height: 400px;
-            background: radial-gradient(ellipse, rgba(255,215,0,0.07) 0%, transparent 70%);
+            background: radial-gradient(ellipse, rgba(255, 215, 0, 0.07) 0%, transparent 70%);
             pointer-events: none;
         }
 
@@ -51,7 +56,7 @@
             display: block;
             text-align: center;
             margin-bottom: 16px;
-            filter: drop-shadow(0 0 20px rgba(255,215,0,0.4));
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.4));
         }
 
         h1 {
@@ -133,7 +138,7 @@
 
         input:focus {
             border-color: var(--yellow);
-            box-shadow: 0 0 0 2px rgba(255,215,0,0.15);
+            box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.15);
         }
 
         .btn {
@@ -151,9 +156,21 @@
             transition: background 0.2s, transform 0.15s;
         }
 
-        .btn:hover { background: #e6c200; transform: translateY(-2px); }
-        .btn:active { transform: translateY(0); }
-        .btn:disabled { background: var(--input-border); color: var(--muted); cursor: not-allowed; transform: none; }
+        .btn:hover {
+            background: #e6c200;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: var(--input-border);
+            color: var(--muted);
+            cursor: not-allowed;
+            transform: none;
+        }
 
         .message {
             margin-top: 16px;
@@ -164,8 +181,17 @@
             display: none;
         }
 
-        .message.error { background: rgba(255,85,85,0.15); color: var(--error); display: block; }
-        .message.success { background: rgba(100,200,100,0.15); color: #6fcf6f; display: block; }
+        .message.error {
+            background: rgba(255, 85, 85, 0.15);
+            color: var(--error);
+            display: block;
+        }
+
+        .message.success {
+            background: rgba(100, 200, 100, 0.15);
+            color: #6fcf6f;
+            display: block;
+        }
 
         .pseudo-hint {
             font-size: 12px;
@@ -174,6 +200,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <span class="bee">🐝</span>
@@ -212,7 +239,8 @@
             </div>
             <div class="form-group">
                 <label>Mot de passe</label>
-                <input type="password" id="inscriptionPassword" placeholder="Minimum 6 caractères" autocomplete="new-password">
+                <input type="password" id="inscriptionPassword" placeholder="Minimum 6 caractères"
+                    autocomplete="new-password">
             </div>
             <button class="btn" id="btnInscription" onclick="sInscrire()">Créer mon compte</button>
         </div>
@@ -228,7 +256,7 @@
             "sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
         );
 
-        window.afficherOnglet = function(onglet) {
+        window.afficherOnglet = function (onglet) {
             document.getElementById('formConnexion').style.display = onglet === 'connexion' ? 'block' : 'none';
             document.getElementById('formInscription').style.display = onglet === 'inscription' ? 'block' : 'none';
             document.getElementById('tabConnexion').classList.toggle('active', onglet === 'connexion');
@@ -242,7 +270,7 @@
             el.className = 'message ' + type;
         }
 
-        window.seConnecter = async function() {
+        window.seConnecter = async function () {
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
             const btn = document.getElementById('btnConnexion');
@@ -264,7 +292,7 @@
             }
         };
 
-        window.sInscrire = async function() {
+        window.sInscrire = async function () {
             const pseudo = document.getElementById('inscriptionPseudo').value.trim();
             const email = document.getElementById('inscriptionEmail').value.trim();
             const password = document.getElementById('inscriptionPassword').value;
@@ -328,4 +356,5 @@
     </script>
 
 </body>
+
 </html>
