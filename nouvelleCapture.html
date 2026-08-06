@@ -260,6 +260,8 @@
                             methode: document.getElementById("methode").value,
                     duree: secondes,
                     nombre: Number(document.getElementById("nombre").value),
+                    // Associer la capture à l'utilisateur connecté
+                    user_id: session ? session.user.id : null,
                     lieu: document.getElementById("lieu").value,
                     notes: document.getElementById("notes").value
                 });
