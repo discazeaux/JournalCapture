@@ -38,6 +38,15 @@
             </div>
             <span class="card-arrow">→</span>
         </a>
+
+        <a class="nav-card" href="mesStats.html" id="navMesStats" style="display:none">
+            <span class="card-icon">📈</span>
+            <div class="card-content">
+                <div class="card-label">Mes stats</div>
+                <p class="card-desc">Voir mes captures</p>
+            </div>
+            <span class="card-arrow">→</span>
+        </a>
     </nav>
 
     <footer>suivi-frelons</footer>
@@ -58,6 +67,7 @@
 
         if (!session) {
             document.getElementById("cardCapture").style.display = "none";
+            document.getElementById("navMesStats").style.display = "none";
         }
 
         if (session) {
@@ -83,6 +93,9 @@
                 await supabase.auth.signOut();
                 window.location.href = "login.html";
             });
+
+            // Montrer le lien "Mes stats"
+            document.getElementById("navMesStats").style.display = "";
 
         } else {
             bar.innerHTML = `

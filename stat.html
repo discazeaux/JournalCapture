@@ -23,6 +23,7 @@
         <a href="index.html">🐝 Accueil</a>
         <a id="navCapture" href="nouvelleCapture.html">📋 Nouvelle capture</a>
         <a href="stat.html" class="active">📊 Statistiques</a>
+        <a href="mesStats.html" id="navMesStats" style="display:none">📈 Mes stats</a>
     </nav>
 
     <div class="container">
@@ -187,12 +188,8 @@
 
 
     <script type="module">
-
-
         import { createClient }
             from "https://esm.sh/@supabase/supabase-js@2";
-
-
 
         const supabase = createClient(
 
@@ -224,6 +221,10 @@
                 await supabase.auth.signOut();
                 window.location.href = "login.html";
             });
+
+            // Afficher le lien Mes stats
+            document.getElementById("navMesStats").style.display = "";
+
         } else {
             bar.innerHTML = `
         <button id="btnConnexion">Se connecter</button>
@@ -236,16 +237,11 @@
             if (navCapture) {
                 navCapture.style.display = "none";
             }
+            document.getElementById("navMesStats").style.display = "none";
+        
         }
 
-
-
-
-
         async function chargerStats() {
-
-
-
             const { data, error } = await supabase
 
                 .from("captures")
