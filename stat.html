@@ -16,27 +16,82 @@
         <a href="index.html">🐝 Accueil</a>
         <a id="navCapture" href="nouvelleCapture.html">📋 Nouvelle capture</a>
         <a href="stat.html" class="active">📊 Statistiques</a>
-        <a href="mesStats.html" id="navMesStats" style="display:none">📈 Mes stats</a>
     </nav>
 
     <div class="container">
-        <div class="stat">
-            <div class="stat-title">Total individus capturés</div>
-            <div class="valeur" id="totalNombre">0</div>
+        <div class="tabs">
+            <button class="tab active" id="tabCommunaute">Stat communauté</button>
+            <button class="tab" id="tabMesStats">Mes stats</button>
         </div>
 
-        <div class="stat">
-            <h2>📅 Captures par semaine par méthode</h2>
-            <canvas id="capturesSemaineMethode"></canvas>
-            <table id="tableSemaine">
-                <thead>
-                    <tr id="tableSemaineHeader">
-                        <th>Semaine</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
+        <section id="sectionCommunaute">
+            <div class="stat">
+                <div class="stat-title">Total individus capturés</div>
+                <div class="valeur" id="totalNombre">0</div>
+            </div>
+
+            <div class="stat">
+                <h2>📅 Captures par semaine par méthode</h2>
+                <canvas id="capturesSemaineMethode"></canvas>
+                <table id="tableSemaine">
+                    <thead>
+                        <tr id="tableSemaineHeader">
+                            <th>Semaine</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="sectionMesStats" style="display:none;">
+            <div id="myStatsNotConnected" class="message error" style="display:none;">
+                Connectez-vous pour consulter vos statistiques personnelles.
+            </div>
+            <div id="mesStatsContent" style="display:none;">
+                <div class="stat">
+                    <div class="stat-title">Total sessions</div>
+                    <div class="valeur" id="totalCaptures">0</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-title">Total individus capturés</div>
+                    <div class="valeur" id="totalNombrePerso">0</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-title">Durée totale d'observation</div>
+                    <div class="valeur" id="dureeTotale">0</div>
+                </div>
+
+                <h3>Efficacité par jour par méthode</h3>
+                <canvas id="capturesSemaineMethodeMes"></canvas>
+
+                <table id="tableSemaineMes">
+                    <thead>
+                        <tr id="tableSemaineHeaderMes">
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+
+                <h3>Liste des captures</h3>
+                <table id="tableMesCaptures">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Heure</th>
+                            <th>Méthode</th>
+                            <th>Durée (s)</th>
+                            <th>Nombre</th>
+                            <th>Lieu</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
     </div>
 
     <script type="module">
@@ -48,43 +103,26 @@
         );
 
         const bar = document.getElementById("userBar");
+        const tabCommunaute = document.getElementById("tabCommunaute");
+        const tabMesStats = document.getElementById("tabMesStats");
+        const sectionCommunaute = document.getElementById("sectionCommunaute");
+        const sectionMesStats = document.getElementById("sectionMesStats");
+        const mesStatsContent = document.getElementById("mesStatsContent");
+        const myStatsNotConnected = document.getElementById("myStatsNotConnected");
+
         const { data: { session } } = await supabase.auth.getSession();
 
-        if (session) {
-            const { data: profil, error: errorProfil } = await supabase
-                .from("profils")
-                .select("pseudo")
-                .eq("id", session.user.id)
-                .single();
-
-            const pseudo = profil?.pseudo || session.user.email;
-
-            bar.innerHTML = `
-                <span class="bee-small">🐝</span>
-                <span class="pseudo">${pseudo}</span>
-                <button id="btnDeconnexion">Se déconnecter</button>
-            `;
-
-            document.getElementById("btnDeconnexion").addEventListener("click", async () => {
-                await supabase.auth.signOut();
-                window.location.href = "login.html";
-            });
-
-            document.getElementById("navMesStats").style.display = "";
-        } else {
-            bar.innerHTML = `
-                <button id="btnConnexion">Se connecter</button>
-            `;
-            document.getElementById("btnConnexion").addEventListener("click", () => {
-                window.location.href = "login.html";
-            });
-
-            const navCapture = document.getElementById("navCapture");
-            if (navCapture) navCapture.style.display = "none";
-            document.getElementById("navMesStats").style.display = "none";
+        function showTab(tab) {
+            tabCommunaute.classList.toggle("active", tab === "communaute");
+            tabMesStats.classList.toggle("active", tab === "mesStats");
+            sectionCommunaute.style.display = tab === "communaute" ? "" : "none";
+            sectionMesStats.style.display = tab === "mesStats" ? "" : "none";
         }
 
-        async function chargerStats() {
+        tabCommunaute.addEventListener("click", () => showTab("communaute"));
+        tabMesStats.addEventListener("click", () => showTab("mesStats"));
+
+        async function chargerCommunauteStats() {
             const { data, error } = await supabase
                 .from("captures")
                 .select("*")
@@ -96,10 +134,7 @@
                 return;
             }
 
-            const totalNombre = data.reduce(
-                (total, capture) => total + (capture.nombre || 0),
-                0
-            );
+            const totalNombre = data.reduce((total, capture) => total + (capture.nombre || 0), 0);
             document.getElementById("totalNombre").textContent = totalNombre;
 
             function getNumeroSemaine(dateStr) {
@@ -112,26 +147,19 @@
                 return date.getFullYear() + "-S" + String(semaine).padStart(2, "0");
             }
 
-            let parSemaineMethode = {};
-            let toutesMethodes = new Set();
+            const parSemaineMethode = {};
+            const toutesMethodes = new Set();
 
             data.forEach(capture => {
                 const semaine = getNumeroSemaine(capture.date_capture);
                 const methode = capture.methode || "Inconnue";
                 toutesMethodes.add(methode);
-
-                if (!parSemaineMethode[semaine]) {
-                    parSemaineMethode[semaine] = {};
-                }
-                if (!parSemaineMethode[semaine][methode]) {
-                    parSemaineMethode[semaine][methode] = 0;
-                }
-                parSemaineMethode[semaine][methode] += capture.nombre || 0;
+                if (!parSemaineMethode[semaine]) parSemaineMethode[semaine] = {};
+                parSemaineMethode[semaine][methode] = (parSemaineMethode[semaine][methode] || 0) + (capture.nombre || 0);
             });
 
             const semaines = Object.keys(parSemaineMethode).sort();
             const methodes = [...toutesMethodes];
-
             const couleurs = [
                 "#ffd700", "#ff6b6b", "#4ecdc4", "#a29bfe",
                 "#fd79a8", "#55efc4", "#fdcb6e", "#74b9ff"
@@ -183,7 +211,169 @@
             });
         }
 
-        chargerStats();
+        function formaterDateSimple(dateStr) {
+            const date = new Date(dateStr);
+            if (Number.isNaN(date.getTime())) return dateStr;
+            return date.toLocaleDateString('fr-FR', {
+                year: 'numeric', month: '2-digit', day: '2-digit'
+            });
+        }
+
+        function formaterTemps(secondes) {
+            const heures = Math.floor(secondes / 3600);
+            const minutes = Math.floor((secondes % 3600) / 60);
+            const sec = secondes % 60;
+            if (heures > 0) return `${heures}h ${minutes}min ${sec}s`;
+            return `${minutes}min ${sec}s`;
+        }
+
+        async function chargerMesStats() {
+            if (!session) {
+                myStatsNotConnected.style.display = 'block';
+                mesStatsContent.style.display = 'none';
+                return;
+            }
+
+            myStatsNotConnected.style.display = 'none';
+            mesStatsContent.style.display = '';
+
+            const { data, error } = await supabase
+                .from('captures')
+                .select('*')
+                .eq('user_id', session.user.id)
+                .order('date_capture', { ascending: false });
+
+            if (error) {
+                console.error(error);
+                alert(error.message);
+                return;
+            }
+
+            document.getElementById('totalCaptures').textContent = data.length;
+            document.getElementById('totalNombrePerso').textContent = data.reduce((t, c) => t + (c.nombre || 0), 0);
+            document.getElementById('dureeTotale').textContent = formaterTemps(data.reduce((t, c) => t + (c.duree || 0), 0));
+
+            const tbody = document.querySelector('#tableMesCaptures tbody');
+            tbody.innerHTML = '';
+            data.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${c.date_capture}</td>
+                    <td>${c.heure_capture || ''}</td>
+                    <td>${c.methode || ''}</td>
+                    <td>${c.duree || 0}</td>
+                    <td>${c.nombre || 0}</td>
+                    <td>${c.lieu || ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const parJourMethode = {};
+            const toutesMethodes = new Set();
+
+            data.forEach(capture => {
+                const jour = formaterDateSimple(capture.date_capture);
+                const methode = capture.methode || 'Inconnue';
+                toutesMethodes.add(methode);
+                if (!parJourMethode[jour]) parJourMethode[jour] = {};
+                parJourMethode[jour][methode] = (parJourMethode[jour][methode] || 0) + (capture.nombre || 0);
+            });
+
+            const jours = Object.keys(parJourMethode).sort((a, b) => {
+                const dateA = new Date(a.split('/').reverse().join('-'));
+                const dateB = new Date(b.split('/').reverse().join('-'));
+                return dateA - dateB;
+            });
+            const methodes = [...toutesMethodes];
+            const couleurs = [
+                "#ffd700", "#ff6b6b", "#4ecdc4", "#a29bfe",
+                "#fd79a8", "#55efc4", "#fdcb6e", "#74b9ff"
+            ];
+
+            const datasetsMethode = methodes.map((methode, i) => ({
+                label: methode,
+                data: jours.map(j => parJourMethode[j][methode] || 0),
+                backgroundColor: couleurs[i % couleurs.length]
+            }));
+
+            new Chart(document.getElementById('capturesSemaineMethodeMes'), {
+                type: 'bar',
+                data: {
+                    labels: jours,
+                    datasets: datasetsMethode
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: { stacked: true },
+                        y: { stacked: true, beginAtZero: true }
+                    },
+                    plugins: {
+                        tooltip: { mode: 'index', intersect: false },
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            const headerRow = document.getElementById('tableSemaineHeaderMes');
+            headerRow.innerHTML = '<th>Date</th>';
+            methodes.forEach(m => {
+                const th = document.createElement('th');
+                th.textContent = m;
+                headerRow.appendChild(th);
+            });
+
+            const tbodySemaine = document.querySelector('#tableSemaineMes tbody');
+            tbodySemaine.innerHTML = '';
+            jours.forEach(jour => {
+                const ligne = document.createElement('tr');
+                let html = `<td><strong>${jour}</strong></td>`;
+                methodes.forEach(m => {
+                    html += `<td>${parJourMethode[jour][m] || 0}</td>`;
+                });
+                ligne.innerHTML = html;
+                tbodySemaine.appendChild(ligne);
+            });
+        }
+
+        async function setup() {
+            if (!session) {
+                bar.innerHTML = `
+                    <button id="btnConnexion">Se connecter</button>
+                `;
+                document.getElementById("btnConnexion").addEventListener("click", () => {
+                    window.location.href = "login.html";
+                });
+                const navCapture = document.getElementById("navCapture");
+                if (navCapture) navCapture.style.display = "none";
+                document.querySelectorAll("#navMesStats").forEach(el => el?.remove());
+                myStatsNotConnected.style.display = 'block';
+                mesStatsContent.style.display = 'none';
+            } else {
+                const { data: profil } = await supabase
+                    .from("profils")
+                    .select("pseudo")
+                    .eq("id", session.user.id)
+                    .single();
+
+                const pseudo = profil?.pseudo || session.user.email;
+                bar.innerHTML = `
+                    <span class="bee-small">🐝</span>
+                    <span class="pseudo">${pseudo}</span>
+                    <button id="btnDeconnexion">Se déconnecter</button>
+                `;
+                document.getElementById("btnDeconnexion").addEventListener("click", async () => {
+                    await supabase.auth.signOut();
+                    window.location.href = "login.html";
+                });
+                await chargerMesStats();
+            }
+
+            showTab("communaute");
+            await chargerCommunauteStats();
+        }
+
+        await setup();
     </script>
 </body>
 

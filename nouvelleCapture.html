@@ -19,7 +19,6 @@
         <a href="index.html">🐝 Accueil</a>
         <a href="nouvelleCapture.html" class="active">📋 Nouvelle capture</a>
         <a href="stat.html">📊 Statistiques</a>
-        <a href="mesStats.html" id="navMesStats" style="display:none">📈 Mes stats</a>
     </nav>
 
     <h2>Nouvelle capture</h2>
@@ -219,9 +218,6 @@
                 window.location.href = "login.html";
             });
 
-            // Afficher le lien Mes stats
-            document.getElementById("navMesStats").style.display = "";
-
         } else {
             bar.innerHTML = `
                 <button id="btnConnexion">Se connecter</button>
@@ -229,8 +225,6 @@
             document.getElementById("btnConnexion").addEventListener("click", () => {
                 window.location.href = "login.html";
             });
-            // Masquer Mes stats si non connecté
-            document.getElementById("navMesStats").style.display = "none";
         }
 
         // Initialiser les valeurs par défaut pour date, heure et lieu
