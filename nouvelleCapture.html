@@ -13,8 +13,6 @@
         <!-- rempli par JS -->
     </div>
 
-
-
     <nav class="navbar">
         <a href="index.html">🐝 Accueil</a>
         <a href="nouvelleCapture.html" class="active">📋 Nouvelle capture</a>
@@ -45,6 +43,7 @@
                 <option value="Harpe">Harpe</option>
             </select>
         </p>
+
         <p>
             <label>Durée de capture</label>
 
@@ -57,16 +56,17 @@
                 00:00
             </div>
 
-            <input id="duree_capture" type="text" value="00:00" placeholder="mm:ss" style="width:100%; padding:10px; margin-bottom:12px; background:#1e1e1e; border:1px solid #444; border-radius:6px; color:#fff;" />
+            <input id="duree_capture" type="text" value="00:00" placeholder="mm:ss"
+                style="width:100%; padding:10px; margin-bottom:12px; background:#1e1e1e; border:1px solid #444; border-radius:6px; color:#fff;" />
 
-            <button type="button" id="startChrono">
-                Démarrer
-            </button>
-
-            <button type="button" id="stopChrono" disabled>
-                Arrêter
+            <!-- BUG CORRIGÉ : le chrono ne remet plus à 0 si on reclique par erreur sur Démarrer alors qu'il tourne -->
+            <button type="button" id="startChrono">Démarrer</button>
+            <button type="button" id="stopChrono" disabled>Arrêter</button>
+            <button type="button" id="resetChrono" style="margin-top:8px; background:#333; color:#ccc; border:1px solid #555; border-radius:6px; padding:8px 14px; cursor:pointer; font-size:13px;">
+                🔄 Remettre à zéro
             </button>
         </p>
+
         <p>
             <label>Nombre</label>
             <input type="number" id="nombre" value="1" min="1">
@@ -82,99 +82,11 @@
             <textarea id="notes"></textarea>
         </p>
 
-        <button type="submit">
-            Enregistrer
-        </button>
+        <button type="submit">Enregistrer</button>
 
     </form>
 
     <script type="module">
-        let chronoInterval;
-        let secondes = 0;
-
-        const chronoDisplay = document.getElementById("chrono");
-        const dureeInput = document.getElementById("duree_capture");
-        const startButton = document.getElementById("startChrono");
-        const stopButton = document.getElementById("stopChrono");
-
-
-        function formatDuree(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const sec = seconds % 60;
-            return String(minutes).padStart(2, '0') + ":" + String(sec).padStart(2, '0');
-        }
-
-        function parseDuree(value) {
-            const raw = String(value || '').trim();
-            if (!raw) return null;
-            const parts = raw.split(':').map(part => part.trim());
-            if (parts.length === 2) {
-                const minutes = Number(parts[0]);
-                const secondsPart = Number(parts[1]);
-                if (Number.isInteger(minutes) && minutes >= 0 && Number.isInteger(secondsPart) && secondsPart >= 0 && secondsPart < 60) {
-                    return minutes * 60 + secondsPart;
-                }
-            }
-            if (parts.length === 1) {
-                const secondsOnly = Number(parts[0]);
-                if (Number.isInteger(secondsOnly) && secondsOnly >= 0) {
-                    return secondsOnly;
-                }
-            }
-            return null;
-        }
-
-        function afficherChrono() {
-            chronoDisplay.textContent = formatDuree(secondes);
-            if (dureeInput) {
-                dureeInput.value = formatDuree(secondes);
-            }
-        }
-
-
-        startButton.addEventListener("click", () => {
-
-            secondes = 0;
-            afficherChrono();
-
-            chronoInterval = setInterval(() => {
-                secondes++;
-                afficherChrono();
-            }, 1000);
-
-
-            startButton.disabled = true;
-            stopButton.disabled = false;
-        });
-
-
-        stopButton.addEventListener("click", () => {
-
-            clearInterval(chronoInterval);
-
-            startButton.disabled = false;
-            stopButton.disabled = true;
-
-            if (dureeInput) {
-                const parsed = parseDuree(dureeInput.value);
-                if (parsed !== null) {
-                    secondes = parsed;
-                    afficherChrono();
-                }
-            }
-
-        });
-
-        dureeInput.addEventListener("change", () => {
-            const parsed = parseDuree(dureeInput.value);
-            if (parsed !== null) {
-                secondes = parsed;
-                afficherChrono();
-            } else {
-                dureeInput.value = formatDuree(secondes);
-            }
-        });
-
         import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
         const supabase = createClient(
@@ -182,69 +94,127 @@
             "sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
         );
 
-        const bar = document.getElementById("userBar");
+        // ── Chrono ────────────────────────────────────────────────
+        let chronoInterval = null;
+        let secondes = 0;
+        let chronoEnCours = false;
 
-        const { data: { session } } = await supabase.auth.getSession();
+        const chronoDisplay = document.getElementById("chrono");
+        const dureeInput    = document.getElementById("duree_capture");
+        const startButton   = document.getElementById("startChrono");
+        const stopButton    = document.getElementById("stopChrono");
+        const resetButton   = document.getElementById("resetChrono");
 
-        console.log("Session:", session);
-
-        if (!session) {
-            document.getElementById("cardCapture").style.display = "none";
+        function formatDuree(s) {
+            const m = Math.floor(s / 60);
+            const sec = s % 60;
+            return String(m).padStart(2, '0') + ":" + String(sec).padStart(2, '0');
         }
 
-        if (session) {
-            console.log("User ID:", session.user.id);
+        function parseDuree(value) {
+            const raw = String(value || '').trim();
+            if (!raw) return null;
+            const parts = raw.split(':').map(p => p.trim());
+            if (parts.length === 2) {
+                const m = Number(parts[0]);
+                const s = Number(parts[1]);
+                if (Number.isInteger(m) && m >= 0 && Number.isInteger(s) && s >= 0 && s < 60)
+                    return m * 60 + s;
+            }
+            if (parts.length === 1) {
+                const s = Number(parts[0]);
+                if (Number.isInteger(s) && s >= 0) return s;
+            }
+            return null;
+        }
 
-            const { data: profil, error: errorProfil } = await supabase
+        function afficherChrono() {
+            chronoDisplay.textContent = formatDuree(secondes);
+            dureeInput.value = formatDuree(secondes);
+        }
+
+        startButton.addEventListener("click", () => {
+            // BUG CORRIGÉ : on ne fait rien si le chrono tourne déjà
+            if (chronoEnCours) return;
+            chronoEnCours = true;
+            startButton.disabled = true;
+            stopButton.disabled = false;
+            chronoInterval = setInterval(() => {
+                secondes++;
+                afficherChrono();
+            }, 1000);
+        });
+
+        stopButton.addEventListener("click", () => {
+            clearInterval(chronoInterval);
+            chronoInterval = null;
+            chronoEnCours = false;
+            startButton.disabled = false;
+            stopButton.disabled = true;
+            // Lire la valeur saisie à la main si modifiée
+            const parsed = parseDuree(dureeInput.value);
+            if (parsed !== null) { secondes = parsed; afficherChrono(); }
+        });
+
+        resetButton.addEventListener("click", () => {
+            clearInterval(chronoInterval);
+            chronoInterval = null;
+            chronoEnCours = false;
+            secondes = 0;
+            afficherChrono();
+            startButton.disabled = false;
+            stopButton.disabled = true;
+        });
+
+        dureeInput.addEventListener("change", () => {
+            const parsed = parseDuree(dureeInput.value);
+            if (parsed !== null) { secondes = parsed; afficherChrono(); }
+            else dureeInput.value = formatDuree(secondes);
+        });
+
+        // ── Supabase / session ────────────────────────────────────
+        const bar = document.getElementById("userBar");
+        const { data: { session } } = await supabase.auth.getSession();
+
+        let lieuDefaut = 'maison';
+
+        if (session) {
+            const { data: profil } = await supabase
                 .from("profils")
                 .select("pseudo, codePostal")
                 .eq("id", session.user.id)
                 .single();
 
-            console.log("Profil:", profil, "Erreur:", errorProfil);
-
             const pseudo = profil?.pseudo || session.user.email;
-            const lieuDefaut = profil?.codePostal || 'maison';
+            lieuDefaut = profil?.codePostal || 'maison';
 
             bar.innerHTML = `
                 <span class="bee-small">🐝</span>
                 <span class="pseudo">${pseudo}</span>
                 <button id="btnDeconnexion">Se déconnecter</button>
             `;
-            document.getElementById('lieu').value = lieuDefaut;
-
             document.getElementById("btnDeconnexion").addEventListener("click", async () => {
                 await supabase.auth.signOut();
                 window.location.href = "login.html";
             });
-
         } else {
-            bar.innerHTML = `
-                <button id="btnConnexion">Se connecter</button>
-            `;
+            bar.innerHTML = `<button id="btnConnexion">Se connecter</button>`;
             document.getElementById("btnConnexion").addEventListener("click", () => {
                 window.location.href = "login.html";
             });
         }
 
-        // Initialiser les valeurs par défaut pour date, heure et lieu
+        // ── Valeurs par défaut ────────────────────────────────────
         function initialiserValeursParDefaut() {
             const now = new Date();
-            const formattedDate = now.toISOString().split('T')[0];
-            const formattedTime = now.toTimeString().split(' ')[0].substring(0, 5);
-            const lieuInput = document.getElementById('lieu');
-
-            document.getElementById('date_capture').value = formattedDate;
-            document.getElementById('heure_capture').value = formattedTime;
-            if (lieuInput && !lieuInput.value.trim()) {
-                lieuInput.value = 'maison';
-            }
+            document.getElementById('date_capture').value = now.toISOString().split('T')[0];
+            document.getElementById('heure_capture').value = now.toTimeString().substring(0, 5);
+            document.getElementById('lieu').value = lieuDefaut;
         }
 
         initialiserValeursParDefaut();
 
-        document.addEventListener('DOMContentLoaded', initialiserValeursParDefaut);
-
+        // ── Soumission ────────────────────────────────────────────
         document.getElementById("captureForm").addEventListener("submit", async (e) => {
             e.preventDefault();
 
@@ -255,15 +225,14 @@
             const { error } = await supabase
                 .from("captures")
                 .insert({
-                    date_capture: document.getElementById("date_capture").value,
+                    date_capture:  document.getElementById("date_capture").value,
                     heure_capture: document.getElementById("heure_capture").value,
-                            methode: document.getElementById("methode").value,
-                    duree: secondes,
-                    nombre: Number(document.getElementById("nombre").value),
-                    // Associer la capture à l'utilisateur connecté
-                    user_id: session ? session.user.id : null,
-                    lieu: document.getElementById("lieu").value,
-                    notes: document.getElementById("notes").value
+                    methode:       document.getElementById("methode").value,
+                    duree:         secondes,
+                    nombre:        Number(document.getElementById("nombre").value),
+                    user_id:       session ? session.user.id : null,
+                    lieu:          document.getElementById("lieu").value,
+                    notes:         document.getElementById("notes").value
                 });
 
             if (error) {
@@ -271,13 +240,26 @@
                 console.error(error);
             } else {
                 alert("Capture enregistrée !");
-                document.getElementById("captureForm").reset();
+
+                // BUG CORRIGÉ : réinitialiser proprement sans écraser date/heure/lieu
+                document.getElementById("methode").value = "Raquette électrique";
+                document.getElementById("nombre").value = 1;
+                document.getElementById("notes").value = "";
+                // Remettre le chrono à zéro
+                clearInterval(chronoInterval);
+                chronoInterval = null;
+                chronoEnCours = false;
+                secondes = 0;
+                afficherChrono();
+                startButton.disabled = false;
+                stopButton.disabled = true;
+                // Remettre date/heure à l'instant actuel (pas effacées)
+                initialiserValeursParDefaut();
             }
 
             submitButton.disabled = false;
             submitButton.textContent = "Enregistrer";
         });
-
     </script>
 </body>
 </html>

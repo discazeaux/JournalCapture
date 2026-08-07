@@ -7,6 +7,42 @@
     <title>Statistiques captures</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Bouton supprimer dans le tableau */
+        .btn-supprimer {
+            background: none;
+            border: 1px solid #555;
+            color: #ff5555;
+            border-radius: 5px;
+            padding: 3px 9px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background .15s, color .15s;
+        }
+        .btn-supprimer:hover {
+            background: rgba(255,85,85,0.15);
+            border-color: #ff5555;
+        }
+        /* Badge efficacité */
+        .efficacite {
+            color: #4ecdc4;
+            font-weight: 600;
+        }
+        .efficacite-na {
+            color: #555;
+            font-size: 12px;
+        }
+        /* Card efficacité globale */
+        .stat-row-perso {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .stat-row-perso .stat {
+            flex: 1 1 180px;
+        }
+    </style>
 </head>
 
 <body>
@@ -24,6 +60,7 @@
             <button class="tab" id="tabMesStats">Mes stats</button>
         </div>
 
+        <!-- ── Communauté ── -->
         <section id="sectionCommunaute">
             <div class="stat">
                 <div class="stat-title">Total individus capturés</div>
@@ -35,47 +72,50 @@
                 <canvas id="capturesSemaineMethode"></canvas>
                 <table id="tableSemaine">
                     <thead>
-                        <tr id="tableSemaineHeader">
-                            <th>Semaine</th>
-                        </tr>
+                        <tr id="tableSemaineHeader"><th>Semaine</th></tr>
                     </thead>
                     <tbody></tbody>
                 </table>
             </div>
         </section>
 
+        <!-- ── Mes stats ── -->
         <section id="sectionMesStats" style="display:none;">
             <div id="myStatsNotConnected" class="message error" style="display:none;">
                 Connectez-vous pour consulter vos statistiques personnelles.
             </div>
+
             <div id="mesStatsContent" style="display:none;">
-                <div class="stat">
-                    <div class="stat-title">Total sessions</div>
-                    <div class="valeur" id="totalCaptures">0</div>
+
+                <!-- Chiffres clés -->
+                <div class="stat-row-perso">
+                    <div class="stat">
+                        <div class="stat-title">Total individus capturés</div>
+                        <div class="valeur" id="totalNombrePerso">0</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-title">Durée totale d'observation</div>
+                        <div class="valeur" id="dureeTotale">0</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-title">Efficacité moyenne 🎯</div>
+                        <div class="valeur efficacite" id="efficaciteMoyenne">—</div>
+                        <div class="stat-title" style="font-size:12px; margin-top:4px;">frelons / min (sessions chronométrées)</div>
+                    </div>
                 </div>
 
-                <div class="stat">
-                    <div class="stat-title">Total individus capturés</div>
-                    <div class="valeur" id="totalNombrePerso">0</div>
-                </div>
-
-                <div class="stat">
-                    <div class="stat-title">Durée totale d'observation</div>
-                    <div class="valeur" id="dureeTotale">0</div>
-                </div>
-
+                <!-- Graphique par jour -->
                 <h3>Efficacité par jour par méthode</h3>
                 <canvas id="capturesSemaineMethodeMes"></canvas>
 
                 <table id="tableSemaineMes">
                     <thead>
-                        <tr id="tableSemaineHeaderMes">
-                            <th>Date</th>
-                        </tr>
+                        <tr id="tableSemaineHeaderMes"><th>Date</th></tr>
                     </thead>
                     <tbody></tbody>
                 </table>
 
+                <!-- Liste des captures avec suppression -->
                 <h3>Liste des captures</h3>
                 <table id="tableMesCaptures">
                     <thead>
@@ -83,9 +123,11 @@
                             <th>Date</th>
                             <th>Heure</th>
                             <th>Méthode</th>
-                            <th>Durée (s)</th>
+                            <th>Durée</th>
                             <th>Nombre</th>
+                            <th>Efficacité</th>
                             <th>Lieu</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -103,129 +145,126 @@
         );
 
         const bar = document.getElementById("userBar");
-        const tabCommunaute = document.getElementById("tabCommunaute");
-        const tabMesStats = document.getElementById("tabMesStats");
-        const sectionCommunaute = document.getElementById("sectionCommunaute");
-        const sectionMesStats = document.getElementById("sectionMesStats");
-        const mesStatsContent = document.getElementById("mesStatsContent");
+        const tabCommunaute      = document.getElementById("tabCommunaute");
+        const tabMesStats        = document.getElementById("tabMesStats");
+        const sectionCommunaute  = document.getElementById("sectionCommunaute");
+        const sectionMesStats    = document.getElementById("sectionMesStats");
+        const mesStatsContent    = document.getElementById("mesStatsContent");
         const myStatsNotConnected = document.getElementById("myStatsNotConnected");
 
         const { data: { session } } = await supabase.auth.getSession();
 
+        // ── Onglets ───────────────────────────────────────────────
         function showTab(tab) {
             tabCommunaute.classList.toggle("active", tab === "communaute");
             tabMesStats.classList.toggle("active", tab === "mesStats");
             sectionCommunaute.style.display = tab === "communaute" ? "" : "none";
-            sectionMesStats.style.display = tab === "mesStats" ? "" : "none";
+            sectionMesStats.style.display   = tab === "mesStats"   ? "" : "none";
+        }
+        tabCommunaute.addEventListener("click", () => showTab("communaute"));
+        tabMesStats.addEventListener("click",   () => showTab("mesStats"));
+
+        // ── Helpers ───────────────────────────────────────────────
+        function formaterDateSimple(dateStr) {
+            const date = new Date(dateStr);
+            if (Number.isNaN(date.getTime())) return dateStr;
+            return date.toLocaleDateString('fr-FR', { year:'numeric', month:'2-digit', day:'2-digit' });
         }
 
-        tabCommunaute.addEventListener("click", () => showTab("communaute"));
-        tabMesStats.addEventListener("click", () => showTab("mesStats"));
+        function formaterTemps(secondes) {
+            const h = Math.floor(secondes / 3600);
+            const m = Math.floor((secondes % 3600) / 60);
+            const s = secondes % 60;
+            if (h > 0) return `${h}h ${m}min ${s}s`;
+            return `${m}min ${s}s`;
+        }
 
+        function formaterDureeMinSec(secondes) {
+            const m = Math.floor(secondes / 60);
+            const s = secondes % 60;
+            return `${m}min ${String(s).padStart(2,'0')}s`;
+        }
+
+        /**
+         * Efficacité : frelons par minute.
+         * Retourne null si durée <= 0 (pas de chrono → pas de calcul).
+         */
+        function calcEfficacite(nombre, dureeSecondes) {
+            if (!dureeSecondes || dureeSecondes <= 0) return null;
+            const parMinute = (nombre / dureeSecondes) * 60;
+            return parMinute.toFixed(2);
+        }
+
+        function getNumeroSemaine(dateStr) {
+            const date  = new Date(dateStr);
+            const debut = new Date(date.getFullYear(), 0, 1);
+            const joursDepuisDebut = Math.floor((date - debut) / 86400000);
+            const semaine = Math.ceil((joursDepuisDebut + debut.getDay() + 1) / 7);
+            return date.getFullYear() + "-S" + String(semaine).padStart(2, "0");
+        }
+
+        const couleurs = ["#ffd700","#ff6b6b","#4ecdc4","#a29bfe","#fd79a8","#55efc4","#fdcb6e","#74b9ff"];
+
+        // ── Communauté ────────────────────────────────────────────
         async function chargerCommunauteStats() {
             const { data, error } = await supabase
                 .from("captures")
                 .select("*")
                 .order("date_capture", { ascending: true });
 
-            if (error) {
-                console.error(error);
-                alert(error.message);
-                return;
-            }
+            if (error) { console.error(error); alert(error.message); return; }
 
-            const totalNombre = data.reduce((total, capture) => total + (capture.nombre || 0), 0);
-            document.getElementById("totalNombre").textContent = totalNombre;
-
-            function getNumeroSemaine(dateStr) {
-                const date = new Date(dateStr);
-                const debut = new Date(date.getFullYear(), 0, 1);
-                const diff = date - debut;
-                const unJour = 86400000;
-                const joursDepuisDebut = Math.floor(diff / unJour);
-                const semaine = Math.ceil((joursDepuisDebut + debut.getDay() + 1) / 7);
-                return date.getFullYear() + "-S" + String(semaine).padStart(2, "0");
-            }
+            document.getElementById("totalNombre").textContent =
+                data.reduce((t, c) => t + (c.nombre || 0), 0);
 
             const parSemaineMethode = {};
             const toutesMethodes = new Set();
 
-            data.forEach(capture => {
-                const semaine = getNumeroSemaine(capture.date_capture);
-                const methode = capture.methode || "Inconnue";
+            data.forEach(c => {
+                const semaine = getNumeroSemaine(c.date_capture);
+                const methode = c.methode || "Inconnue";
                 toutesMethodes.add(methode);
                 if (!parSemaineMethode[semaine]) parSemaineMethode[semaine] = {};
-                parSemaineMethode[semaine][methode] = (parSemaineMethode[semaine][methode] || 0) + (capture.nombre || 0);
+                parSemaineMethode[semaine][methode] =
+                    (parSemaineMethode[semaine][methode] || 0) + (c.nombre || 0);
             });
 
             const semaines = Object.keys(parSemaineMethode).sort();
             const methodes = [...toutesMethodes];
-            const couleurs = [
-                "#ffd700", "#ff6b6b", "#4ecdc4", "#a29bfe",
-                "#fd79a8", "#55efc4", "#fdcb6e", "#74b9ff"
-            ];
-
-            const datasetsMethode = methodes.map((methode, i) => ({
-                label: methode,
-                data: semaines.map(s => parSemaineMethode[s][methode] || 0),
-                backgroundColor: couleurs[i % couleurs.length]
-            }));
 
             new Chart(document.getElementById("capturesSemaineMethode"), {
                 type: "bar",
                 data: {
                     labels: semaines,
-                    datasets: datasetsMethode
+                    datasets: methodes.map((m, i) => ({
+                        label: m,
+                        data: semaines.map(s => parSemaineMethode[s][m] || 0),
+                        backgroundColor: couleurs[i % couleurs.length]
+                    }))
                 },
                 options: {
                     responsive: true,
-                    scales: {
-                        x: { stacked: true },
-                        y: { stacked: true, beginAtZero: true }
-                    },
-                    plugins: {
-                        tooltip: { mode: 'index', intersect: false },
-                        legend: { position: 'bottom' }
-                    }
+                    scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
+                    plugins: { tooltip: { mode:'index', intersect:false }, legend: { position:'bottom' } }
                 }
             });
 
             const headerRow = document.getElementById("tableSemaineHeader");
             headerRow.innerHTML = '<th>Semaine</th>';
-            methodes.forEach(m => {
-                const th = document.createElement("th");
-                th.textContent = m;
-                headerRow.appendChild(th);
-            });
+            methodes.forEach(m => { const th = document.createElement("th"); th.textContent = m; headerRow.appendChild(th); });
 
-            const tbodySemaine = document.querySelector("#tableSemaine tbody");
-            tbodySemaine.innerHTML = "";
-            semaines.forEach(semaine => {
-                const ligne = document.createElement("tr");
-                let html = `<td><strong>${semaine}</strong></td>`;
-                methodes.forEach(m => {
-                    html += `<td>${parSemaineMethode[semaine][m] || 0}</td>`;
-                });
-                ligne.innerHTML = html;
-                tbodySemaine.appendChild(ligne);
+            const tbody = document.querySelector("#tableSemaine tbody");
+            tbody.innerHTML = "";
+            semaines.forEach(s => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `<td><strong>${s}</strong></td>` +
+                    methodes.map(m => `<td>${parSemaineMethode[s][m] || 0}</td>`).join('');
+                tbody.appendChild(tr);
             });
         }
 
-        function formaterDateSimple(dateStr) {
-            const date = new Date(dateStr);
-            if (Number.isNaN(date.getTime())) return dateStr;
-            return date.toLocaleDateString('fr-FR', {
-                year: 'numeric', month: '2-digit', day: '2-digit'
-            });
-        }
-
-        function formaterTemps(secondes) {
-            const heures = Math.floor(secondes / 3600);
-            const minutes = Math.floor((secondes % 3600) / 60);
-            const sec = secondes % 60;
-            if (heures > 0) return `${heures}h ${minutes}min ${sec}s`;
-            return `${minutes}min ${sec}s`;
-        }
+        // ── Mes stats ─────────────────────────────────────────────
+        let chartMesStats = null; // référence pour détruire avant recréer si rechargement
 
         async function chargerMesStats() {
             if (!session) {
@@ -243,110 +282,144 @@
                 .eq('user_id', session.user.id)
                 .order('date_capture', { ascending: false });
 
-            if (error) {
-                console.error(error);
-                alert(error.message);
-                return;
+            if (error) { console.error(error); alert(error.message); return; }
+
+            // ── Chiffres clés ──
+            const totalNombre = data.reduce((t, c) => t + (c.nombre || 0), 0);
+            const totalDuree  = data.reduce((t, c) => t + (c.duree  || 0), 0);
+            document.getElementById('totalNombrePerso').textContent = totalNombre;
+            document.getElementById('dureeTotale').textContent = formaterTemps(totalDuree);
+
+            // Efficacité moyenne : uniquement sur les captures avec durée > 0
+            const avecDuree = data.filter(c => c.duree > 0);
+            if (avecDuree.length > 0) {
+                const totalNombreAvecDuree = avecDuree.reduce((t, c) => t + (c.nombre || 0), 0);
+                const totalDureeAvecDuree  = avecDuree.reduce((t, c) => t + c.duree, 0);
+                const efficaciteGlobale = ((totalNombreAvecDuree / totalDureeAvecDuree) * 60).toFixed(2);
+                document.getElementById('efficaciteMoyenne').textContent = efficaciteGlobale + ' /min';
+            } else {
+                document.getElementById('efficaciteMoyenne').textContent = '—';
             }
 
-            document.getElementById('totalCaptures').textContent = data.length;
-            document.getElementById('totalNombrePerso').textContent = data.reduce((t, c) => t + (c.nombre || 0), 0);
-            document.getElementById('dureeTotale').textContent = formaterTemps(data.reduce((t, c) => t + (c.duree || 0), 0));
-
+            // ── Tableau des captures ──
             const tbody = document.querySelector('#tableMesCaptures tbody');
             tbody.innerHTML = '';
             data.forEach(c => {
+                const eff = calcEfficacite(c.nombre || 0, c.duree || 0);
+                const effHTML = eff !== null
+                    ? `<span class="efficacite">${eff} /min</span>`
+                    : `<span class="efficacite-na">—</span>`;
+
                 const tr = document.createElement('tr');
+                tr.dataset.id = c.id;
                 tr.innerHTML = `
-                    <td>${c.date_capture}</td>
+                    <td>${formaterDateSimple(c.date_capture)}</td>
                     <td>${c.heure_capture || ''}</td>
                     <td>${c.methode || ''}</td>
-                    <td>${c.duree || 0}</td>
+                    <td>${c.duree > 0 ? formaterDureeMinSec(c.duree) : '—'}</td>
                     <td>${c.nombre || 0}</td>
+                    <td>${effHTML}</td>
                     <td>${c.lieu || ''}</td>
+                    <td>
+                        <button class="btn-supprimer" data-id="${c.id}" title="Supprimer cette capture">🗑</button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            const parJourMethode = {};
-            const toutesMethodes = new Set();
+            // Délégation d'événement pour les boutons supprimer
+            tbody.addEventListener('click', async (e) => {
+                const btn = e.target.closest('.btn-supprimer');
+                if (!btn) return;
 
-            data.forEach(capture => {
-                const jour = formaterDateSimple(capture.date_capture);
-                const methode = capture.methode || 'Inconnue';
-                toutesMethodes.add(methode);
-                if (!parJourMethode[jour]) parJourMethode[jour] = {};
-                parJourMethode[jour][methode] = (parJourMethode[jour][methode] || 0) + (capture.nombre || 0);
-            });
+                const id = btn.dataset.id;
+                const confirmed = confirm("Supprimer cette capture ? Cette action est irréversible.");
+                if (!confirmed) return;
 
-            const jours = Object.keys(parJourMethode).sort((a, b) => {
-                const dateA = new Date(a.split('/').reverse().join('-'));
-                const dateB = new Date(b.split('/').reverse().join('-'));
-                return dateA - dateB;
-            });
-            const methodes = [...toutesMethodes];
-            const couleurs = [
-                "#ffd700", "#ff6b6b", "#4ecdc4", "#a29bfe",
-                "#fd79a8", "#55efc4", "#fdcb6e", "#74b9ff"
-            ];
+                btn.disabled = true;
+                btn.textContent = '…';
 
-            const datasetsMethode = methodes.map((methode, i) => ({
-                label: methode,
-                data: jours.map(j => parJourMethode[j][methode] || 0),
-                backgroundColor: couleurs[i % couleurs.length]
-            }));
+                const { error: errDel } = await supabase
+                    .from('captures')
+                    .delete()
+                    .eq('id', id)
+                    .eq('user_id', session.user.id); // sécurité : ne supprimer que ses propres captures
 
-            new Chart(document.getElementById('capturesSemaineMethodeMes'), {
-                type: 'bar',
-                data: {
-                    labels: jours,
-                    datasets: datasetsMethode
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: { stacked: true },
-                        y: { stacked: true, beginAtZero: true }
-                    },
-                    plugins: {
-                        tooltip: { mode: 'index', intersect: false },
-                        legend: { position: 'bottom' }
-                    }
+                if (errDel) {
+                    alert("Erreur lors de la suppression : " + errDel.message);
+                    btn.disabled = false;
+                    btn.textContent = '🗑';
+                } else {
+                    // Retirer la ligne du DOM sans recharger toute la page
+                    const tr = tbody.querySelector(`tr[data-id="${id}"]`);
+                    if (tr) tr.remove();
+                    // Recharger les stats pour mettre à jour les totaux et le graphique
+                    if (chartMesStats) { chartMesStats.destroy(); chartMesStats = null; }
+                    await chargerMesStats();
                 }
             });
 
+            // ── Graphique par jour ──
+            const parJourMethode = {};
+            const toutesMethodes = new Set();
+
+            data.forEach(c => {
+                const jour    = formaterDateSimple(c.date_capture);
+                const methode = c.methode || 'Inconnue';
+                toutesMethodes.add(methode);
+                if (!parJourMethode[jour]) parJourMethode[jour] = {};
+                parJourMethode[jour][methode] =
+                    (parJourMethode[jour][methode] || 0) + (c.nombre || 0);
+            });
+
+            const jours = Object.keys(parJourMethode).sort((a, b) => {
+                return new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-'));
+            });
+            const methodes = [...toutesMethodes];
+
+            if (chartMesStats) { chartMesStats.destroy(); chartMesStats = null; }
+
+            chartMesStats = new Chart(document.getElementById('capturesSemaineMethodeMes'), {
+                type: 'bar',
+                data: {
+                    labels: jours,
+                    datasets: methodes.map((m, i) => ({
+                        label: m,
+                        data: jours.map(j => parJourMethode[j][m] || 0),
+                        backgroundColor: couleurs[i % couleurs.length]
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
+                    plugins: { tooltip: { mode:'index', intersect:false }, legend: { position:'bottom' } }
+                }
+            });
+
+            // Tableau par jour
             const headerRow = document.getElementById('tableSemaineHeaderMes');
             headerRow.innerHTML = '<th>Date</th>';
-            methodes.forEach(m => {
-                const th = document.createElement('th');
-                th.textContent = m;
-                headerRow.appendChild(th);
-            });
+            methodes.forEach(m => { const th = document.createElement('th'); th.textContent = m; headerRow.appendChild(th); });
 
             const tbodySemaine = document.querySelector('#tableSemaineMes tbody');
             tbodySemaine.innerHTML = '';
             jours.forEach(jour => {
-                const ligne = document.createElement('tr');
-                let html = `<td><strong>${jour}</strong></td>`;
-                methodes.forEach(m => {
-                    html += `<td>${parJourMethode[jour][m] || 0}</td>`;
-                });
-                ligne.innerHTML = html;
-                tbodySemaine.appendChild(ligne);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td><strong>${jour}</strong></td>` +
+                    methodes.map(m => `<td>${parJourMethode[jour][m] || 0}</td>`).join('');
+                tbodySemaine.appendChild(tr);
             });
         }
 
+        // ── Setup ─────────────────────────────────────────────────
         async function setup() {
             if (!session) {
-                bar.innerHTML = `
-                    <button id="btnConnexion">Se connecter</button>
-                `;
+                bar.innerHTML = `<button id="btnConnexion">Se connecter</button>`;
                 document.getElementById("btnConnexion").addEventListener("click", () => {
                     window.location.href = "login.html";
                 });
                 const navCapture = document.getElementById("navCapture");
                 if (navCapture) navCapture.style.display = "none";
-                document.querySelectorAll("#navMesStats").forEach(el => el?.remove());
                 myStatsNotConnected.style.display = 'block';
                 mesStatsContent.style.display = 'none';
             } else {
@@ -376,5 +449,4 @@
         await setup();
     </script>
 </body>
-
 </html>
