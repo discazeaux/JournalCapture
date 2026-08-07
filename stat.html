@@ -66,6 +66,10 @@
                 <div class="stat-title">Total individus capturés</div>
                 <div class="valeur" id="totalNombre">0</div>
             </div>
+            <div class="stat">
+                <div class="stat-title">Moyenne par jour ce mois</div>
+                <div class="valeur" id="moyenneCommunaute">0.0</div>
+            </div>
 
             <div class="stat">
                 <h2>📅 Captures par semaine par méthode</h2>
@@ -92,6 +96,10 @@
                     <div class="stat">
                         <div class="stat-title">Total individus capturés</div>
                         <div class="valeur" id="totalNombrePerso">0</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-title">Moyenne par jour ce mois</div>
+                        <div class="valeur" id="moyennePersoMois">0.0</div>
                     </div>
                     <div class="stat">
                         <div class="stat-title">Durée totale d'observation</div>
@@ -171,6 +179,10 @@
             return date.toLocaleDateString('fr-FR', { year:'numeric', month:'2-digit', day:'2-digit' });
         }
 
+        function getJoursDansMois(annee, mois) {
+            return new Date(annee, mois + 1, 0).getDate();
+        }
+
         function formaterTemps(secondes) {
             const h = Math.floor(secondes / 3600);
             const m = Math.floor((secondes % 3600) / 60);
@@ -214,8 +226,21 @@
 
             if (error) { console.error(error); alert(error.message); return; }
 
-            document.getElementById("totalNombre").textContent =
-                data.reduce((t, c) => t + (c.nombre || 0), 0);
+            const totalNombre = data.reduce((t, c) => t + (c.nombre || 0), 0);
+            document.getElementById("totalNombre").textContent = totalNombre;
+
+            const now = new Date();
+            const moisActuel = now.getMonth();
+            const anneeActuelle = now.getFullYear();
+            const totalMoisCommunaute = data.reduce((t, c) => {
+                const date = new Date(c.date_capture);
+                return date.getFullYear() === anneeActuelle && date.getMonth() === moisActuel
+                    ? t + (c.nombre || 0)
+                    : t;
+            }, 0);
+            const joursPasseCeMois = now.getDate();
+            const moyenneCommunaute = totalMoisCommunaute / joursPasseCeMois;
+            document.getElementById("moyenneCommunaute").textContent = moyenneCommunaute.toFixed(1);
 
             const parSemaineMethode = {};
             const toutesMethodes = new Set();
@@ -288,6 +313,16 @@
             const totalNombre = data.reduce((t, c) => t + (c.nombre || 0), 0);
             const totalDuree  = data.reduce((t, c) => t + (c.duree  || 0), 0);
             document.getElementById('totalNombrePerso').textContent = totalNombre;
+            const maintenant = new Date();
+            const totalMoisPerso = data.reduce((t, c) => {
+                const d = new Date(c.date_capture);
+                return d.getFullYear() === maintenant.getFullYear() && d.getMonth() === maintenant.getMonth()
+                    ? t + (c.nombre || 0)
+                    : t;
+            }, 0);
+            const joursPasseCeMois = maintenant.getDate();
+            const moyennePersoMois = totalMoisPerso / joursPasseCeMois;
+            document.getElementById('moyennePersoMois').textContent = moyennePersoMois.toFixed(1);
             document.getElementById('dureeTotale').textContent = formaterTemps(totalDuree);
 
             // Efficacité moyenne : uniquement sur les captures avec durée > 0
@@ -400,13 +435,18 @@
             const headerRow = document.getElementById('tableSemaineHeaderMes');
             headerRow.innerHTML = '<th>Date</th>';
             methodes.forEach(m => { const th = document.createElement('th'); th.textContent = m; headerRow.appendChild(th); });
+            const thTotal = document.createElement('th');
+            thTotal.textContent = 'Total';
+            headerRow.appendChild(thTotal);
 
             const tbodySemaine = document.querySelector('#tableSemaineMes tbody');
             tbodySemaine.innerHTML = '';
             jours.forEach(jour => {
                 const tr = document.createElement('tr');
+                const totalJour = methodes.reduce((sum, m) => sum + (parJourMethode[jour][m] || 0), 0);
                 tr.innerHTML = `<td><strong>${jour}</strong></td>` +
-                    methodes.map(m => `<td>${parJourMethode[jour][m] || 0}</td>`).join('');
+                    methodes.map(m => `<td>${parJourMethode[jour][m] || 0}</td>`).join('') +
+                    `<td><strong>${totalJour}</strong></td>`;
                 tbodySemaine.appendChild(tr);
             });
         }
