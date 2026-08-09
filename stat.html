@@ -277,13 +277,18 @@
             const headerRow = document.getElementById("tableSemaineHeader");
             headerRow.innerHTML = '<th>Semaine</th>';
             methodes.forEach(m => { const th = document.createElement("th"); th.textContent = m; headerRow.appendChild(th); });
+            const thTotal = document.createElement("th");
+            thTotal.textContent = 'Total';
+            headerRow.appendChild(thTotal);
 
             const tbody = document.querySelector("#tableSemaine tbody");
             tbody.innerHTML = "";
             semaines.forEach(s => {
+                const totalSemaine = methodes.reduce((sum, m) => sum + (parSemaineMethode[s][m] || 0), 0);
                 const tr = document.createElement("tr");
                 tr.innerHTML = `<td><strong>${s}</strong></td>` +
-                    methodes.map(m => `<td>${parSemaineMethode[s][m] || 0}</td>`).join('');
+                    methodes.map(m => `<td>${parSemaineMethode[s][m] || 0}</td>`).join('') +
+                    `<td><strong>${totalSemaine}</strong></td>`;
                 tbody.appendChild(tr);
             });
         }
