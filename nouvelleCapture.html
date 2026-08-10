@@ -267,8 +267,14 @@
             ajouterGroupe('🍯 Sucrés', sucres);
             ajouterGroupe('🥩 Protéinés', proteines);
 
-            if (!sel.options.length)
+            if (!sel.options.length) {
                 sel.innerHTML = '<option value="">— aucun appât configuré —</option>';
+            } else {
+                if (!sel.value) {
+                    const premierAppat = appats.find(a => a.id === appat_id_defaut) || appats[0];
+                    if (premierAppat) sel.value = premierAppat.id;
+                }
+            }
 
             mettreAJourFicheRecette();
         }
