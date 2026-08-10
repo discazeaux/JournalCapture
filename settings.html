@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paramètres — Suivi Frelons</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .settings-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .settings-section h3 {
+            color: var(--yellow);
+            margin: 0 0 4px 0;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .section-subtitle {
+            color: var(--muted);
+            font-size: 12px;
+            margin: 0 0 18px 0;
+        }
+
+        /* ── Cartes appât ── */
+        .item-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+
+        .appat-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: border-color .2s;
+        }
+        .appat-card.is-default { border-color: var(--yellow); }
+        .appat-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px; flex-wrap: wrap;
+        }
+        .appat-nom { font-size: 15px; font-weight: 600; flex: 1; min-width: 100px; }
+        .appat-card.is-default .appat-nom { color: var(--yellow); }
+
+        .badge-type { font-size: 11px; font-weight: 700; border-radius: 10px; padding: 2px 9px; white-space: nowrap; }
+        .badge-sucre    { background: rgba(255,180,50,0.18);  color: #ffc04a; border: 1px solid rgba(255,180,50,0.35); }
+        .badge-proteine { background: rgba(100,200,120,0.18); color: #6fcf7a; border: 1px solid rgba(100,200,120,0.35); }
+        .badge-default  { font-size: 10px; background: var(--yellow); color: #111; border-radius: 10px; padding: 2px 8px; font-weight: 700; }
+
+        .item-actions { display: flex; gap: 4px; align-items: center; }
+        .item-actions button {
+            background: none; border: 1px solid #444; border-radius: 6px;
+            color: #888; cursor: pointer; font-size: 13px; padding: 3px 9px;
+            width: auto; transition: border-color .15s, color .15s; white-space: nowrap;
+        }
+        .item-actions .btn-defaut:hover,
+        .item-actions .btn-defaut.active  { border-color: var(--yellow); color: var(--yellow); font-weight: 700; }
+        .item-actions .btn-recette:hover  { border-color: #4ecdc4; color: #4ecdc4; }
+        .item-actions .btn-edit:hover     { border-color: #74b9ff; color: #74b9ff; }
+        .item-actions .btn-toggle:hover   { border-color: #a29bfe; color: #a29bfe; }
+        .item-actions .btn-rm:hover       { border-color: #ff5555; color: #ff5555; }
+
+        .appat-recette-panel {
+            border-top: 1px solid #2a2a2a; padding: 12px 14px;
+            background: #111; display: none;
+        }
+        .appat-recette-panel.open { display: block; }
+        .appat-recette-panel label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+        .appat-recette-panel textarea { width: 100%; min-height: 80px; font-size: 13px; padding: 8px 10px; resize: vertical; margin: 0; }
+
+        /* ── Cartes poste ── */
+        .poste-card {
+            background: #1a1a1a; border: 1px solid #333;
+            border-radius: 10px; overflow: hidden; transition: border-color .2s;
+        }
+        .poste-card.inactif { opacity: 0.5; }
+        .poste-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; flex-wrap: wrap; }
+        .poste-nom { font-size: 15px; font-weight: 600; flex: 1; color: var(--yellow); }
+        .poste-detail { font-size: 12px; color: var(--muted); }
+        .badge-actif   { font-size: 11px; font-weight: 700; border-radius: 10px; padding: 2px 9px; background: rgba(78,205,196,0.15); color: #4ecdc4; border: 1px solid rgba(78,205,196,0.3); }
+        .badge-inactif { font-size: 11px; font-weight: 700; border-radius: 10px; padding: 2px 9px; background: rgba(100,100,100,0.15); color: #666; border: 1px solid #333; }
+
+        /* ── Formulaire ajout ── */
+        .add-form {
+            background: #111; border: 1px dashed #333;
+            border-radius: 10px; padding: 16px;
+        }
+        .add-form .form-row {
+            display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;
+        }
+        .add-form .form-row:last-child { margin-bottom: 0; }
+        .add-form input[type="text"],
+        .add-form input[type="number"],
+        .add-form select { flex: 1; min-width: 120px; padding: 9px 12px; font-size: 14px; margin: 0; }
+        .add-form label { font-size: 13px; color: var(--muted); white-space: nowrap; margin: 0; }
+        .add-form button.btn-add {
+            width: auto; padding: 9px 18px; font-size: 14px;
+            white-space: nowrap; border-radius: 8px; flex-shrink: 0;
+        }
+
+        .type-toggle { display: flex; gap: 6px; }
+        .type-btn {
+            padding: 7px 14px; border-radius: 8px; border: 1px solid #444;
+            background: #1a1a1a; color: #888; cursor: pointer; font-size: 13px;
+            font-weight: 600; width: auto; transition: all .15s;
+        }
+        .type-btn.sucre.selected    { background: rgba(255,180,50,0.18);  color: #ffc04a; border-color: #ffc04a; }
+        .type-btn.proteine.selected { background: rgba(100,200,120,0.18); color: #6fcf7a; border-color: #6fcf7a; }
+
+        /* ── Suggestion appâts par défaut ── */
+        .suggestion-grid {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;
+        }
+        .suggestion-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #1a1a1a; border: 1px dashed #444; border-radius: 20px;
+            padding: 5px 12px; font-size: 13px; color: #aaa; cursor: pointer;
+            transition: border-color .15s, color .15s;
+        }
+        .suggestion-chip:hover { border-color: var(--yellow); color: var(--yellow); }
+        .suggestion-chip.imported { border-color: #555; color: #555; cursor: default; text-decoration: line-through; }
+
+        .hint { font-size: 12px; color: var(--muted); margin: 8px 0 0 0; }
+
+        .save-bar { position: sticky; bottom: 20px; text-align: right; padding-top: 8px; }
+
+        .toast {
+            position: fixed; bottom: 30px; left: 50%;
+            transform: translateX(-50%) translateY(60px);
+            background: #1a1a1a; border: 1px solid var(--yellow);
+            color: var(--yellow); padding: 12px 28px; border-radius: 10px;
+            font-weight: 600; font-size: 14px; z-index: 999;
+            opacity: 0; transition: opacity .3s, transform .3s;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        .loading { color: var(--muted); font-size: 13px; padding: 8px 0; }
+        .empty   { color: var(--muted); font-size: 13px; font-style: italic; padding: 8px 0; }
+    </style>
+</head>
+<body>
+    <div class="user-bar" id="userBar"></div>
+
+    <nav class="navbar">
+        <a href="index.html">🐝 Accueil</a>
+        <a href="nouvelleCapture.html">📋 Nouvelle capture</a>
+        <a href="stat.html">📊 Statistiques</a>
+        <a href="settings.html" class="active">⚙️ Paramètres</a>
+    </nav>
+
+    <div class="container" style="max-width:680px; padding-top:12px;">
+        <h2 style="margin-bottom:24px;">⚙️ Paramètres</h2>
+
+        <!-- ── Appâts ── -->
+        <div class="settings-section">
+            <h3>🧪 Mes appâts</h3>
+            <p class="section-subtitle">Vos appâts personnels, utilisés pour vos postes de piégeage</p>
+
+            <div class="item-list" id="listAppats"><p class="loading">Chargement…</p></div>
+
+            <!-- Suggestions -->
+            <div id="sectionSuggestions" style="margin-bottom:16px; display:none;">
+                <p style="font-size:12px; color:var(--muted); margin-bottom:8px;">✨ Appâts suggérés — cliquez pour importer :</p>
+                <div class="suggestion-grid" id="gridSuggestions"></div>
+            </div>
+
+            <!-- Formulaire ajout appât -->
+            <div class="add-form">
+                <div class="form-row">
+                    <input type="text" id="inputNouvelAppat" placeholder="Nom de l'appât…" maxlength="60">
+                </div>
+                <div class="form-row">
+                    <label>Type :</label>
+                    <div class="type-toggle">
+                        <button type="button" class="type-btn sucre selected" id="btnTypeSucre" onclick="selectType('sucre')">🍯 Sucré</button>
+                        <button type="button" class="type-btn proteine" id="btnTypeProteine" onclick="selectType('proteine')">🥩 Protéiné</button>
+                    </div>
+                    <button type="button" class="btn-add" onclick="ajouterAppat()">＋ Ajouter</button>
+                </div>
+            </div>
+            <p class="hint">★ = appât par défaut &nbsp;·&nbsp; 📖 = recette &nbsp;·&nbsp; Vous pouvez importer les appâts suggérés ci-dessus.</p>
+        </div>
+
+        <!-- ── Postes de piégeage ── -->
+        <div class="settings-section">
+            <h3>🪤 Mes postes de piégeage</h3>
+            <p class="section-subtitle">Un poste = un groupe de pièges au même endroit avec le même appât</p>
+
+            <div class="item-list" id="listPostes"><p class="loading">Chargement…</p></div>
+
+            <!-- Formulaire ajout poste -->
+            <div class="add-form">
+                <div class="form-row">
+                    <input type="text" id="inputNomPoste" placeholder="Nom du poste (ex: Jardin nord, Poulailler…)" maxlength="80">
+                </div>
+                <div class="form-row">
+                    <label>Type :</label>
+                    <input type="text" id="inputTypePiege" placeholder="Type de piège…" maxlength="60" style="flex:1;">
+                </div>
+                    <div class="form-row">
+                    <label>Nombre :</label>
+                    <input type="number" id="inputNombrePostes" min="1" max="99" value="1" style="width:80px; flex:none;">
+                    <span style="font-size:13px; color:var(--muted);">piège(s) sur ce poste</span>
+                    <button type="button" class="btn-add" onclick="ajouterPoste()" style="margin-left:auto;">＋ Ajouter</button>
+                </div>
+            </div>
+            <p class="hint">Les postes inactifs n'apparaissent plus dans le formulaire de capture.</p>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+        import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+        const supabase = createClient(
+            "https://pvqfwozqfndlpfzypbza.supabase.co",
+            "sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
+        );
+
+        // ── État ──────────────────────────────────────────────────
+        let appats  = [];   // [{ id, nom, type, recette, defaut }]
+        let postes  = [];   // [{ id, nom, type_piege, nombre, actif }]
+        let suggDef = [];   // appats_defaut
+        let typeSelectionneGlobal = 'sucre';
+
+        // ── Auth ──────────────────────────────────────────────────
+        const bar = document.getElementById("userBar");
+        const { data, error } = await supabase.auth.getSession();
+        const session = data?.session;
+
+        function afficherConnexionRequise() {
+            bar.innerHTML = `<button onclick="location.href='login.html'">Se connecter</button>`;
+            document.getElementById('listAppats').innerHTML = '<p class="empty">Connectez-vous pour gérer vos paramètres.</p>';
+            document.getElementById('listPostes').innerHTML = '<p class="empty">Connectez-vous pour gérer vos paramètres.</p>';
+        }
+
+        if (error || !session) {
+            console.error(error || 'Aucune session');
+            afficherConnexionRequise();
+        } else {
+            const { data: profil, error: profilError } = await supabase.from("profils").select("pseudo").eq("id", session.user.id).single();
+            if (profilError) { console.error(profilError); }
+            const pseudo = profil?.pseudo || session.user.email;
+            bar.innerHTML = `<span class="bee-small">🐝</span><span class="pseudo">${pseudo}</span><button id="btnDeco">Se déconnecter</button>`;
+            document.getElementById("btnDeco").addEventListener("click", async () => {
+                await supabase.auth.signOut(); window.location.href = "login.html";
+            });
+            await init();
+        }
+
+        // ── Init ──────────────────────────────────────────────────
+        async function init() {
+            await Promise.all([chargerAppats(), chargerSuggestions()]);
+            await chargerPostes();
+        }
+
+        async function chargerAppats() {
+            const { data, error } = await supabase
+                .from('appats').select('*').eq('user_id', session.user.id).order('created_at');
+            if (error) {
+                console.error(error);
+                appats = [];
+                renderAppats();
+                return;
+            }
+            appats = Array.isArray(data) ? data : [];
+            renderAppats();
+        }
+
+        async function chargerSuggestions() {
+            const { data } = await supabase.from('appats_defaut').select('*').order('nom');
+            suggDef = data || [];
+            renderSuggestions();
+        }
+
+        async function chargerPostes() {
+            const { data, error } = await supabase
+                .from('postes_pieges')
+                .select('*')
+                .eq('user_id', session.user.id)
+                .order('created_at');
+            if (error) { console.error(error); return; }
+            postes = data || [];
+            renderPostes();
+        }
+
+        // ── Rendu appâts ──────────────────────────────────────────
+        function renderAppats() {
+            const list = document.getElementById('listAppats');
+            list.innerHTML = '';
+            if (!appats.length) {
+                list.innerHTML = '<p class="empty">Aucun appât. Ajoutez-en un ci-dessous ou importez une suggestion.</p>';
+                return;
+            }
+            appats.forEach(a => {
+                const card = document.createElement('div');
+                card.className = 'appat-card' + (a.defaut ? ' is-default' : '');
+                const typeBadge = a.type === 'proteine'
+                    ? '<span class="badge-type badge-proteine">🥩 Protéiné</span>'
+                    : '<span class="badge-type badge-sucre">🍯 Sucré</span>';
+                const defBadge = a.defaut ? '<span class="badge-default">★ défaut</span>' : '';
+                card.innerHTML = `
+                    <div class="appat-header">
+                        <span class="appat-nom">${a.nom}</span>
+                        ${typeBadge} ${defBadge}
+                        <div class="item-actions">
+                            <button class="btn-defaut ${a.defaut ? 'active' : ''}" data-id="${a.id}" title="Définir comme défaut">★</button>
+                            <button class="btn-recette" data-id="${a.id}" title="Recette">📖</button>
+                            <button class="btn-rm" data-id="${a.id}" title="Supprimer">✕</button>
+                        </div>
+                    </div>
+                    <div class="appat-recette-panel" id="rp-${a.id}">
+                        <label>Recette / composition</label>
+                        <textarea placeholder="Ingrédients, proportions…" data-id="${a.id}">${a.recette || ''}</textarea>
+                        <button type="button" onclick="sauvegarderRecette('${a.id}')" style="margin-top:8px; width:auto; padding:6px 14px; font-size:13px; border-radius:6px;">💾 Enregistrer la recette</button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+
+            list.querySelectorAll('.btn-defaut').forEach(btn => btn.addEventListener('click', () => setDefaut(btn.dataset.id)));
+            list.querySelectorAll('.btn-recette').forEach(btn => btn.addEventListener('click', () => {
+                document.getElementById(`rp-${btn.dataset.id}`).classList.toggle('open');
+            }));
+            list.querySelectorAll('.btn-rm').forEach(btn => btn.addEventListener('click', () => supprimerAppat(btn.dataset.id)));
+        }
+
+        // ── Rendu suggestions ─────────────────────────────────────
+        function renderSuggestions() {
+            const section = document.getElementById('sectionSuggestions');
+            const grid    = document.getElementById('gridSuggestions');
+            if (!suggDef.length) { section.style.display = 'none'; return; }
+            section.style.display = '';
+            grid.innerHTML = '';
+            suggDef.forEach(s => {
+                const dejaImporte = appats.some(a => a.nom.toLowerCase() === s.nom.toLowerCase());
+                const chip = document.createElement('span');
+                chip.className = 'suggestion-chip' + (dejaImporte ? ' imported' : '');
+                chip.innerHTML = `${s.type === 'proteine' ? '🥩' : '🍯'} ${s.nom}`;
+                if (!dejaImporte) chip.addEventListener('click', () => importerSuggestion(s));
+                grid.appendChild(chip);
+            });
+        }
+
+        // ── Rendu postes ──────────────────────────────────────────
+        function renderPostes() {
+            const list = document.getElementById('listPostes');
+            list.innerHTML = '';
+            if (!postes.length) {
+                list.innerHTML = '<p class="empty">Aucun poste. Ajoutez-en un ci-dessous. Si vous n’avez pas encore d’appât, commencez par créer un appât.</p>';
+                return;
+            }
+            postes.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'poste-card' + (p.actif ? '' : ' inactif');
+                const defautBadge = p.defaut ? '<span class="badge-default">★ défaut</span>' : '';
+                const actifBadge = p.actif
+                    ? '<span class="badge-actif">● Actif</span>'
+                    : '<span class="badge-inactif">○ Inactif</span>';
+                card.innerHTML = `
+                    <div class="poste-header">
+                        <span class="poste-nom">${p.nom}</span>
+                        ${defautBadge}
+                        ${actifBadge}
+                        <div class="item-actions">
+                            <button class="btn-defaut ${p.defaut ? 'active' : ''}" data-id="${p.id}" title="Définir comme poste par défaut">★</button>
+                            <button class="btn-toggle" data-id="${p.id}" data-actif="${p.actif}" title="${p.actif ? 'Désactiver' : 'Activer'}">${p.actif ? '⏸' : '▶'}</button>
+                            <button class="btn-rm" data-id="${p.id}" title="Supprimer">✕</button>
+                        </div>
+                    </div>
+                    <div style="padding: 0 14px 10px; font-size:13px; color:var(--muted); display:flex; gap:14px; flex-wrap:wrap;">
+                        <span>🪤 ${p.type_piege || '—'}</span>
+                        <span>× ${p.nombre} piège(s)</span>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+
+            list.querySelectorAll('.btn-defaut').forEach(btn => btn.addEventListener('click', () => setDefautPoste(btn.dataset.id)));
+            list.querySelectorAll('.btn-toggle').forEach(btn => btn.addEventListener('click', () =>
+                togglePoste(btn.dataset.id, btn.dataset.actif === 'true')
+            ));
+            list.querySelectorAll('.btn-rm').forEach(btn => btn.addEventListener('click', () => supprimerPoste(btn.dataset.id)));
+        }
+
+        async function setDefautPoste(id) {
+            await supabase.from('postes_pieges').update({ defaut: false }).eq('user_id', session.user.id);
+            await supabase.from('postes_pieges').update({ defaut: true }).eq('id', id);
+            postes.forEach(p => p.defaut = p.id === id);
+            renderPostes();
+            toast('Poste par défaut mis à jour ✓');
+        }
+
+        // ── Select appât dans formulaire poste ────────────────────
+        function remplirSelectAppat() {
+            const sel = document.getElementById('selectAppat');
+            if (!sel) return;
+            const val = sel.value;
+            sel.innerHTML = '<option value="">— choisir —</option>';
+            if (!appats.length) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'Aucun appât disponible';
+                opt.disabled = true;
+                sel.appendChild(opt);
+                sel.disabled = true;
+                return;
+            }
+            sel.disabled = false;
+            appats.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a.id;
+                opt.textContent = `${a.type === 'proteine' ? '🥩' : '🍯'} ${a.nom}`;
+                if (a.id === val) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+
+        // ── Actions appâts ────────────────────────────────────────
+        window.selectType = function(type) {
+            typeSelectionneGlobal = type;
+            document.getElementById('btnTypeSucre').classList.toggle('selected', type === 'sucre');
+            document.getElementById('btnTypeProteine').classList.toggle('selected', type === 'proteine');
+        };
+
+        window.ajouterAppat = async function() {
+            const nom = document.getElementById('inputNouvelAppat').value.trim();
+            if (!nom) return;
+            // Premier appât → défaut automatique
+            const premierDefaut = appats.length === 0;
+            const { data, error } = await supabase.from('appats').insert({
+                user_id: session.user.id,
+                nom,
+                type: typeSelectionneGlobal,
+                recette: '',
+                defaut: premierDefaut
+            }).select().single();
+            if (error) { toast('Erreur : ' + error.message, true); return; }
+            appats.push(data);
+            document.getElementById('inputNouvelAppat').value = '';
+            renderAppats();
+            renderSuggestions();
+            remplirSelectAppat();
+            toast('Appât ajouté ✓');
+        };
+
+        async function setDefaut(id) {
+            // Retirer le défaut de tous, mettre sur celui-ci
+            await supabase.from('appats').update({ defaut: false }).eq('user_id', session.user.id);
+            await supabase.from('appats').update({ defaut: true  }).eq('id', id);
+            appats.forEach(a => a.defaut = (a.id === id));
+            renderAppats();
+            toast('Appât par défaut mis à jour ✓');
+        }
+
+        window.sauvegarderRecette = async function(id) {
+            const ta = document.querySelector(`textarea[data-id="${id}"]`);
+            if (!ta) return;
+            const { error } = await supabase.from('appats').update({ recette: ta.value }).eq('id', id);
+            if (error) { toast('Erreur : ' + error.message, true); return; }
+            const a = appats.find(x => x.id === id);
+            if (a) a.recette = ta.value;
+            toast('Recette enregistrée ✓');
+        };
+
+        async function supprimerAppat(id) {
+            if (!confirm('Supprimer cet appât ? Les postes liés perdront leur appât.')) return;
+            const { error } = await supabase.from('appats').delete().eq('id', id);
+            if (error) { toast('Erreur : ' + error.message, true); return; }
+            appats = appats.filter(a => a.id !== id);
+            renderAppats();
+            renderSuggestions();
+            remplirSelectAppat();
+            toast('Appât supprimé');
+        }
+
+        async function importerSuggestion(s) {
+            const { data, error } = await supabase.from('appats').insert({
+                user_id: session.user.id,
+                nom: s.nom,
+                type: s.type,
+                recette: s.recette || '',
+                defaut: appats.length === 0
+            }).select().single();
+            if (error) { toast('Erreur : ' + error.message, true); return; }
+            appats.push(data);
+            renderAppats();
+            renderSuggestions();
+            remplirSelectAppat();
+            toast(`"${s.nom}" importé ✓`);
+        }
+
+        // ── Actions postes ────────────────────────────────────────
+        window.ajouterPoste = async function() {
+            const nom       = document.getElementById('inputNomPoste').value.trim();
+            const typePiege = document.getElementById('inputTypePiege').value.trim();
+            const nombre    = parseInt(document.getElementById('inputNombrePostes').value) || 1;
+            if (!nom) { toast('Donnez un nom au poste', true); return; }
+            const premierDefaut = postes.length === 0;
+            const { data, error } = await supabase.from('postes_pieges').insert({
+                user_id: session.user.id, nom, type_piege: typePiege, nombre, actif: true, defaut: premierDefaut
+            }).select('*').single();
+            if (error) { toast('Erreur : ' + error.message, true); return; }
+            postes.push(data);
+            document.getElementById('inputNomPoste').value = '';
+            document.getElementById('inputTypePiege').value = '';
+            document.getElementById('inputNombrePostes').value = 1;
+            renderPostes();
+            toast('Poste ajouté ✓');
+        };
+
+        async function togglePoste(id, estActif) {
+            const { error } = await supabase.from('postes_pieges').update({ actif: !estActif }).eq('id', id);
+            if (error) { toast('Erreur : ' + error.message, true); return; }
+            const p = postes.find(x => x.id === id);
+            if (p) p.actif = !estActif;
+            renderPostes();
+            toast(estActif ? 'Poste désactivé' : 'Poste activé ✓');
+        }
+
+        async function supprimerPoste(id) {
+            if (!confirm('Supprimer ce poste ?')) return;
+            const { error } = await supabase.from('postes_pieges').delete().eq('id', id);
+            if (error) { toast('Erreur : ' + error.message, true); return; }
+            postes = postes.filter(p => p.id !== id);
+            renderPostes();
+            toast('Poste supprimé');
+        }
+
+        // ── Toast ─────────────────────────────────────────────────
+        function toast(msg, erreur = false) {
+            const el = document.getElementById('toast');
+            el.textContent = erreur ? '⚠ ' + msg : '✓ ' + msg;
+            el.style.borderColor = erreur ? '#ff5555' : 'var(--yellow)';
+            el.style.color       = erreur ? '#ff5555' : 'var(--yellow)';
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 2500);
+        }
+
+        // Enter rapide
+        document.getElementById('inputNouvelAppat').addEventListener('keydown', e => { if (e.key === 'Enter') window.ajouterAppat(); });
+        document.getElementById('inputNomPoste').addEventListener('keydown',   e => { if (e.key === 'Enter') window.ajouterPoste(); });
+    </script>
+</body>
+</html>

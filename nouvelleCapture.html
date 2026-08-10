@@ -1,65 +1,140 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enregistrer une nouvelle capture de frelons</title>
+    <title>Nouvelle capture — Suivi Frelons</title>
     <link rel="stylesheet" href="styles.css">
-</head>
+    <style>
+        #detailsPiege {
+            background: #111; border: 1px solid #333; border-radius: 10px;
+            padding: 16px 18px; margin-top: 8px; animation: slideDown .2s ease;
+        }
+        @keyframes slideDown {
+            from { opacity:0; transform:translateY(-8px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        #detailsPiege h4 {
+            color: var(--yellow); margin: 0 0 14px 0;
+            font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        #detailsPiege p { margin: 0 0 12px 0; }
+        #detailsPiege p:last-child { margin-bottom: 0; }
 
+        /* Fiche poste */
+        .fiche-poste {
+            background: #0a1628; border: 1px solid #1e3a5f;
+            border-radius: 8px; padding: 12px 14px; margin-top: 8px;
+            font-size: 13px; display: none;
+        }
+        .fiche-poste.visible { display: block; }
+        .fiche-poste-titre { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #74b9ff; margin-bottom: 8px; }
+        .fiche-poste-ligne { color: #a0c4ff; margin-bottom: 4px; }
+        .fiche-poste-ligne:last-child { margin-bottom: 0; }
+
+        /* Fiche recette */
+        .fiche-recette {
+            background: #0d1a14; border: 1px solid #1e4a2e;
+            border-radius: 8px; padding: 10px 14px; margin-top: 8px;
+            font-size: 13px; color: #7ecfa0; line-height: 1.5; display: none;
+        }
+        .fiche-recette.visible { display: block; }
+        .fiche-recette-titre { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #4ecdc4; margin-bottom: 4px; }
+
+        .badge-appat-type {
+            display: inline-block; font-size: 11px; font-weight: 700;
+            border-radius: 10px; padding: 2px 9px; margin-left: 8px; vertical-align: middle;
+        }
+        .badge-sucre    { background: rgba(255,180,50,0.18); color: #ffc04a; border: 1px solid rgba(255,180,50,0.35); }
+        .badge-proteine { background: rgba(100,200,120,0.18); color: #6fcf7a; border: 1px solid rgba(100,200,120,0.35); }
+
+        .no-postes-hint {
+            font-size: 13px; color: var(--muted); padding: 10px 0;
+        }
+        .no-postes-hint a { color: var(--yellow); }
+    </style>
+</head>
 <body>
-    <div class="user-bar" id="userBar">
-        <!-- rempli par JS -->
-    </div>
+    <div class="user-bar" id="userBar"></div>
 
     <nav class="navbar">
         <a href="index.html">🐝 Accueil</a>
         <a href="nouvelleCapture.html" class="active">📋 Nouvelle capture</a>
         <a href="stat.html">📊 Statistiques</a>
+        <a href="settings.html">⚙️ Paramètres</a>
     </nav>
 
     <h2>Nouvelle capture</h2>
 
     <form id="captureForm">
-
         <p>
             <label class="required-field">Date</label>
             <input type="date" id="date_capture" required>
         </p>
-
         <p>
             <label class="required-field">Heure</label>
             <input type="time" id="heure_capture" required>
         </p>
-
         <p>
             <label class="required-field">Méthode</label>
             <select id="methode" required>
                 <option value="" disabled>Sélectionnez une méthode</option>
                 <option value="DPR">DPR</option>
-                <option value="Piége">Piége</option>
+                <option value="Piège">Piège</option>
                 <option value="Raquette électrique" selected>Raquette électrique</option>
                 <option value="Harpe">Harpe</option>
             </select>
         </p>
 
+        <!-- ── Détails piège ── -->
+        <div id="detailsPiege" style="display:none;">
+            <h4>🪤 Détails du piège</h4>
+
+            <p>
+                <label>Poste de piégeage</label>
+                <select id="selectPoste">
+                    <option value="">Chargement…</option>
+                </select>
+                <!-- Fiche récap du poste sélectionné -->
+                <div class="fiche-poste" id="fichePoste">
+                    <div class="fiche-poste-titre">📍 Informations du poste</div>
+                    <div class="fiche-poste-ligne" id="fichePosteLigne1"></div>
+                    <div class="fiche-poste-ligne" id="fichePosteLigne2"></div>
+                    <div class="fiche-poste-ligne" id="fichePosteLigne3"></div>
+                </div>
+                <div id="hintPasDePoste" class="no-postes-hint" style="display:none;">
+                    Aucun poste actif. <a href="settings.html">Créez vos postes dans les paramètres →</a>
+                </div>
+            </p>
+
+            <p>
+                <label>
+                    Appât utilisé
+                    <span id="badgeTypeAppat"></span>
+                </label>
+                <select id="appat"></select>
+                <div class="fiche-recette" id="ficheRecette">
+                    <div class="fiche-recette-titre">📖 Recette</div>
+                    <div id="ficheRecetteTexte"></div>
+                </div>
+            </p>
+
+            <p>
+                <label>Nombre de pièges relevés</label>
+                <input type="number" id="nombrePieges" min="1" max="99" value="1">
+            </p>
+
+            <p>
+                <label>Notes sur le piège</label>
+                <textarea id="notesPiege" rows="2" placeholder="Position, conditions, observations…"></textarea>
+            </p>
+        </div>
+
         <p>
             <label>Durée de capture</label>
-
-            <div id="chrono" style="
-                font-size:28px;
-                color:#ffd700;
-                text-align:center;
-                margin-bottom:10px;
-            ">
-                00:00
-            </div>
-
+            <div id="chrono" style="font-size:28px; color:#ffd700; text-align:center; margin-bottom:10px;">00:00</div>
             <input id="duree_capture" type="text" value="00:00" placeholder="mm:ss"
                 style="width:100%; padding:10px; margin-bottom:12px; background:#1e1e1e; border:1px solid #444; border-radius:6px; color:#fff;" />
-
-            <!-- BUG CORRIGÉ : le chrono ne remet plus à 0 si on reclique par erreur sur Démarrer alors qu'il tourne -->
             <button type="button" id="startChrono">Démarrer</button>
             <button type="button" id="stopChrono" disabled>Arrêter</button>
             <button type="button" id="resetChrono" style="margin-top:8px; background:#333; color:#ccc; border:1px solid #555; border-radius:6px; padding:8px 14px; cursor:pointer; font-size:13px;">
@@ -68,7 +143,7 @@
         </p>
 
         <p>
-            <label>Nombre</label>
+            <label>Nombre de frelons capturés</label>
             <input type="number" id="nombre" value="1" min="1">
         </p>
 
@@ -78,151 +153,248 @@
         </p>
 
         <p>
-            <label>Notes</label>
+            <label>Notes générales</label>
             <textarea id="notes"></textarea>
         </p>
 
         <button type="submit">Enregistrer</button>
-
     </form>
 
     <script type="module">
         import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
         const supabase = createClient(
             "https://pvqfwozqfndlpfzypbza.supabase.co",
             "sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
         );
 
-        // ── Chrono ────────────────────────────────────────────────
-        let chronoInterval = null;
-        let secondes = 0;
-        let chronoEnCours = false;
+        // ── Session ───────────────────────────────────────────────
+        const bar = document.getElementById("userBar");
+        const { data: { session } } = await supabase.auth.getSession();
+        let lieuDefaut = 'maison';
 
+        if (session) {
+            const { data: profil } = await supabase
+                .from("profils").select("pseudo, codePostal").eq("id", session.user.id).single();
+            const pseudo = profil?.pseudo || session.user.email;
+            lieuDefaut = profil?.codePostal || 'maison';
+            bar.innerHTML = `<span class="bee-small">🐝</span><span class="pseudo">${pseudo}</span><button id="btnDeco">Se déconnecter</button>`;
+            document.getElementById("btnDeco").addEventListener("click", async () => {
+                await supabase.auth.signOut(); window.location.href = "login.html";
+            });
+        } else {
+            bar.innerHTML = `<button onclick="location.href='login.html'">Se connecter</button>`;
+        }
+
+        // ── Données Supabase ──────────────────────────────────────
+        let postes = [];   // postes_pieges actifs
+        let appats = [];   // tous les appâts de l'utilisateur
+
+        if (session) {
+            const [{ data: p }, { data: a }] = await Promise.all([
+                supabase.from('postes_pieges')
+                    .select('*')
+                    .eq('user_id', session.user.id)
+                    .eq('actif', true)
+                    .order('nom'),
+                supabase.from('appats')
+                    .select('*')
+                    .eq('user_id', session.user.id)
+                    .order('nom')
+            ]);
+            postes = p || [];
+            appats = a || [];
+        }
+
+        // ── Remplir le select postes ──────────────────────────────
+        function remplirSelectPoste() {
+            const sel = document.getElementById('selectPoste');
+            sel.innerHTML = '';
+            const hint = document.getElementById('hintPasDePoste');
+
+            if (!postes.length) {
+                sel.innerHTML = '<option value="">— aucun poste actif —</option>';
+                sel.style.display = 'none';
+                hint.style.display = 'block';
+                return;
+            }
+            hint.style.display = 'none';
+            sel.style.display  = '';
+
+            const optVide = document.createElement('option');
+            optVide.value = ''; optVide.textContent = '— sélectionner un poste —';
+            sel.appendChild(optVide);
+
+            postes.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = `${p.nom}  (×${p.nombre})`;
+                sel.appendChild(opt);
+            });
+
+            const posteDefaut = postes.find(p => p.defaut);
+            if (posteDefaut) {
+                sel.value = posteDefaut.id;
+            }
+
+            mettreAJourFichePoste();
+        }
+
+        // ── Remplir le select appâts ──────────────────────────────
+        function remplirSelectAppat(appat_id_defaut) {
+            const sel = document.getElementById('appat');
+            sel.innerHTML = '';
+
+            const sucres    = appats.filter(a => a.type !== 'proteine');
+            const proteines = appats.filter(a => a.type === 'proteine');
+
+            function ajouterGroupe(label, liste) {
+                if (!liste.length) return;
+                const grp = document.createElement('optgroup');
+                grp.label = label;
+                liste.forEach(a => {
+                    const opt = document.createElement('option');
+                    opt.value = a.id;
+                    opt.textContent = a.nom;
+                    if (a.id === appat_id_defaut) opt.selected = true;
+                    grp.appendChild(opt);
+                });
+                sel.appendChild(grp);
+            }
+            ajouterGroupe('🍯 Sucrés', sucres);
+            ajouterGroupe('🥩 Protéinés', proteines);
+
+            if (!sel.options.length)
+                sel.innerHTML = '<option value="">— aucun appât configuré —</option>';
+
+            mettreAJourFicheRecette();
+        }
+
+        // ── Fiche poste ───────────────────────────────────────────
+        function mettreAJourFichePoste() {
+            const poste_id = document.getElementById('selectPoste').value;
+            const fiche    = document.getElementById('fichePoste');
+            const poste    = postes.find(p => p.id === poste_id);
+
+            if (!poste) {
+                fiche.classList.remove('visible');
+                document.getElementById('nombrePieges').value = 1;
+                return;
+            }
+
+            // Pré-remplir le nombre depuis le poste
+            document.getElementById('nombrePieges').value = poste.nombre;
+
+            // Afficher la fiche récap
+            document.getElementById('fichePosteLigne1').textContent = `🪤 Type : ${poste.type_piege || '—'}`;
+            document.getElementById('fichePosteLigne2').textContent = `× ${poste.nombre} piège(s) sur ce poste`;
+            document.getElementById('fichePosteLigne3').textContent = '';
+            fiche.classList.add('visible');
+        }
+
+        // ── Fiche recette ─────────────────────────────────────────
+        function mettreAJourFicheRecette() {
+            const sel   = document.getElementById('appat');
+            const appId = sel.value;
+            const appat = appats.find(a => a.id === appId);
+
+            const badge = document.getElementById('badgeTypeAppat');
+            const fiche = document.getElementById('ficheRecette');
+            const texte = document.getElementById('ficheRecetteTexte');
+
+            if (appat) {
+                badge.innerHTML = appat.type === 'proteine'
+                    ? '<span class="badge-appat-type badge-proteine">🥩 Protéiné</span>'
+                    : '<span class="badge-appat-type badge-sucre">🍯 Sucré</span>';
+                if (appat.recette?.trim()) {
+                    texte.textContent = appat.recette;
+                    fiche.classList.add('visible');
+                } else {
+                    fiche.classList.remove('visible');
+                }
+            } else {
+                badge.innerHTML = '';
+                fiche.classList.remove('visible');
+            }
+        }
+
+        remplirSelectPoste();
+        remplirSelectAppat(appats.find(a => a.defaut)?.id);
+
+        document.getElementById('selectPoste').addEventListener('change', mettreAJourFichePoste);
+        document.getElementById('appat').addEventListener('change', mettreAJourFicheRecette);
+
+        // ── Affichage conditionnel bloc piège ─────────────────────
+        const selectMethode = document.getElementById('methode');
+        const detailsPiege  = document.getElementById('detailsPiege');
+
+        function mettreAJourAffichagePiege() {
+            detailsPiege.style.display = selectMethode.value === 'Piège' ? 'block' : 'none';
+        }
+        selectMethode.addEventListener('change', mettreAJourAffichagePiege);
+        mettreAJourAffichagePiege();
+
+        // ── Chrono ────────────────────────────────────────────────
+        let chronoInterval = null, secondes = 0, chronoEnCours = false;
         const chronoDisplay = document.getElementById("chrono");
         const dureeInput    = document.getElementById("duree_capture");
         const startButton   = document.getElementById("startChrono");
         const stopButton    = document.getElementById("stopChrono");
         const resetButton   = document.getElementById("resetChrono");
 
-        function formatDuree(s) {
-            const m = Math.floor(s / 60);
-            const sec = s % 60;
-            return String(m).padStart(2, '0') + ":" + String(sec).padStart(2, '0');
-        }
-
-        function parseDuree(value) {
-            const raw = String(value || '').trim();
-            if (!raw) return null;
-            const parts = raw.split(':').map(p => p.trim());
-            if (parts.length === 2) {
-                const m = Number(parts[0]);
-                const s = Number(parts[1]);
-                if (Number.isInteger(m) && m >= 0 && Number.isInteger(s) && s >= 0 && s < 60)
-                    return m * 60 + s;
-            }
-            if (parts.length === 1) {
-                const s = Number(parts[0]);
-                if (Number.isInteger(s) && s >= 0) return s;
-            }
+        function formatDuree(s) { return String(Math.floor(s/60)).padStart(2,'0') + ":" + String(s%60).padStart(2,'0'); }
+        function parseDuree(v) {
+            const raw = String(v||'').trim(); if (!raw) return null;
+            const parts = raw.split(':').map(p=>p.trim());
+            if (parts.length===2) { const m=Number(parts[0]),s=Number(parts[1]); if(Number.isInteger(m)&&m>=0&&Number.isInteger(s)&&s>=0&&s<60) return m*60+s; }
+            if (parts.length===1) { const s=Number(parts[0]); if(Number.isInteger(s)&&s>=0) return s; }
             return null;
         }
-
-        function afficherChrono() {
-            chronoDisplay.textContent = formatDuree(secondes);
-            dureeInput.value = formatDuree(secondes);
-        }
+        function afficherChrono() { chronoDisplay.textContent = formatDuree(secondes); dureeInput.value = formatDuree(secondes); }
 
         startButton.addEventListener("click", () => {
-            // BUG CORRIGÉ : on ne fait rien si le chrono tourne déjà
             if (chronoEnCours) return;
-            chronoEnCours = true;
-            startButton.disabled = true;
-            stopButton.disabled = false;
-            chronoInterval = setInterval(() => {
-                secondes++;
-                afficherChrono();
-            }, 1000);
+            chronoEnCours=true; startButton.disabled=true; stopButton.disabled=false;
+            chronoInterval=setInterval(()=>{secondes++;afficherChrono();},1000);
         });
-
         stopButton.addEventListener("click", () => {
-            clearInterval(chronoInterval);
-            chronoInterval = null;
-            chronoEnCours = false;
-            startButton.disabled = false;
-            stopButton.disabled = true;
-            // Lire la valeur saisie à la main si modifiée
-            const parsed = parseDuree(dureeInput.value);
-            if (parsed !== null) { secondes = parsed; afficherChrono(); }
+            clearInterval(chronoInterval); chronoInterval=null; chronoEnCours=false;
+            startButton.disabled=false; stopButton.disabled=true;
+            const p=parseDuree(dureeInput.value); if(p!==null){secondes=p;afficherChrono();}
         });
-
         resetButton.addEventListener("click", () => {
-            clearInterval(chronoInterval);
-            chronoInterval = null;
-            chronoEnCours = false;
-            secondes = 0;
-            afficherChrono();
-            startButton.disabled = false;
-            stopButton.disabled = true;
+            clearInterval(chronoInterval); chronoInterval=null; chronoEnCours=false;
+            secondes=0; afficherChrono(); startButton.disabled=false; stopButton.disabled=true;
         });
-
         dureeInput.addEventListener("change", () => {
-            const parsed = parseDuree(dureeInput.value);
-            if (parsed !== null) { secondes = parsed; afficherChrono(); }
-            else dureeInput.value = formatDuree(secondes);
+            const p=parseDuree(dureeInput.value); if(p!==null){secondes=p;afficherChrono();} else dureeInput.value=formatDuree(secondes);
         });
-
-        // ── Supabase / session ────────────────────────────────────
-        const bar = document.getElementById("userBar");
-        const { data: { session } } = await supabase.auth.getSession();
-
-        let lieuDefaut = 'maison';
-
-        if (session) {
-            const { data: profil } = await supabase
-                .from("profils")
-                .select("pseudo, codePostal")
-                .eq("id", session.user.id)
-                .single();
-
-            const pseudo = profil?.pseudo || session.user.email;
-            lieuDefaut = profil?.codePostal || 'maison';
-
-            bar.innerHTML = `
-                <span class="bee-small">🐝</span>
-                <span class="pseudo">${pseudo}</span>
-                <button id="btnDeconnexion">Se déconnecter</button>
-            `;
-            document.getElementById("btnDeconnexion").addEventListener("click", async () => {
-                await supabase.auth.signOut();
-                window.location.href = "login.html";
-            });
-        } else {
-            bar.innerHTML = `<button id="btnConnexion">Se connecter</button>`;
-            document.getElementById("btnConnexion").addEventListener("click", () => {
-                window.location.href = "login.html";
-            });
-        }
 
         // ── Valeurs par défaut ────────────────────────────────────
         function initialiserValeursParDefaut() {
             const now = new Date();
             document.getElementById('date_capture').value = now.toISOString().split('T')[0];
-            document.getElementById('heure_capture').value = now.toTimeString().substring(0, 5);
+            document.getElementById('heure_capture').value = now.toTimeString().substring(0,5);
             document.getElementById('lieu').value = lieuDefaut;
         }
-
         initialiserValeursParDefaut();
 
         // ── Soumission ────────────────────────────────────────────
         document.getElementById("captureForm").addEventListener("submit", async (e) => {
             e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true; submitBtn.textContent = "Enregistrement…";
 
-            const submitButton = e.target.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.textContent = "Enregistrement en cours...";
+            const estPiege = document.getElementById('methode').value === 'Piège';
+            const poste_id = estPiege ? (document.getElementById('selectPoste').value || null) : null;
 
-            const { error } = await supabase
+            // Notes : si c'est un piège, on enrichit les notes avec les détails de la session
+            let notes = document.getElementById("notes").value;
+            if (estPiege) {
+                const notesPiege = document.getElementById('notesPiege').value;
+                if (notesPiege) notes = notesPiege + (notes ? '\n' + notes : '');
+            }
+
+            const { error: errCapture } = await supabase
                 .from("captures")
                 .insert({
                     date_capture:  document.getElementById("date_capture").value,
@@ -232,33 +404,30 @@
                     nombre:        Number(document.getElementById("nombre").value),
                     user_id:       session ? session.user.id : null,
                     lieu:          document.getElementById("lieu").value,
-                    notes:         document.getElementById("notes").value
+                    notes:         notes,
+                    poste_id:      poste_id
                 });
 
-            if (error) {
-                alert(error.message);
-                console.error(error);
-            } else {
-                alert("Capture enregistrée !");
-
-                // BUG CORRIGÉ : réinitialiser proprement sans écraser date/heure/lieu
-                document.getElementById("methode").value = "Raquette électrique";
-                document.getElementById("nombre").value = 1;
-                document.getElementById("notes").value = "";
-                // Remettre le chrono à zéro
-                clearInterval(chronoInterval);
-                chronoInterval = null;
-                chronoEnCours = false;
-                secondes = 0;
-                afficherChrono();
-                startButton.disabled = false;
-                stopButton.disabled = true;
-                // Remettre date/heure à l'instant actuel (pas effacées)
-                initialiserValeursParDefaut();
+            if (errCapture) {
+                alert(errCapture.message); console.error(errCapture);
+                submitBtn.disabled=false; submitBtn.textContent="Enregistrer"; return;
             }
 
-            submitButton.disabled = false;
-            submitButton.textContent = "Enregistrer";
+            alert("Capture enregistrée !");
+
+            // Reset
+            document.getElementById("methode").value = "Raquette électrique";
+            document.getElementById("nombre").value  = 1;
+            document.getElementById("notes").value   = "";
+            document.getElementById('notesPiege').value = '';
+            document.getElementById('selectPoste').value = '';
+            mettreAJourFichePoste();
+            mettreAJourAffichagePiege();
+            clearInterval(chronoInterval); chronoInterval=null; chronoEnCours=false;
+            secondes=0; afficherChrono(); startButton.disabled=false; stopButton.disabled=true;
+            initialiserValeursParDefaut();
+
+            submitBtn.disabled=false; submitBtn.textContent="Enregistrer";
         });
     </script>
 </body>
