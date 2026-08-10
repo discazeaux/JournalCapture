@@ -21,6 +21,8 @@
         #detailsPiege p { margin: 0 0 12px 0; }
         #detailsPiege p:last-child { margin-bottom: 0; }
 
+        #dureeBlock { display: none; }
+
         /* Fiche poste */
         .fiche-poste {
             background: #0a1628; border: 1px solid #1e3a5f;
@@ -130,17 +132,19 @@
             </p>
         </div>
 
-        <p>
-            <label>Durée de capture</label>
-            <div id="chrono" style="font-size:28px; color:#ffd700; text-align:center; margin-bottom:10px;">00:00</div>
-            <input id="duree_capture" type="text" value="00:00" placeholder="mm:ss"
-                style="width:100%; padding:10px; margin-bottom:12px; background:#1e1e1e; border:1px solid #444; border-radius:6px; color:#fff;" />
-            <button type="button" id="startChrono">Démarrer</button>
-            <button type="button" id="stopChrono" disabled>Arrêter</button>
-            <button type="button" id="resetChrono" style="margin-top:8px; background:#333; color:#ccc; border:1px solid #555; border-radius:6px; padding:8px 14px; cursor:pointer; font-size:13px;">
-                🔄 Remettre à zéro
-            </button>
-        </p>
+        <div id="dureeBlock">
+            <p>
+                <label>Durée de capture</label>
+                <div id="chrono" style="font-size:28px; color:#ffd700; text-align:center; margin-bottom:10px;">00:00</div>
+                <input id="duree_capture" type="text" value="00:00" placeholder="mm:ss"
+                    style="width:100%; padding:10px; margin-bottom:12px; background:#1e1e1e; border:1px solid #444; border-radius:6px; color:#fff;" />
+                <button type="button" id="startChrono">Démarrer</button>
+                <button type="button" id="stopChrono" disabled>Arrêter</button>
+                <button type="button" id="resetChrono" style="margin-top:8px; background:#333; color:#ccc; border:1px solid #555; border-radius:6px; padding:8px 14px; cursor:pointer; font-size:13px;">
+                    🔄 Remettre à zéro
+                </button>
+            </p>
+        </div>
 
         <p>
             <label>Nombre de frelons capturés</label>
@@ -326,20 +330,37 @@
         // ── Affichage conditionnel bloc piège ─────────────────────
         const selectMethode = document.getElementById('methode');
         const detailsPiege  = document.getElementById('detailsPiege');
-
-        function mettreAJourAffichagePiege() {
-            detailsPiege.style.display = selectMethode.value === 'Piège' ? 'block' : 'none';
-        }
-        selectMethode.addEventListener('change', mettreAJourAffichagePiege);
-        mettreAJourAffichagePiege();
-
-        // ── Chrono ────────────────────────────────────────────────
-        let chronoInterval = null, secondes = 0, chronoEnCours = false;
+        const dureeBlock    = document.getElementById('dureeBlock');
         const chronoDisplay = document.getElementById("chrono");
         const dureeInput    = document.getElementById("duree_capture");
         const startButton   = document.getElementById("startChrono");
         const stopButton    = document.getElementById("stopChrono");
         const resetButton   = document.getElementById("resetChrono");
+        let chronoInterval = null, secondes = 0, chronoEnCours = false;
+
+        function mettreAJourAffichagePiege() {
+            detailsPiege.style.display = selectMethode.value === 'Piège' ? 'block' : 'none';
+        }
+        function mettreAJourAffichageDuree() {
+            const estRaquette = selectMethode.value === 'Raquette électrique';
+            dureeBlock.style.display = estRaquette ? 'block' : 'none';
+            if (!estRaquette) {
+                clearInterval(chronoInterval);
+                chronoInterval = null;
+                chronoEnCours = false;
+                secondes = 0;
+                afficherChrono();
+                startButton.disabled = false;
+                stopButton.disabled = true;
+            }
+        }
+
+        selectMethode.addEventListener('change', () => {
+            mettreAJourAffichagePiege();
+            mettreAJourAffichageDuree();
+        });
+        mettreAJourAffichagePiege();
+        mettreAJourAffichageDuree();
 
         function formatDuree(s) { return String(Math.floor(s/60)).padStart(2,'0') + ":" + String(s%60).padStart(2,'0'); }
         function parseDuree(v) {
@@ -384,8 +405,13 @@
             const submitBtn = e.target.querySelector('button[type="submit"]');
             submitBtn.disabled = true; submitBtn.textContent = "Enregistrement…";
 
-            const estPiege = document.getElementById('methode').value === 'Piège';
+            const methodeChoisie = document.getElementById('methode').value;
+            const estPiege = methodeChoisie === 'Piège';
+            const estRaquette = methodeChoisie === 'Raquette électrique';
             const poste_id = estPiege ? (document.getElementById('selectPoste').value || null) : null;
+            if (!estRaquette) {
+                secondes = 0;
+            }
 
             // Notes : si c'est un piège, on enrichit les notes avec les détails de la session
             let notes = document.getElementById("notes").value;
