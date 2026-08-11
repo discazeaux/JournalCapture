@@ -8,7 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Bouton supprimer dans le tableau */
         .btn-supprimer {
             background: none;
             border: 1px solid #555;
@@ -23,25 +22,47 @@
             background: rgba(255,85,85,0.15);
             border-color: #ff5555;
         }
-        /* Badge efficacité */
-        .efficacite {
-            color: #4ecdc4;
-            font-weight: 600;
-        }
-        .efficacite-na {
-            color: #555;
-            font-size: 12px;
-        }
-        /* Card efficacité globale */
+        .efficacite { color: #4ecdc4; font-weight: 600; }
+        .efficacite-na { color: #555; font-size: 12px; }
         .stat-row-perso {
+            display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;
+        }
+        .stat-row-perso .stat { flex: 1 1 180px; }
+
+        /* Contrôle fenêtre glissante */
+        .tendance-controls {
             display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
             flex-wrap: wrap;
-            gap: 16px;
-            margin-bottom: 20px;
         }
-        .stat-row-perso .stat {
-            flex: 1 1 180px;
+        .tendance-controls label {
+            display: inline;
+            margin: 0;
+            font-size: 13px;
+            color: var(--muted);
+            white-space: nowrap;
         }
+        .tendance-controls select {
+            width: auto;
+            padding: 5px 10px;
+            font-size: 13px;
+            border-radius: 6px;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            color: var(--text);
+        }
+        .tendance-legende {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 8px;
+        }
+        .tendance-legende span { display: flex; align-items: center; gap: 5px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
     </style>
 </head>
 
@@ -67,8 +88,29 @@
                 <div class="valeur" id="totalNombre">0</div>
             </div>
 
+            <!-- Courbe de tendance communauté -->
             <div class="stat">
-                <h2>� Captures par semaine par méthode</h2>
+                <h2>📈 Tendance des captures</h2>
+                <div class="tendance-controls">
+                    <label>Regrouper par :</label>
+                    <select id="fenetreCommunaute">
+                        <option value="1">1 jour</option>
+                        <option value="2">2 jours</option>
+                        <option value="3" selected>3 jours</option>
+                        <option value="5">5 jours</option>
+                        <option value="7">1 semaine</option>
+                        <option value="14">2 semaines</option>
+                    </select>
+                </div>
+                <canvas id="tendanceCommunaute"></canvas>
+                <div class="tendance-legende">
+                    <span><span class="dot" style="background:#ffd700"></span> Captures (total par période)</span>
+                    <span><span class="dot" style="background:#ff6b6b; opacity:.7"></span> Tendance linéaire</span>
+                </div>
+            </div>
+
+            <div class="stat">
+                <h2>📊 Captures par semaine par méthode</h2>
                 <canvas id="capturesSemaineMethode"></canvas>
                 <table id="tableSemaine">
                     <thead>
@@ -104,8 +146,29 @@
                     </div>
                 </div>
 
+                <!-- Courbe de tendance personnelle -->
+                <div class="stat">
+                    <h2>📈 Tendance de mes captures</h2>
+                    <div class="tendance-controls">
+                        <label>Regrouper par :</label>
+                        <select id="fenetrePerso">
+                            <option value="1">1 jour</option>
+                            <option value="2">2 jours</option>
+                            <option value="3" selected>3 jours</option>
+                            <option value="5">5 jours</option>
+                            <option value="7">1 semaine</option>
+                            <option value="14">2 semaines</option>
+                        </select>
+                    </div>
+                    <canvas id="tendancePerso"></canvas>
+                    <div class="tendance-legende">
+                        <span><span class="dot" style="background:#4ecdc4"></span> Mes captures (total par période)</span>
+                        <span><span class="dot" style="background:#a29bfe; opacity:.7"></span> Tendance linéaire</span>
+                    </div>
+                </div>
+
                 <!-- Graphique par jour -->
-                <h3>Efficacité par jour par méthode</h3>
+                <h3>Détail par jour par méthode</h3>
                 <canvas id="capturesSemaineMethodeMes"></canvas>
 
                 <table id="tableSemaineMes">
@@ -145,11 +208,11 @@
         );
 
         const bar = document.getElementById("userBar");
-        const tabCommunaute      = document.getElementById("tabCommunaute");
-        const tabMesStats        = document.getElementById("tabMesStats");
-        const sectionCommunaute  = document.getElementById("sectionCommunaute");
-        const sectionMesStats    = document.getElementById("sectionMesStats");
-        const mesStatsContent    = document.getElementById("mesStatsContent");
+        const tabCommunaute       = document.getElementById("tabCommunaute");
+        const tabMesStats         = document.getElementById("tabMesStats");
+        const sectionCommunaute   = document.getElementById("sectionCommunaute");
+        const sectionMesStats     = document.getElementById("sectionMesStats");
+        const mesStatsContent     = document.getElementById("mesStatsContent");
         const myStatsNotConnected = document.getElementById("myStatsNotConnected");
 
         const { data: { session } } = await supabase.auth.getSession();
@@ -170,7 +233,6 @@
             if (Number.isNaN(date.getTime())) return dateStr;
             return date.toLocaleDateString('fr-FR', { year:'numeric', month:'2-digit', day:'2-digit' });
         }
-
         function formaterTemps(secondes) {
             const h = Math.floor(secondes / 3600);
             const m = Math.floor((secondes % 3600) / 60);
@@ -178,23 +240,15 @@
             if (h > 0) return `${h}h ${m}min ${s}s`;
             return `${m}min ${s}s`;
         }
-
         function formaterDureeMinSec(secondes) {
             const m = Math.floor(secondes / 60);
             const s = secondes % 60;
             return `${m}min ${String(s).padStart(2,'0')}s`;
         }
-
-        /**
-         * Efficacité : frelons par minute.
-         * Retourne null si durée <= 0 (pas de chrono → pas de calcul).
-         */
         function calcEfficacite(nombre, dureeSecondes) {
             if (!dureeSecondes || dureeSecondes <= 0) return null;
-            const parMinute = (nombre / dureeSecondes) * 60;
-            return parMinute.toFixed(2);
+            return ((nombre / dureeSecondes) * 60).toFixed(2);
         }
-
         function getNumeroSemaine(dateStr) {
             const date  = new Date(dateStr);
             const debut = new Date(date.getFullYear(), 0, 1);
@@ -205,7 +259,100 @@
 
         const couleurs = ["#ffd700","#ff6b6b","#4ecdc4","#a29bfe","#fd79a8","#55efc4","#fdcb6e","#74b9ff"];
 
+        // ── Tendance : regroupe les données par fenêtre de N jours ──
+        // dataTotauxParJour : { 'YYYY-MM-DD': nombre }
+        // fenetre : int (nombre de jours à fusionner)
+        // retourne { labels: [...], values: [...] }
+        function regrouperParFenetre(dataTotauxParJour, fenetre) {
+            const jours = Object.keys(dataTotauxParJour).sort();
+            if (!jours.length) return { labels: [], values: [] };
+
+            const labels = [];
+            const values = [];
+
+            for (let i = 0; i < jours.length; i += fenetre) {
+                const tranche = jours.slice(i, i + fenetre);
+                const total = tranche.reduce((s, j) => s + (dataTotauxParJour[j] || 0), 0);
+                // Label = premier jour de la tranche (format court)
+                const d = new Date(tranche[0]);
+                const label = d.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit' });
+                labels.push(label);
+                values.push(total);
+            }
+            return { labels, values };
+        }
+
+        // ── Calcul régression linéaire ────────────────────────────
+        function tendanceLineaire(values) {
+            const n = values.length;
+            if (n < 2) return values.map(() => null);
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+            for (let i = 0; i < n; i++) {
+                sumX  += i;
+                sumY  += values[i];
+                sumXY += i * values[i];
+                sumX2 += i * i;
+            }
+            const denom = n * sumX2 - sumX * sumX;
+            if (denom === 0) return values.map(() => sumY / n);
+            const a = (n * sumXY - sumX * sumY) / denom;
+            const b = (sumY - a * sumX) / n;
+            return values.map((_, i) => parseFloat((a * i + b).toFixed(2)));
+        }
+
+        // ── Créer / recréer un chart de tendance ─────────────────
+        function creerChartTendance(canvasId, labels, values, couleurBarre, couleurTendance) {
+            const tendance = tendanceLineaire(values);
+            return new Chart(document.getElementById(canvasId), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Captures',
+                            data: values,
+                            backgroundColor: couleurBarre + 'cc',
+                            borderColor: couleurBarre,
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            order: 2
+                        },
+                        {
+                            label: 'Tendance',
+                            data: tendance,
+                            type: 'line',
+                            borderColor: couleurTendance,
+                            borderWidth: 2.5,
+                            pointRadius: 0,
+                            tension: 0.3,
+                            fill: false,
+                            order: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: '#888' }, grid: { color: '#222' } },
+                        x: { ticks: { color: '#888', maxRotation: 45 }, grid: { color: '#1a1a1a' } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ctx.dataset.label + ' : ' + ctx.parsed.y
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
         // ── Communauté ────────────────────────────────────────────
+        let dataCommunauteParJour = {};  // gardé pour re-render au changement select
+        let chartTendanceCommunaute = null;
+
         async function chargerCommunauteStats() {
             const { data, error } = await supabase
                 .from("captures")
@@ -217,9 +364,18 @@
             document.getElementById("totalNombre").textContent =
                 data.reduce((t, c) => t + (c.nombre || 0), 0);
 
+            // Totaux par jour brut (YYYY-MM-DD)
+            dataCommunauteParJour = {};
+            data.forEach(c => {
+                const j = c.date_capture;  // format YYYY-MM-DD depuis Supabase
+                dataCommunauteParJour[j] = (dataCommunauteParJour[j] || 0) + (c.nombre || 0);
+            });
+
+            renderTendanceCommunaute();
+
+            // Graphique par semaine/méthode (existant)
             const parSemaineMethode = {};
             const toutesMethodes = new Set();
-
             data.forEach(c => {
                 const semaine = getNumeroSemaine(c.date_capture);
                 const methode = c.methode || "Inconnue";
@@ -263,8 +419,19 @@
             });
         }
 
+        function renderTendanceCommunaute() {
+            const fenetre = parseInt(document.getElementById('fenetreCommunaute').value);
+            const { labels, values } = regrouperParFenetre(dataCommunauteParJour, fenetre);
+            if (chartTendanceCommunaute) { chartTendanceCommunaute.destroy(); }
+            chartTendanceCommunaute = creerChartTendance('tendanceCommunaute', labels, values, '#ffd700', '#ff6b6b');
+        }
+
+        document.getElementById('fenetreCommunaute').addEventListener('change', renderTendanceCommunaute);
+
         // ── Mes stats ─────────────────────────────────────────────
-        let chartMesStats = null; // référence pour détruire avant recréer si rechargement
+        let chartMesStats = null;
+        let dataPersoParJour = {};
+        let chartTendancePerso = null;
 
         async function chargerMesStats() {
             if (!session) {
@@ -284,24 +451,30 @@
 
             if (error) { console.error(error); alert(error.message); return; }
 
-            // ── Chiffres clés ──
+            // Chiffres clés
             const totalNombre = data.reduce((t, c) => t + (c.nombre || 0), 0);
             const totalDuree  = data.reduce((t, c) => t + (c.duree  || 0), 0);
             document.getElementById('totalNombrePerso').textContent = totalNombre;
             document.getElementById('dureeTotale').textContent = formaterTemps(totalDuree);
 
-            // Efficacité moyenne : uniquement sur les captures avec durée > 0
             const avecDuree = data.filter(c => c.duree > 0);
             if (avecDuree.length > 0) {
                 const totalNombreAvecDuree = avecDuree.reduce((t, c) => t + (c.nombre || 0), 0);
                 const totalDureeAvecDuree  = avecDuree.reduce((t, c) => t + c.duree, 0);
-                const efficaciteGlobale = ((totalNombreAvecDuree / totalDureeAvecDuree) * 60).toFixed(2);
-                document.getElementById('efficaciteMoyenne').textContent = efficaciteGlobale + ' /min';
+                document.getElementById('efficaciteMoyenne').textContent =
+                    ((totalNombreAvecDuree / totalDureeAvecDuree) * 60).toFixed(2) + ' /min';
             } else {
                 document.getElementById('efficaciteMoyenne').textContent = '—';
             }
 
-            // ── Tableau des captures ──
+            // Totaux par jour perso
+            dataPersoParJour = {};
+            data.forEach(c => {
+                dataPersoParJour[c.date_capture] = (dataPersoParJour[c.date_capture] || 0) + (c.nombre || 0);
+            });
+            renderTendancePerso();
+
+            // Tableau captures
             const tbody = document.querySelector('#tableMesCaptures tbody');
             tbody.innerHTML = '';
             data.forEach(c => {
@@ -309,7 +482,6 @@
                 const effHTML = eff !== null
                     ? `<span class="efficacite">${eff} /min</span>`
                     : `<span class="efficacite-na">—</span>`;
-
                 const tr = document.createElement('tr');
                 tr.dataset.id = c.id;
                 tr.innerHTML = `
@@ -320,49 +492,34 @@
                     <td>${c.nombre || 0}</td>
                     <td>${effHTML}</td>
                     <td>${c.lieu || ''}</td>
-                    <td>
-                        <button class="btn-supprimer" data-id="${c.id}" title="Supprimer cette capture">🗑</button>
-                    </td>
+                    <td><button class="btn-supprimer" data-id="${c.id}" title="Supprimer">🗑</button></td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            // Délégation d'événement pour les boutons supprimer
             tbody.addEventListener('click', async (e) => {
                 const btn = e.target.closest('.btn-supprimer');
                 if (!btn) return;
-
                 const id = btn.dataset.id;
-                const confirmed = confirm("Supprimer cette capture ? Cette action est irréversible.");
-                if (!confirmed) return;
-
-                btn.disabled = true;
-                btn.textContent = '…';
-
+                if (!confirm("Supprimer cette capture ? Cette action est irréversible.")) return;
+                btn.disabled = true; btn.textContent = '…';
                 const { error: errDel } = await supabase
-                    .from('captures')
-                    .delete()
-                    .eq('id', id)
-                    .eq('user_id', session.user.id); // sécurité : ne supprimer que ses propres captures
-
+                    .from('captures').delete().eq('id', id).eq('user_id', session.user.id);
                 if (errDel) {
-                    alert("Erreur lors de la suppression : " + errDel.message);
-                    btn.disabled = false;
-                    btn.textContent = '🗑';
+                    alert("Erreur : " + errDel.message);
+                    btn.disabled = false; btn.textContent = '🗑';
                 } else {
-                    // Retirer la ligne du DOM sans recharger toute la page
                     const tr = tbody.querySelector(`tr[data-id="${id}"]`);
                     if (tr) tr.remove();
-                    // Recharger les stats pour mettre à jour les totaux et le graphique
                     if (chartMesStats) { chartMesStats.destroy(); chartMesStats = null; }
+                    if (chartTendancePerso) { chartTendancePerso.destroy(); chartTendancePerso = null; }
                     await chargerMesStats();
                 }
             });
 
-            // ── Graphique par jour ──
+            // Graphique par jour/méthode
             const parJourMethode = {};
             const toutesMethodes = new Set();
-
             data.forEach(c => {
                 const jour    = formaterDateSimple(c.date_capture);
                 const methode = c.methode || 'Inconnue';
@@ -372,13 +529,12 @@
                     (parJourMethode[jour][methode] || 0) + (c.nombre || 0);
             });
 
-            const jours = Object.keys(parJourMethode).sort((a, b) => {
-                return new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-'));
-            });
+            const jours = Object.keys(parJourMethode).sort((a, b) =>
+                new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-'))
+            );
             const methodes = [...toutesMethodes];
 
             if (chartMesStats) { chartMesStats.destroy(); chartMesStats = null; }
-
             chartMesStats = new Chart(document.getElementById('capturesSemaineMethodeMes'), {
                 type: 'bar',
                 data: {
@@ -396,7 +552,6 @@
                 }
             });
 
-            // Tableau par jour
             const headerRow = document.getElementById('tableSemaineHeaderMes');
             headerRow.innerHTML = '<th>Date</th>';
             methodes.forEach(m => { const th = document.createElement('th'); th.textContent = m; headerRow.appendChild(th); });
@@ -411,6 +566,15 @@
             });
         }
 
+        function renderTendancePerso() {
+            const fenetre = parseInt(document.getElementById('fenetrePerso').value);
+            const { labels, values } = regrouperParFenetre(dataPersoParJour, fenetre);
+            if (chartTendancePerso) { chartTendancePerso.destroy(); }
+            chartTendancePerso = creerChartTendance('tendancePerso', labels, values, '#4ecdc4', '#a29bfe');
+        }
+
+        document.getElementById('fenetrePerso').addEventListener('change', renderTendancePerso);
+
         // ── Setup ─────────────────────────────────────────────────
         async function setup() {
             if (!session) {
@@ -424,11 +588,7 @@
                 mesStatsContent.style.display = 'none';
             } else {
                 const { data: profil } = await supabase
-                    .from("profils")
-                    .select("pseudo")
-                    .eq("id", session.user.id)
-                    .single();
-
+                    .from("profils").select("pseudo").eq("id", session.user.id).single();
                 const pseudo = profil?.pseudo || session.user.email;
                 bar.innerHTML = `
                     <span class="bee-small">🐝</span>
