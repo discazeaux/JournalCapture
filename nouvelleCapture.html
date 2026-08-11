@@ -54,7 +54,6 @@
             font-size: 13px; color: var(--muted); padding: 10px 0;
         }
         .no-postes-hint a { color: var(--yellow); }
-
         /* Grille captures */
         .capture-grid {
             width: 100%;
@@ -94,6 +93,24 @@
         }
         .capture-grid .espece-label { font-weight: 600; }
         .capture-grid .espece-sub   { font-size: 11px; color: var(--muted); display: block; }
+
+        
+        /* Météo */
+        .meteo-bloc {
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+            background: #0d1a2e; border: 1px solid #1e3a5f;
+            border-radius: 8px; padding: 10px 14px; margin-top: 4px;
+        }
+        .meteo-icone { font-size: 26px; line-height: 1; }
+        .meteo-info  { flex: 1; min-width: 120px; }
+        .meteo-ligne { font-size: 13px; color: #a0c4ff; margin-bottom: 2px; }
+        .meteo-ligne strong { color: #fff; }
+        .meteo-status { font-size: 12px; color: var(--muted); font-style: italic; }
+        .meteo-edit { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+        .meteo-edit input[type="number"] { width: 80px; padding: 7px 10px; font-size: 14px; margin: 0; }
+        .meteo-edit select { flex: 1; min-width: 140px; padding: 7px 10px; font-size: 14px; margin: 0; }
+        .meteo-edit label { font-size: 12px; color: var(--muted); margin: 0 0 4px 0; display: block; }
+        .meteo-edit-groupe { display: flex; flex-direction: column; }
     </style>
 </head>
 <body>
@@ -184,10 +201,37 @@
                     🔄 Remettre à zéro
                 </button>
             </p>
+            <p>
+                <label>🌤 Météo</label>
+                <div class="meteo-bloc" id="meteoBloc">
+                    <div class="meteo-icone" id="meteoIcone">⏳</div>
+                    <div class="meteo-info">
+                        <div class="meteo-ligne" id="meteoTexte">Géolocalisation en cours…</div>
+                        <div class="meteo-status" id="meteoStatus"></div>
+                    </div>
+                </div>
+                <div class="meteo-edit" id="meteoEdit" style="display:none;">
+                    <div class="meteo-edit-groupe">
+                        <label>Température (°C)</label>
+                        <input type="number" id="meteo_temp" step="0.1" placeholder="—">
+                    </div>
+                    <div class="meteo-edit-groupe">
+                        <label>Conditions</label>
+                        <select id="meteo_conditions">
+                            <option value="ensoleillé">☀️ Ensoleillé</option>
+                            <option value="nuageux">⛅ Nuageux</option>
+                            <option value="couvert">☁️ Couvert</option>
+                            <option value="bruine">🌦 Bruine</option>
+                            <option value="pluie">🌧 Pluie</option>
+                            <option value="orage">⛈ Orage</option>
+                            <option value="inconnu">— Inconnu</option>
+                        </select>
+                    </div>
+                </div>
+            </p>
         </div>
-
-        <p>
-            <label>Captures &amp; observations</label>
+         <p>
+       <label>Captures &amp; observations</label>
             <table class="capture-grid">
                 <thead>
                     <tr>
@@ -432,6 +476,16 @@
                 afficherChrono();
                 startButton.disabled = false;
                 stopButton.disabled = true;
+                // Vider les champs météo
+                document.getElementById('meteo_temp').value = '';
+                document.getElementById('meteo_conditions').value = 'ensoleillé';
+                document.getElementById('meteoIcone').textContent = '—';
+                document.getElementById('meteoTexte').textContent = '—';
+                document.getElementById('meteoEdit').style.display = 'none';
+            }
+            else {
+                // Re-fetch météo si on revient sur raquette
+                recupererMeteo();
             }
         }
 
@@ -516,7 +570,9 @@
                     user_id:       session ? session.user.id : null,
                     lieu:          document.getElementById("lieu").value,
                     notes:         notes,
-                    poste_id:      poste_id
+                    poste_id:      poste_id,
+                    meteo_temp:       estRaquette && document.getElementById('meteo_temp').value !== '' ? parseFloat(document.getElementById('meteo_temp').value) : null,
+                    meteo_conditions: estRaquette ? (document.getElementById('meteo_conditions').value || null) : null
                 });
 
             if (errCapture) {
@@ -542,9 +598,89 @@
             clearInterval(chronoInterval); chronoInterval=null; chronoEnCours=false;
             secondes=0; afficherChrono(); startButton.disabled=false; stopButton.disabled=true;
             initialiserValeursParDefaut();
+            // Reset météo — re-fetch
+            recupererMeteo();
 
             submitBtn.disabled=false; submitBtn.textContent="Enregistrer";
         });
+
+        // ── Météo ─────────────────────────────────────────────────
+        const WMO = {
+            0: ['☀️','ensoleillé'], 1: ['🌤','ensoleillé'], 2: ['⛅','nuageux'], 3: ['☁️','couvert'],
+            45: ['🌫','couvert'], 48: ['🌫','couvert'],
+            51: ['🌦','bruine'], 53: ['🌦','bruine'], 55: ['🌦','bruine'],
+            61: ['🌧','pluie'], 63: ['🌧','pluie'], 65: ['🌧','pluie'],
+            71: ['❄️','couvert'], 73: ['❄️','couvert'], 75: ['❄️','couvert'],
+            80: ['🌧','pluie'], 81: ['🌧','pluie'], 82: ['🌧','pluie'],
+            95: ['⛈','orage'], 96: ['⛈','orage'], 99: ['⛈','orage'],
+        };
+
+        async function recupererMeteo() {
+            const icone  = document.getElementById('meteoIcone');
+            const texte  = document.getElementById('meteoTexte');
+            const status = document.getElementById('meteoStatus');
+            const edit   = document.getElementById('meteoEdit');
+
+            icone.textContent = '⏳';
+            texte.textContent = 'Géolocalisation en cours…';
+            status.textContent = '';
+            edit.style.display = 'none';
+
+            if (!navigator.geolocation) {
+                icone.textContent = '📍';
+                texte.textContent = 'Géolocalisation non disponible';
+                status.textContent = 'Saisissez manuellement ci-dessous.';
+                edit.style.display = 'flex';
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const { latitude: lat, longitude: lon } = pos.coords;
+                try {
+                    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode&timezone=auto`;
+                    const res  = await fetch(url);
+                    const json = await res.json();
+                    const temp = json.current.temperature_2m;
+                    const code = json.current.weathercode;
+                    const [emoji, cond] = WMO[code] || ['🌡️', 'inconnu'];
+
+                    // Mettre à jour l'affichage
+                    icone.textContent = emoji;
+                    texte.innerHTML = `<strong>${temp} °C</strong> · ${cond.charAt(0).toUpperCase() + cond.slice(1)}`;
+                    status.textContent = 'Modifiable ci-dessous si nécessaire';
+
+                    // Pré-remplir les champs éditables
+                    document.getElementById('meteo_temp').value = temp;
+                    document.getElementById('meteo_conditions').value = cond;
+                    edit.style.display = 'flex';
+
+                    // Sync affichage quand l'utilisateur modifie
+                    document.getElementById('meteo_temp').addEventListener('input', syncMeteoAffichage, { once: false });
+                    document.getElementById('meteo_conditions').addEventListener('change', syncMeteoAffichage, { once: false });
+
+                } catch(err) {
+                    icone.textContent = '⚠️';
+                    texte.textContent = 'Erreur météo — saisissez manuellement';
+                    edit.style.display = 'flex';
+                }
+            }, () => {
+                icone.textContent = '📍';
+                texte.textContent = 'Position refusée — saisissez manuellement';
+                edit.style.display = 'flex';
+            });
+        }
+
+        function syncMeteoAffichage() {
+            const temp = document.getElementById('meteo_temp').value;
+            const cond = document.getElementById('meteo_conditions').value;
+            const [emoji] = WMO[Object.keys(WMO).find(k => WMO[k][1] === cond)] || ['🌡️'];
+            document.getElementById('meteoIcone').textContent = emoji || '🌡️';
+            document.getElementById('meteoTexte').innerHTML =
+                `<strong>${temp ? temp + ' °C' : '—'}</strong> · ${cond.charAt(0).toUpperCase() + cond.slice(1)}`;
+        }
+
+        // Lancer au chargement
+        recupererMeteo();
     </script>
 </body>
 </html>
