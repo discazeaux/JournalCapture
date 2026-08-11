@@ -54,6 +54,46 @@
             font-size: 13px; color: var(--muted); padding: 10px 0;
         }
         .no-postes-hint a { color: var(--yellow); }
+
+        /* Grille captures */
+        .capture-grid {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 4px;
+        }
+        .capture-grid th {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted);
+            padding: 0 0 8px 0;
+            text-align: center;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        .capture-grid th:first-child { text-align: left; }
+        .capture-grid td {
+            padding: 6px 4px;
+            text-align: center;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        .capture-grid td:first-child {
+            text-align: left;
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding-right: 12px;
+            white-space: nowrap;
+        }
+        .capture-grid input[type="number"] {
+            width: 72px;
+            padding: 8px 10px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0;
+        }
+        .capture-grid .espece-label { font-weight: 600; }
+        .capture-grid .espece-sub   { font-size: 11px; color: var(--muted); display: block; }
     </style>
 </head>
 <body>
@@ -147,8 +187,42 @@
         </div>
 
         <p>
-            <label>Nombre de frelons capturés</label>
-            <input type="number" id="nombre" value="1" min="1">
+            <label>Captures &amp; observations</label>
+            <table class="capture-grid">
+                <thead>
+                    <tr>
+                        <th>Espèce</th>
+                        <th>⚡ Tués</th>
+                        <th>👁 Observés</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <span class="espece-label">🐝 Frelon asiatique</span>
+                            <span class="espece-sub">Vespa velutina</span>
+                        </td>
+                        <td><input type="number" id="nombre" value="0" min="0"></td>
+                        <td><input type="number" id="nombre_obs_asiatique" value="0" min="0"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="espece-label">🟡 Frelon européen</span>
+                            <span class="espece-sub">Vespa crabro</span>
+                        </td>
+                        <td><input type="number" id="nombre_europeen" value="0" min="0"></td>
+                        <td><input type="number" id="nombre_obs_europeen" value="0" min="0"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="espece-label">🐞 Abeille / guêpe</span>
+                            <span class="espece-sub">accessoires</span>
+                        </td>
+                        <td><input type="number" id="nombre_autres" value="0" min="0"></td>
+                        <td><input type="number" id="nombre_obs_autres" value="0" min="0"></td>
+                    </tr>
+                </tbody>
+            </table>
         </p>
 
         <p>
@@ -433,7 +507,12 @@
                     heure_capture: document.getElementById("heure_capture").value,
                     methode:       document.getElementById("methode").value,
                     duree:         secondes,
-                    nombre:        Number(document.getElementById("nombre").value),
+                    nombre:              Number(document.getElementById("nombre").value) || 0,
+                    nombre_europeen:     Number(document.getElementById("nombre_europeen").value) || 0,
+                    nombre_autres:       Number(document.getElementById("nombre_autres").value) || 0,
+                    nombre_obs_asiatique: Number(document.getElementById("nombre_obs_asiatique").value) || 0,
+                    nombre_obs_europeen:  Number(document.getElementById("nombre_obs_europeen").value) || 0,
+                    nombre_obs_autres:    Number(document.getElementById("nombre_obs_autres").value) || 0,
                     user_id:       session ? session.user.id : null,
                     lieu:          document.getElementById("lieu").value,
                     notes:         notes,
@@ -449,7 +528,12 @@
 
             // Reset
             document.getElementById("methode").value = "Raquette électrique";
-            document.getElementById("nombre").value  = 1;
+            document.getElementById("nombre").value             = 0;
+            document.getElementById("nombre_europeen").value    = 0;
+            document.getElementById("nombre_autres").value      = 0;
+            document.getElementById("nombre_obs_asiatique").value = 0;
+            document.getElementById("nombre_obs_europeen").value  = 0;
+            document.getElementById("nombre_obs_autres").value    = 0;
             document.getElementById("notes").value   = "";
             document.getElementById('notesPiege').value = '';
             document.getElementById('selectPoste').value = '';

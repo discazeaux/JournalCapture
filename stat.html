@@ -408,15 +408,33 @@
             const headerRow = document.getElementById("tableSemaineHeader");
             headerRow.innerHTML = '<th>Semaine</th>';
             methodes.forEach(m => { const th = document.createElement("th"); th.textContent = m; headerRow.appendChild(th); });
+            const thTotal = document.createElement("th");
+            thTotal.textContent = 'Total 🐝'; thTotal.style.color = 'var(--yellow)';
+            headerRow.appendChild(thTotal);
 
             const tbody = document.querySelector("#tableSemaine tbody");
             tbody.innerHTML = "";
+            // Totaux par méthode (ligne de pied)
+            const totauxMethode = {};
+            methodes.forEach(m => totauxMethode[m] = 0);
+            let grandTotal = 0;
             semaines.forEach(s => {
+                const ligneTotal = methodes.reduce((t, m) => t + (parSemaineMethode[s][m] || 0), 0);
+                methodes.forEach(m => totauxMethode[m] += (parSemaineMethode[s][m] || 0));
+                grandTotal += ligneTotal;
                 const tr = document.createElement("tr");
                 tr.innerHTML = `<td><strong>${s}</strong></td>` +
-                    methodes.map(m => `<td>${parSemaineMethode[s][m] || 0}</td>`).join('');
+                    methodes.map(m => `<td>${parSemaineMethode[s][m] || 0}</td>`).join('') +
+                    `<td><strong style="color:var(--yellow)">${ligneTotal}</strong></td>`;
                 tbody.appendChild(tr);
             });
+            // Ligne totaux
+            const trFoot = document.createElement("tr");
+            trFoot.style.borderTop = '2px solid #333';
+            trFoot.innerHTML = `<td><strong style="color:var(--muted)">Total</strong></td>` +
+                methodes.map(m => `<td><strong>${totauxMethode[m]}</strong></td>`).join('') +
+                `<td><strong style="color:var(--yellow)">${grandTotal}</strong></td>`;
+            tbody.appendChild(trFoot);
         }
 
         function renderTendanceCommunaute() {
@@ -555,15 +573,31 @@
             const headerRow = document.getElementById('tableSemaineHeaderMes');
             headerRow.innerHTML = '<th>Date</th>';
             methodes.forEach(m => { const th = document.createElement('th'); th.textContent = m; headerRow.appendChild(th); });
+            const thTotalMes = document.createElement('th');
+            thTotalMes.textContent = 'Total 🐝'; thTotalMes.style.color = 'var(--yellow)';
+            headerRow.appendChild(thTotalMes);
 
             const tbodySemaine = document.querySelector('#tableSemaineMes tbody');
             tbodySemaine.innerHTML = '';
+            const totauxMethodeMes = {};
+            methodes.forEach(m => totauxMethodeMes[m] = 0);
+            let grandTotalMes = 0;
             jours.forEach(jour => {
+                const ligneTotal = methodes.reduce((t, m) => t + (parJourMethode[jour][m] || 0), 0);
+                methodes.forEach(m => totauxMethodeMes[m] += (parJourMethode[jour][m] || 0));
+                grandTotalMes += ligneTotal;
                 const tr = document.createElement('tr');
                 tr.innerHTML = `<td><strong>${jour}</strong></td>` +
-                    methodes.map(m => `<td>${parJourMethode[jour][m] || 0}</td>`).join('');
+                    methodes.map(m => `<td>${parJourMethode[jour][m] || 0}</td>`).join('') +
+                    `<td><strong style="color:var(--yellow)">${ligneTotal}</strong></td>`;
                 tbodySemaine.appendChild(tr);
             });
+            const trFootMes = document.createElement('tr');
+            trFootMes.style.borderTop = '2px solid #333';
+            trFootMes.innerHTML = `<td><strong style="color:var(--muted)">Total</strong></td>` +
+                methodes.map(m => `<td><strong>${totauxMethodeMes[m]}</strong></td>`).join('') +
+                `<td><strong style="color:var(--yellow)">${grandTotalMes}</strong></td>`;
+            tbodySemaine.appendChild(trFootMes);
         }
 
         function renderTendancePerso() {
