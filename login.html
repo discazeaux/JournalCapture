@@ -125,10 +125,10 @@
                 return;
             }
 
-            // Sauvegarder le pseudo dans la table profils
+            // Sauvegarder le pseudo dans la table profils (rôle par défaut : user)
             const { error: errorProfil } = await supabase
                 .from('profils')
-                .insert({ id: data.user.id, pseudo, codePostal });
+                .insert({ id: data.user.id, pseudo, codePostal, role: 'user' });
 
             if (errorProfil) {
                 afficherMessage('Compte créé mais erreur sur le pseudo : ' + errorProfil.message, 'error');
