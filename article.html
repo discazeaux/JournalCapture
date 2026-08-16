@@ -298,6 +298,211 @@
             text-align: center;
         }
 
+        /* ===== Section commentaires ===== */
+        .comments-section {
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+        }
+
+        .comments-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .comments-title .count {
+            background: var(--yellow-soft);
+            color: var(--yellow);
+            border-radius: 99px;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 2px 12px;
+        }
+
+        .comment-form {
+            background: var(--yellow-dim);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 28px;
+        }
+
+        .comment-form textarea {
+            width: 100%;
+            min-height: 90px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            font-family: inherit;
+            font-size: 15px;
+            color: var(--text);
+            background: var(--card);
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .comment-form textarea:focus {
+            border-color: var(--yellow);
+        }
+
+        .comment-form .form-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+            gap: 12px;
+        }
+
+        .comment-form .hint {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .comment-form .submit-btn {
+            background: var(--yellow);
+            color: #fff;
+            border: none;
+            border-radius: 99px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 10px 24px;
+            cursor: pointer;
+            transition: background 0.2s, opacity 0.2s;
+        }
+
+        .comment-form .submit-btn:hover {
+            background: #9a7209;
+        }
+
+        .comment-form .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .comment-form .form-message {
+            font-size: 13px;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        .comment-form .form-message.error {
+            color: #c0392b;
+        }
+
+        .comment-form .form-message.success {
+            color: #27ae60;
+        }
+
+        .comment-login-prompt {
+            background: var(--yellow-dim);
+            border: 1px dashed var(--yellow);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        .comment-login-prompt a {
+            color: var(--yellow);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .comment-login-prompt a:hover {
+            text-decoration: underline;
+        }
+
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .comment-item {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 22px;
+        }
+
+        .comment-item .comment-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .comment-item .comment-author {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .comment-item .comment-author .bee-small {
+            font-size: 16px;
+        }
+
+        .comment-item .comment-date {
+            font-size: 12px;
+            color: var(--muted);
+            letter-spacing: 0.3px;
+        }
+
+        .comment-item .comment-body {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .comment-item .delete-btn {
+            background: none;
+            border: 1px solid #e74c3c;
+            border-radius: 99px;
+            color: #e74c3c;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .comment-item .delete-btn:hover {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .comments-empty {
+            text-align: center;
+            color: var(--muted);
+            padding: 32px 20px;
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            font-size: 14px;
+            background: var(--card);
+        }
+
+        .comments-empty .bee {
+            font-size: 28px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
         @media (max-width: 480px) {
             .user-bar {
                 top: 12px;
@@ -393,7 +598,7 @@
         } else {
             const { data: article, error } = await supabase
                 .from("articles")
-                .select("titre, contenu, created_at, auteur_id")
+                .select("id, titre, contenu, created_at, auteur_id")
                 .eq("slug", slug)
                 .eq("publie", true)
                 .single();
@@ -432,7 +637,167 @@
                             </div>
                         ` : ''}
                     </article>
+                    <section class="comments-section" id="commentsSection">
+                        <h2 class="comments-title">💬 Commentaires <span class="count" id="commentsCount">0</span></h2>
+                        <div id="commentFormArea">
+                            <!-- formulaire ou invitation à se connecter -->
+                        </div>
+                        <div id="commentsListArea">
+                            <!-- liste des commentaires -->
+                        </div>
+                    </section>
                 `;
+
+                // ===== Gestion des commentaires =====
+                const commentFormArea = document.getElementById("commentFormArea");
+                const commentsListArea = document.getElementById("commentsListArea");
+                const commentsCount = document.getElementById("commentsCount");
+
+                // Charger les commentaires de l'article
+                async function chargerCommentaires() {
+                    const { data: commentaires, error } = await supabase
+                        .from("commentaires")
+                        .select("id, contenu, created_at, auteur_id, profils(pseudo)")
+                        .eq("article_id", article.id)
+                        .order("created_at", { ascending: false });
+
+                    if (error) {
+                        console.error("Erreur chargement commentaires:", error);
+                        commentsListArea.innerHTML = `
+                            <div class="comments-empty">
+                                <span class="bee">🐝</span>
+                                Erreur lors du chargement des commentaires.
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    commentsCount.textContent = commentaires.length;
+
+                    if (!commentaires || commentaires.length === 0) {
+                        commentsListArea.innerHTML = `
+                            <div class="comments-empty">
+                                <span class="bee">🐝</span>
+                                Aucun commentaire pour le moment. Soyez le premier à commenter !
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    commentsListArea.innerHTML = `
+                        <div class="comments-list">
+                            ${commentaires.map(c => {
+                                const dateC = new Date(c.created_at).toLocaleDateString("fr-FR", {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit"
+                                });
+                                const pseudo = c.profils?.pseudo || "Utilisateur";
+                                return `
+                                    <div class="comment-item" data-id="${c.id}">
+                                        <div class="comment-header">
+                                            <span class="comment-author">
+                                                <span class="bee-small">🐝</span>
+                                                ${pseudo}
+                                            </span>
+                                            <div style="display:flex;align-items:center;gap:10px;">
+                                                <span class="comment-date">${dateC}</span>
+                                                ${estAdmin ? `
+                                                    <button class="delete-btn" data-id="${c.id}">🗑️ Supprimer</button>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                        <div class="comment-body">${c.contenu}</div>
+                                    </div>
+                                `;
+                            }).join("")}
+                        </div>
+                    `;
+
+                    // Attacher les événements de suppression (admin uniquement)
+                    if (estAdmin) {
+                        document.querySelectorAll(".delete-btn").forEach(btn => {
+                            btn.addEventListener("click", async () => {
+                                const id = btn.dataset.id;
+                                if (!confirm("Supprimer ce commentaire ?")) return;
+
+                                const { error: errDel } = await supabase
+                                    .from("commentaires")
+                                    .delete()
+                                    .eq("id", id);
+
+                                if (errDel) {
+                                    alert("Erreur lors de la suppression : " + errDel.message);
+                                } else {
+                                    chargerCommentaires();
+                                }
+                            });
+                        });
+                    }
+                }
+
+                // Afficher le formulaire de commentaire ou l'invitation à se connecter
+                if (session) {
+                    commentFormArea.innerHTML = `
+                        <div class="comment-form">
+                            <textarea id="commentTextarea" placeholder="Écrivez votre commentaire…" maxlength="1000"></textarea>
+                            <div class="form-footer">
+                                <span class="hint">Maximum 1000 caractères</span>
+                                <button class="submit-btn" id="btnCommenter">Publier</button>
+                            </div>
+                            <div class="form-message" id="commentMessage"></div>
+                        </div>
+                    `;
+
+                    document.getElementById("btnCommenter").addEventListener("click", async () => {
+                        const textarea = document.getElementById("commentTextarea");
+                        const message = document.getElementById("commentMessage");
+                        const btn = document.getElementById("btnCommenter");
+                        const contenu = textarea.value.trim();
+
+                        if (!contenu) {
+                            message.textContent = "Veuillez écrire un commentaire.";
+                            message.className = "form-message error";
+                            return;
+                        }
+
+                        btn.disabled = true;
+                        btn.textContent = "Publication…";
+
+                        const { error: errInsert } = await supabase
+                            .from("commentaires")
+                            .insert({
+                                article_id: article.id,
+                                auteur_id: session.user.id,
+                                contenu
+                            });
+
+                        if (errInsert) {
+                            message.textContent = "Erreur : " + errInsert.message;
+                            message.className = "form-message error";
+                            btn.disabled = false;
+                            btn.textContent = "Publier";
+                        } else {
+                            message.textContent = "Commentaire publié !";
+                            message.className = "form-message success";
+                            textarea.value = "";
+                            btn.disabled = false;
+                            btn.textContent = "Publier";
+                            chargerCommentaires();
+                        }
+                    });
+                } else {
+                    commentFormArea.innerHTML = `
+                        <div class="comment-login-prompt">
+                            <a href="login.html">Connectez-vous</a> pour laisser un commentaire.
+                        </div>
+                    `;
+                }
+
+                // Charger les commentaires au démarrage
+                chargerCommentaires();
             }
         }
     </script>
