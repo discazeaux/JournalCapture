@@ -1,1 +1,5 @@
 lancement serveur local : python3 -m http.server 8080
+
+<a href="https://www.flaticon.com/fr/icones-gratuites/monstre" title="monstre icônes">Monstre icônes créées par iconixar - Flaticon</a>
+
+<a href="https://www.flaticon.com/fr/icones-gratuites/frelon" title="frelon icônes">Frelon icônes créées par Park Jisun - Flaticon</a>

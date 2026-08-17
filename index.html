@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suivi Frelons</title>
+    <title>JournalCapture — Suivi de la pression du frelon & La ruche résiste</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap');
 
@@ -31,7 +31,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             padding: 30px 20px;
         }
 
@@ -53,12 +52,14 @@
             margin-bottom: 56px;
         }
 
-        .bee {
-            font-size: 64px;
-            line-height: 1;
+        .hero-img {
+            width: 88px;
+            height: 88px;
+            border-radius: 18px;
+            object-fit: cover;
             margin-bottom: 20px;
-            display: block;
-            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.4));
+            display: inline-block;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
         }
 
         h1 {
@@ -76,91 +77,165 @@
             letter-spacing: 0.3px;
         }
 
-        .nav {
+        /* ── Hub : deux univers distincts ───────────────────────── */
+        .hub {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 28px;
             width: 100%;
-            max-width: 560px;
+            max-width: 760px;
         }
 
-        .nav-card {
+        .universe {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
-            gap: 12px;
+            gap: 16px;
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 28px 24px;
+            border-radius: 20px;
+            padding: 32px 28px;
             text-decoration: none;
             color: var(--text);
             cursor: pointer;
-            transition: border-color 0.2s, background 0.2s, transform 0.15s;
+            transition: border-color 0.3s, transform 0.2s, box-shadow 0.3s;
             position: relative;
             overflow: hidden;
         }
 
-        .nav-card::after {
+        /* Tintes d'ambiance propres à chaque univers */
+        .universe::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: var(--yellow-dim);
-            opacity: 0;
-            transition: opacity 0.2s;
-            border-radius: 14px;
+            pointer-events: none;
+            opacity: 0.6;
+            transition: opacity 0.3s;
         }
 
-        .nav-card:hover {
+        .universe-frelon::before {
+            background: radial-gradient(ellipse at 20% 0%, rgba(255, 215, 0, 0.14) 0%, transparent 60%);
+        }
+
+        .universe-blog::before {
+            background: radial-gradient(ellipse at 20% 0%, rgba(184, 134, 11, 0.16) 0%, transparent 60%);
+        }
+
+        .universe:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+        }
+
+        .universe-frelon:hover {
             border-color: var(--yellow);
-            transform: translateY(-3px);
         }
 
-        .nav-card:hover::after {
-            opacity: 1;
+        .universe-blog:hover {
+            border-color: #b8860b;
         }
 
-        .nav-card:active {
-            transform: translateY(0);
-        }
-
-        .card-icon {
-            font-size: 32px;
+        .universe-icon {
+            font-size: 44px;
             line-height: 1;
             position: relative;
             z-index: 1;
         }
 
-        .card-label {
-            font-size: 18px;
+        .universe-img {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            object-fit: cover;
+            display: inline-block;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+        }
+
+        .universe-tag {
+            display: inline-block;
+            font-size: 11px;
             font-weight: 700;
-            color: var(--yellow);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            border-radius: 99px;
+            padding: 4px 12px;
+            align-self: flex-start;
             position: relative;
             z-index: 1;
         }
 
-        .card-desc {
-            font-size: 13px;
+        .universe-frelon .universe-tag {
+            background: var(--yellow-dim);
+            color: var(--yellow);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .universe-blog .universe-tag {
+            background: rgba(184, 134, 11, 0.12);
+            color: #d4a017;
+            border: 1px solid rgba(184, 134, 11, 0.35);
+        }
+
+        .universe-title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .universe-frelon .universe-title {
+            color: var(--yellow);
+        }
+
+        .universe-blog .universe-title {
+            color: #d4a017;
+        }
+
+        .universe-desc {
+            font-size: 14px;
             color: var(--muted);
-            line-height: 1.5;
+            line-height: 1.6;
             position: relative;
             z-index: 1;
         }
 
-        .card-arrow {
-            margin-top: auto;
-            font-size: 20px;
+        .universe-entries {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .universe-entry {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            text-decoration: none;
+            transition: border-color 0.2s, background 0.2s, color 0.2s;
+        }
+
+        .universe-frelon .universe-entry:hover {
+            border-color: var(--yellow);
+            background: var(--yellow-dim);
             color: var(--yellow);
-            opacity: 0;
-            transform: translateX(-6px);
-            transition: opacity 0.2s, transform 0.2s;
-            position: relative;
-            z-index: 1;
         }
 
-        .nav-card:hover .card-arrow {
-            opacity: 1;
-            transform: translateX(0);
+        .universe-blog .universe-entry:hover {
+            border-color: #b8860b;
+            background: rgba(184, 134, 11, 0.1);
+            color: #d4a017;
+        }
+
+        .universe-entry span {
+            font-size: 18px;
         }
 
         footer {
@@ -170,110 +245,67 @@
             letter-spacing: 0.5px;
         }
 
-        .user-bar {
-            position: fixed;
-            top: 16px;
-            right: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 99px;
-            padding: 8px 16px;
-            font-size: 14px;
-            font-weight: 600;
-            z-index: 10;
-        }
-
-        .user-bar .pseudo {
-            color: var(--yellow);
-        }
-
-        .user-bar .bee-small {
-            font-size: 18px;
-        }
-
-        .user-bar button, .user-bar a {
-            background: none;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--muted);
-            font-family: inherit;
-            font-size: 13px;
-            font-weight: 600;
-            padding: 4px 10px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: border-color 0.2s, color 0.2s;
-        }
-
-        .user-bar button:hover, .user-bar a:hover {
-            border-color: var(--yellow);
-            color: var(--yellow);
-        }
-
-        @media (max-width: 480px) {
-            .user-bar {
-                top: 10px;
-                right: 10px;
-                padding: 6px 12px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .nav {
+        @media (max-width: 640px) {
+            .hub {
                 grid-template-columns: 1fr;
             }
-            .nav-card {
-                flex-direction: row;
-                align-items: center;
-                gap: 16px;
-                padding: 20px;
+            .universe {
+                padding: 28px 24px;
             }
-            .card-content {
-                flex: 1;
-            }
-            .card-arrow {
-                opacity: 1;
-                transform: none;
+            .universe-entries {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
 
-    <div class="user-bar" id="userBar">
-        <!-- rempli par JS -->
-    </div>
-
     <div class="hero">
-        <span class="bee">🐝</span>
-        <h1>Suivi Frelons</h1>
-        <p class="subtitle">Enregistrez vos captures et consultez les statistiques</p>
+        <img class="hero-img" src="ruche.png" alt="Ruche" aria-label="Ruche">
+        <h1>La ruche résiste</h1>
+        <p class="subtitle">Ce site est la mémoire d'un rucher.</p>
     </div>
 
-    <nav class="nav">
-        <a class="nav-card" href="nouvelleCapture.html" id="cardCapture">
-            <span class="card-icon">📋</span>
-            <div class="card-content">
-                <div class="card-label">Nouvelle capture</div>
-                <p class="card-desc">Saisir une session, démarrer le chrono et enregistrer</p>
-            </div>
-            <span class="card-arrow">→</span>
-        </a>
+    <nav class="hub">
 
-        <a class="nav-card" href="stat.html">
-            <span class="card-icon">📊</span>
-            <div class="card-content">
-                <div class="card-label">Statistiques</div>
-                <p class="card-desc">Consulter les graphiques, totaux et efficacité par méthode</p>
+        <!-- ── Univers 1 : Suivi de la pression du frelon ── -->
+        <div class="universe universe-frelon">
+            <span class="universe-tag">Suivi & Outils</span>
+            <span class="universe-icon">
+                <img class="universe-img" src="mordre.png" alt="Frelon" aria-label="Frelon">
+            </span>
+            <div class="universe-title">Suivi de la pression du frelon</div>
+            <p class="universe-desc">
+                Enregistrez vos sessions de capture, suivez vos statistiques
+                et gérez vos postes de piégeage et appâts.
+            </p>
+            <div class="universe-entries">
+                <a class="universe-entry" href="nouvelleCapture.html"><span>📋</span> Nouvelle capture</a>
+                <a class="universe-entry" href="stat.html"><span>📊</span> Statistiques</a>
+                <a class="universe-entry" href="settings.html"><span>⚙️</span> Paramètres</a>
+                <a class="universe-entry" href="login.html"><span>🔐</span> Connexion</a>
             </div>
-            <span class="card-arrow">→</span>
-        </a>
+        </div>
+
+        <!-- ── Univers 2 : La ruche résiste ── -->
+        <div class="universe universe-blog">
+            <span class="universe-tag">Partage & Actualité</span>
+            <span class="universe-icon" style="filter: drop-shadow(0 0 20px rgba(184, 134, 11, 0.35));">📖 
+
+                
+            </span>
+            <div class="universe-title">Les nouvelles</div>
+            <p class="universe-desc">Observations, expériences et vie du rucher — des notes de terrain au fil des saisons.
+            </p>
+            <div class="universe-entries">
+                <a class="universe-entry" href="blog.html"><span>📖</span> Le blog</a>
+                <a class="universe-entry" href="article.html"><span>📄</span> Derniers articles</a>
+            </div>
+        </div>
+
     </nav>
 
-    <footer>suivi-frelons</footer>
+    <footer>journal-capture</footer>
 
     <script type="module">
         import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -283,47 +315,27 @@
             "sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
         );
 
-        const bar = document.getElementById("userBar");
-
         const { data: { session } } = await supabase.auth.getSession();
 
-        console.log("Session:", session);
+        // Liens protégés (univers frelon) : uniquement visibles si connecté.
+        // "Statistiques" reste accessible sans connexion (stats communauté publiques).
+        const liensProteges = ['nouvelleCapture.html', 'settings.html'];
+        const frelonEntries = document.querySelectorAll('.universe-frelon .universe-entry');
 
-        if (!session) {
-            document.getElementById("cardCapture").style.display = "none";
-        }
+        frelonEntries.forEach(entry => {
+            const href = entry.getAttribute('href');
+            if (liensProteges.includes(href)) {
+                entry.style.display = session ? '' : 'none';
+            }
+        });
 
-        if (session) {
-            console.log("User ID:", session.user.id);
-
-            const { data: profil, error: errorProfil } = await supabase
-                .from("profils")
-                .select("pseudo")
-                .eq("id", session.user.id)
-                .single();
-
-            console.log("Profil:", profil, "Erreur:", errorProfil);
-
-            const pseudo = profil?.pseudo || session.user.email;
-
-            bar.innerHTML = `
-                <span class="bee-small">🐝</span>
-                <span class="pseudo">${pseudo}</span>
-                <button id="btnDeconnexion">Se déconnecter</button>
-            `;
-
-            document.getElementById("btnDeconnexion").addEventListener("click", async () => {
-                await supabase.auth.signOut();
-                window.location.href = "login.html";
-            });
-
-        } else {
-            bar.innerHTML = `
-                <button id="btnConnexion">Se connecter</button>
-            `;
-            document.getElementById("btnConnexion").addEventListener("click", () => {
-                window.location.href = "login.html";
-            });
+        // Mettre à jour le lien "Connexion" selon l'état de session
+        const connexionEntry = document.querySelector('.universe-frelon .universe-entry:last-child');
+        if (connexionEntry) {
+            if (session) {
+                connexionEntry.href = 'stat.html';
+                connexionEntry.innerHTML = '<span>📊</span> Mes stats';
+            }
         }
     </script>
 

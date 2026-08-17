@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques captures</title>
+    <script src="navigation.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="navigation.css">
     <link rel="stylesheet" href="styles.css">
     <style>
         .btn-supprimer {
@@ -68,12 +70,6 @@
 
 <body>
     <div class="user-bar" id="userBar"></div>
-
-    <nav class="navbar">
-        <a href="index.html">🐝 Accueil</a>
-        <a id="navCapture" href="nouvelleCapture.html">📋 Nouvelle capture</a>
-        <a href="stat.html" class="active">📊 Statistiques</a>
-    </nav>
 
     <div class="container">
         <div class="tabs">
@@ -198,6 +194,10 @@
             </div>
         </section>
     </div>
+
+    <script>
+        initNavigation({ univers: 'frelon', sectionActive: 'stat' });
+    </script>
 
     <script type="module">
         import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -616,8 +616,6 @@
                 document.getElementById("btnConnexion").addEventListener("click", () => {
                     window.location.href = "login.html";
                 });
-                const navCapture = document.getElementById("navCapture");
-                if (navCapture) navCapture.style.display = "none";
                 myStatsNotConnected.style.display = 'block';
                 mesStatsContent.style.display = 'none';
             } else {

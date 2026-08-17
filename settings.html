@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paramètres — Suivi Frelons</title>
+    <title>Paramètres — Suivi de la pression du frelon</title>
+    <script src="navigation.js"></script>
+    <link rel="stylesheet" href="navigation.css">
     <link rel="stylesheet" href="styles.css">
     <style>
         .settings-section {
@@ -168,13 +170,6 @@
 <body>
     <div class="user-bar" id="userBar"></div>
 
-    <nav class="navbar">
-        <a href="index.html">🐝 Accueil</a>
-        <a href="nouvelleCapture.html">📋 Nouvelle capture</a>
-        <a href="stat.html">📊 Statistiques</a>
-        <a href="settings.html" class="active">⚙️ Paramètres</a>
-    </nav>
-
     <div class="container" style="max-width:680px; padding-top:12px;">
         <h2 style="margin-bottom:24px;">⚙️ Paramètres</h2>
 
@@ -237,6 +232,10 @@
 
     <div class="toast" id="toast"></div>
 
+    <script>
+        initNavigation({ univers: 'frelon', sectionActive: 'settings' });
+    </script>
+
     <script type="module">
         import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
         const supabase = createClient(
@@ -256,9 +255,8 @@
         const session = data?.session;
 
         function afficherConnexionRequise() {
-            bar.innerHTML = `<button onclick="location.href='login.html'">Se connecter</button>`;
-            document.getElementById('listAppats').innerHTML = '<p class="empty">Connectez-vous pour gérer vos paramètres.</p>';
-            document.getElementById('listPostes').innerHTML = '<p class="empty">Connectez-vous pour gérer vos paramètres.</p>';
+            // Page protégée : rediriger vers la connexion
+            window.location.href = 'login.html';
         }
 
         if (error || !session) {

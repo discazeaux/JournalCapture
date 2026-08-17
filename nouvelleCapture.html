@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nouvelle capture — Suivi Frelons</title>
+    <title>Nouvelle capture — Suivi de la pression du frelon</title>
+    <link rel="stylesheet" href="navigation.css">
+    <script src="navigation.js"></script>
     <link rel="stylesheet" href="styles.css">
     <style>
         #detailsPiege {
@@ -115,13 +117,6 @@
 </head>
 <body>
     <div class="user-bar" id="userBar"></div>
-
-    <nav class="navbar">
-        <a href="index.html">🐝 Accueil</a>
-        <a href="nouvelleCapture.html" class="active">📋 Nouvelle capture</a>
-        <a href="stat.html">📊 Statistiques</a>
-        <a href="settings.html">⚙️ Paramètres</a>
-    </nav>
 
     <h2>Nouvelle capture</h2>
 
@@ -287,6 +282,10 @@
         <button type="submit">Enregistrer</button>
     </form>
 
+    <script>
+        initNavigation({ univers: 'frelon', sectionActive: 'nouvelleCapture' });
+    </script>
+
     <script type="module">
         import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
         const supabase = createClient(
@@ -298,6 +297,12 @@
         const bar = document.getElementById("userBar");
         const { data: { session } } = await supabase.auth.getSession();
         let lieuDefaut = 'maison';
+
+        // Page protégée : rediriger vers la connexion si non connecté
+        if (!session) {
+            window.location.href = 'login.html';
+            document.getElementById('captureForm').style.display = 'none';
+        }
 
         if (session) {
             const { data: profil } = await supabase

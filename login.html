@@ -4,17 +4,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion — Suivi Frelons</title>
+    <title>Connexion — Suivi de la pression du frelon</title>
+    <script src="navigation.js"></script>
+    <link rel="stylesheet" href="navigation.css">
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* La nav sticky va occuper le haut de page,
+           on recentre le reste dans un conteneur dédié. */
+        body.login-page {
+            display: block;
+        }
+        .login-content {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px 60px;
+        }
+    </style>
 </head>
 
 <body class="login-page">
 
-    <span class="bee">🐝</span>
-    <h1>Suivi Frelons</h1>
-    <p class="subtitle">Connectez-vous pour accéder à l'application</p>
+    <div class="login-content">
+        <span class="bee">🐝</span>
+        <h1>Suivi de la pression du frelon</h1>
+        <p class="subtitle">Connectez-vous pour accéder à l'application</p>
 
-    <div class="card">
+        <div class="card">
         <div class="tabs">
             <button class="tab active" id="tabConnexion" onclick="afficherOnglet('connexion')">Connexion</button>
             <button class="tab" id="tabInscription" onclick="afficherOnglet('inscription')">Créer un compte</button>
@@ -56,8 +74,13 @@
             <button class="btn" id="btnInscription" onclick="sInscrire()">Créer mon compte</button>
         </div>
 
-        <div class="message" id="message"></div>
+            <div class="message" id="message"></div>
+        </div>
     </div>
+
+    <script>
+        initNavigation({ univers: 'frelon', sectionActive: 'accueil' });
+    </script>
 
     <script type="module">
         import { createClient } from "https://esm.sh/@supabase/supabase-js@2";

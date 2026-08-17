@@ -113,9 +113,9 @@ h2 { color: var(--accent-yellow); text-align: center; }
 footer { margin-top:56px; color:var(--border); font-size:12px; }
 
 /* User bar */
-.user-bar { position: fixed; top: 16px; right: 20px; display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); border-radius:99px; padding:8px 16px; font-size:14px; font-weight:600; z-index:10; }
+.user-bar { position: fixed; top: 16px; right: 20px; display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); border-radius:99px; padding:8px 16px; font-size:14px; font-weight:600; z-index:2000; }
 .user-bar .pseudo { color: var(--yellow); }
-.user-bar button, .user-bar a { background:none; border:1px solid var(--border); border-radius:6px; color:var(--muted); font-family:inherit; font-size:13px; font-weight:600; padding:4px 10px; cursor:pointer; text-decoration:none; transition:border-color .2s, color .2s; }
+.user-bar button, .user-bar a { background:none; border:1px solid var(--border); border-radius:6px; color:var(--muted); font-family:inherit; font-size:13px; font-weight:600; padding:8px 16px; cursor:pointer; text-decoration:none; transition:border-color .2s, color .2s; }
 .user-bar button:hover, .user-bar a:hover { border-color:var(--yellow); color:var(--yellow); }
 
 /* Navbar used on some pages */

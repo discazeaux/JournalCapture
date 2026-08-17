@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rédiger un article — Suivi Frelons</title>
+    <title>Rédiger un article — Suivi de la pression du frelon</title>
+    <link rel="stylesheet" href="navigation.css">
+    <script src="navigation.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap');
@@ -71,23 +73,6 @@
             margin-right: 10px;
         }
 
-        .back-link {
-            color: var(--muted);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            border: 1px solid var(--border);
-            border-radius: 99px;
-            padding: 8px 18px;
-            background: var(--card);
-            transition: border-color 0.2s, color 0.2s;
-        }
-
-        .back-link:hover {
-            border-color: var(--yellow);
-            color: var(--yellow);
-        }
-
         .user-bar {
             position: fixed;
             top: 20px;
@@ -101,7 +86,7 @@
             padding: 8px 16px;
             font-size: 14px;
             font-weight: 600;
-            z-index: 10;
+            z-index: 2000;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
         }
 
@@ -121,7 +106,7 @@
             font-family: inherit;
             font-size: 13px;
             font-weight: 600;
-            padding: 5px 12px;
+            padding: 8px 16px;
             cursor: pointer;
             text-decoration: none;
             transition: border-color 0.2s, color 0.2s;
@@ -385,7 +370,6 @@
     <div class="container">
         <div class="header">
             <h1><span class="bee">🐝</span>Rédiger un article</h1>
-            <a class="back-link" href="blog.html">← Blog</a>
         </div>
 
         <div id="editorContainer">
@@ -393,7 +377,11 @@
         </div>
     </div>
 
-    <footer>suivi-frelons</footer>
+    <footer>suivi de la pression du frelon</footer>
+
+    <script>
+        initNavigation({ univers: 'blog', sectionActive: 'rediger' });
+    </script>
 
     <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
     <script type="module">
@@ -526,7 +514,7 @@
             if (articleExistant) {
                 document.querySelector(".header h1").innerHTML =
                     '<span class="bee">🐝</span>Modifier un article';
-                document.title = "Modifier un article — Suivi Frelons";
+                document.title = "Modifier un article — Suivi de la pression du frelon";
                 titreInput.value = articleExistant.titre || "";
                 slugInput.value = articleExistant.slug || "";
                 slugInput.dataset.manual = "true";
