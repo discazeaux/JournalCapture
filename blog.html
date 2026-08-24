@@ -269,6 +269,20 @@
             font-size: 13px;
             font-weight: 700;
             color: var(--yellow);
+            background: var(--yellow-dim);
+            border: 1px solid var(--yellow);
+            border-radius: 99px;
+            padding: 6px 14px;
+            text-decoration: none;
+            z-index: 2;
+            transition: background 0.2s, color 0.2s;
+        }
+        .article-actions:hover {
+            background: var(--yellow-soft);
+            color: var(--yellow);
+        }
+        .article-card .article-actions + h2 {
+            padding-right: 90px;
         }
 
         .article-card {
@@ -431,13 +445,22 @@
                     .slice(0, 200);
                 return `
                     <a class="article-card" href="article.html?slug=${encodeURIComponent(a.slug)}">
-                        ${estAdmin ? `<span class="article-actions">✏️ Modifier</span>` : ''}
+                        ${estAdmin ? `<span class="article-actions" data-slug="${encodeURIComponent(a.slug)}">✏️ Modifier</span>` : ''}
                         <h2>${a.titre}</h2>
                         <div class="date">${date}</div>
                         <p class="excerpt">${excerpt}...</p>
                     </a>
                 `;
             }).join(""));
+
+            // Bouton "Modifier" : rediriger vers l'édition sans ouvrir l'article
+            document.querySelectorAll('.article-actions').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.location.href = `rediger.html?slug=${btn.dataset.slug}`;
+                });
+            });
         }
     </script>
 

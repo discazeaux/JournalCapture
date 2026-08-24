@@ -12,8 +12,8 @@
     <style>
         .btn-supprimer {
             background: none;
-            border: 1px solid #555;
-            color: #ff5555;
+            border: 1px solid var(--border);
+            color: #c05a5a;
             border-radius: 5px;
             padding: 3px 9px;
             cursor: pointer;
@@ -21,11 +21,11 @@
             transition: background .15s, color .15s;
         }
         .btn-supprimer:hover {
-            background: rgba(255,85,85,0.15);
-            border-color: #ff5555;
+            background: rgba(192, 90, 90, 0.12);
+            border-color: #c05a5a;
         }
-        .efficacite { color: #4ecdc4; font-weight: 600; }
-        .efficacite-na { color: #555; font-size: 12px; }
+        .efficacite { color: #4a9d8f; font-weight: 600; }
+        .efficacite-na { color: var(--muted); font-size: 12px; }
         .stat-row-perso {
             display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;
         }
@@ -51,8 +51,8 @@
             padding: 5px 10px;
             font-size: 13px;
             border-radius: 6px;
-            background: #1a1a1a;
-            border: 1px solid #444;
+            background: var(--card);
+            border: 1px solid var(--border);
             color: var(--text);
         }
         .tendance-legende {
@@ -100,8 +100,8 @@
                 </div>
                 <canvas id="tendanceCommunaute"></canvas>
                 <div class="tendance-legende">
-                    <span><span class="dot" style="background:#ffd700"></span> Captures (total par période)</span>
-                    <span><span class="dot" style="background:#ff6b6b; opacity:.7"></span> Tendance linéaire</span>
+                    <span><span class="dot" style="background:#b8860b"></span> Captures (total par période)</span>
+                    <span><span class="dot" style="background:#c05a5a; opacity:.7"></span> Tendance linéaire</span>
                 </div>
             </div>
 
@@ -158,8 +158,8 @@
                     </div>
                     <canvas id="tendancePerso"></canvas>
                     <div class="tendance-legende">
-                        <span><span class="dot" style="background:#4ecdc4"></span> Mes captures (total par période)</span>
-                        <span><span class="dot" style="background:#a29bfe; opacity:.7"></span> Tendance linéaire</span>
+                        <span><span class="dot" style="background:#4a9d8f"></span> Mes captures (total par période)</span>
+                        <span><span class="dot" style="background:#8a7fb8; opacity:.7"></span> Tendance linéaire</span>
                     </div>
                 </div>
 
@@ -257,7 +257,7 @@
             return date.getFullYear() + "-S" + String(semaine).padStart(2, "0");
         }
 
-        const couleurs = ["#ffd700","#ff6b6b","#4ecdc4","#a29bfe","#fd79a8","#55efc4","#fdcb6e","#74b9ff"];
+        const couleurs = ["#b8860b","#c05a5a","#4a9d8f","#8a7fb8","#c98a6b","#7a9d6a","#c9a86b","#5a8fb4"];
 
         // ── Tendance : regroupe les données par fenêtre de N jours ──
         // dataTotauxParJour : { 'YYYY-MM-DD': nombre }
@@ -334,8 +334,8 @@
                     responsive: true,
                     interaction: { mode: 'index', intersect: false },
                     scales: {
-                        y: { beginAtZero: true, ticks: { color: '#888' }, grid: { color: '#222' } },
-                        x: { ticks: { color: '#888', maxRotation: 45 }, grid: { color: '#1a1a1a' } }
+                        y: { beginAtZero: true, ticks: { color: '#8a8578' }, grid: { color: '#e8e2d4' } },
+                        x: { ticks: { color: '#8a8578', maxRotation: 45 }, grid: { color: '#f0ece2' } }
                     },
                     plugins: {
                         legend: { display: false },
@@ -430,7 +430,7 @@
             });
             // Ligne totaux
             const trFoot = document.createElement("tr");
-            trFoot.style.borderTop = '2px solid #333';
+            trFoot.style.borderTop = '2px solid var(--border)';
             trFoot.innerHTML = `<td><strong style="color:var(--muted)">Total</strong></td>` +
                 methodes.map(m => `<td><strong>${totauxMethode[m]}</strong></td>`).join('') +
                 `<td><strong style="color:var(--yellow)">${grandTotal}</strong></td>`;
@@ -441,7 +441,7 @@
             const fenetre = parseInt(document.getElementById('fenetreCommunaute').value);
             const { labels, values } = regrouperParFenetre(dataCommunauteParJour, fenetre);
             if (chartTendanceCommunaute) { chartTendanceCommunaute.destroy(); }
-            chartTendanceCommunaute = creerChartTendance('tendanceCommunaute', labels, values, '#ffd700', '#ff6b6b');
+            chartTendanceCommunaute = creerChartTendance('tendanceCommunaute', labels, values, '#b8860b', '#c05a5a');
         }
 
         document.getElementById('fenetreCommunaute').addEventListener('change', renderTendanceCommunaute);
@@ -593,7 +593,7 @@
                 tbodySemaine.appendChild(tr);
             });
             const trFootMes = document.createElement('tr');
-            trFootMes.style.borderTop = '2px solid #333';
+            trFootMes.style.borderTop = '2px solid var(--border)';
             trFootMes.innerHTML = `<td><strong style="color:var(--muted)">Total</strong></td>` +
                 methodes.map(m => `<td><strong>${totauxMethodeMes[m]}</strong></td>`).join('') +
                 `<td><strong style="color:var(--yellow)">${grandTotalMes}</strong></td>`;
@@ -604,7 +604,7 @@
             const fenetre = parseInt(document.getElementById('fenetrePerso').value);
             const { labels, values } = regrouperParFenetre(dataPersoParJour, fenetre);
             if (chartTendancePerso) { chartTendancePerso.destroy(); }
-            chartTendancePerso = creerChartTendance('tendancePerso', labels, values, '#4ecdc4', '#a29bfe');
+            chartTendancePerso = creerChartTendance('tendancePerso', labels, values, '#4a9d8f', '#8a7fb8');
         }
 
         document.getElementById('fenetrePerso').addEventListener('change', renderTendancePerso);

@@ -32,8 +32,8 @@
         .item-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
 
         .appat-card {
-            background: #1a1a1a;
-            border: 1px solid #333;
+            background: var(--card);
+            border: 1px solid var(--border);
             border-radius: 10px;
             overflow: hidden;
             transition: border-color .2s;
@@ -47,26 +47,26 @@
         .appat-card.is-default .appat-nom { color: var(--yellow); }
 
         .badge-type { font-size: 11px; font-weight: 700; border-radius: 10px; padding: 2px 9px; white-space: nowrap; }
-        .badge-sucre    { background: rgba(255,180,50,0.18);  color: #ffc04a; border: 1px solid rgba(255,180,50,0.35); }
-        .badge-proteine { background: rgba(100,200,120,0.18); color: #6fcf7a; border: 1px solid rgba(100,200,120,0.35); }
-        .badge-default  { font-size: 10px; background: var(--yellow); color: #111; border-radius: 10px; padding: 2px 8px; font-weight: 700; }
+        .badge-sucre    { background: rgba(201, 138, 27, 0.12);  color: #a8751a; border: 1px solid rgba(201, 138, 27, 0.3); }
+        .badge-proteine { background: rgba(90, 143, 60, 0.12); color: #5a8f3c; border: 1px solid rgba(90, 143, 60, 0.3); }
+        .badge-default  { font-size: 10px; background: var(--yellow); color: #fff; border-radius: 10px; padding: 2px 8px; font-weight: 700; }
 
         .item-actions { display: flex; gap: 4px; align-items: center; }
         .item-actions button {
-            background: none; border: 1px solid #444; border-radius: 6px;
-            color: #888; cursor: pointer; font-size: 13px; padding: 3px 9px;
+            background: none; border: 1px solid var(--border); border-radius: 6px;
+            color: var(--muted); cursor: pointer; font-size: 13px; padding: 3px 9px;
             width: auto; transition: border-color .15s, color .15s; white-space: nowrap;
         }
         .item-actions .btn-defaut:hover,
         .item-actions .btn-defaut.active  { border-color: var(--yellow); color: var(--yellow); font-weight: 700; }
-        .item-actions .btn-recette:hover  { border-color: #4ecdc4; color: #4ecdc4; }
-        .item-actions .btn-edit:hover     { border-color: #74b9ff; color: #74b9ff; }
-        .item-actions .btn-toggle:hover   { border-color: #a29bfe; color: #a29bfe; }
-        .item-actions .btn-rm:hover       { border-color: #ff5555; color: #ff5555; }
+        .item-actions .btn-recette:hover  { border-color: #4a9d8f; color: #4a9d8f; }
+        .item-actions .btn-edit:hover     { border-color: #5a8fb4; color: #5a8fb4; }
+        .item-actions .btn-toggle:hover   { border-color: #8a7fb8; color: #8a7fb8; }
+        .item-actions .btn-rm:hover       { border-color: #c05a5a; color: #c05a5a; }
 
         .appat-recette-panel {
-            border-top: 1px solid #2a2a2a; padding: 12px 14px;
-            background: #111; display: none;
+            border-top: 1px solid var(--border); padding: 12px 14px;
+            background: var(--bg); display: none;
         }
         .appat-recette-panel.open { display: block; }
         .appat-recette-panel label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
@@ -74,8 +74,8 @@
         .appat-recette-panel .btn-save-recipe {
             margin-top: 12px; width: auto; padding: 10px 16px; font-size: 13px;
             border-radius: 10px; border: none; background: var(--accent-yellow);
-            color: #0a0a0a; font-weight: 700; cursor: pointer;
-            box-shadow: 0 8px 18px rgba(0,0,0,0.16); transition: transform .15s, background .15s;
+            color: #fff; font-weight: 700; cursor: pointer;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.08); transition: transform .15s, background .15s;
         }
         .appat-recette-panel .btn-save-recipe:hover {
             background: var(--button-hover); transform: translateY(-1px);
@@ -86,19 +86,19 @@
 
         /* ── Cartes poste ── */
         .poste-card {
-            background: #1a1a1a; border: 1px solid #333;
+            background: var(--card); border: 1px solid var(--border);
             border-radius: 10px; overflow: hidden; transition: border-color .2s;
         }
         .poste-card.inactif { opacity: 0.5; }
         .poste-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; flex-wrap: wrap; }
         .poste-nom { font-size: 15px; font-weight: 600; flex: 1; color: var(--yellow); }
         .poste-detail { font-size: 12px; color: var(--muted); }
-        .badge-actif   { font-size: 11px; font-weight: 700; border-radius: 10px; padding: 2px 9px; background: rgba(78,205,196,0.15); color: #4ecdc4; border: 1px solid rgba(78,205,196,0.3); }
-        .badge-inactif { font-size: 11px; font-weight: 700; border-radius: 10px; padding: 2px 9px; background: rgba(100,100,100,0.15); color: #666; border: 1px solid #333; }
+        .badge-actif   { font-size: 11px; font-weight: 700; border-radius: 10px; padding: 2px 9px; background: rgba(74, 157, 143, 0.12); color: #4a9d8f; border: 1px solid rgba(74, 157, 143, 0.3); }
+        .badge-inactif { font-size: 11px; font-weight: 700; border-radius: 10px; padding: 2px 9px; background: rgba(100,100,100,0.1); color: var(--muted); border: 1px solid var(--border); }
 
         /* ── Formulaire ajout ── */
         .add-form {
-            background: #111; border: 1px dashed #333;
+            background: var(--bg); border: 1px dashed var(--border);
             border-radius: 10px; padding: 16px;
         }
         .add-form .form-row {
@@ -112,9 +112,9 @@
         .add-form button.btn-add {
             width: auto; padding: 10px 18px; font-size: 14px;
             white-space: nowrap; border-radius: 12px; flex-shrink: 0;
-            background: var(--button-bg); color: var(--bg-dark);
+            background: var(--button-bg); color: #fff;
             border: none; cursor: pointer; font-weight: 700;
-            box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.08);
             transition: transform .15s, background .15s, box-shadow .15s;
         }
         .add-form button.btn-add:hover {
@@ -129,12 +129,12 @@
 
         .type-toggle { display: flex; gap: 6px; }
         .type-btn {
-            padding: 7px 14px; border-radius: 8px; border: 1px solid #444;
-            background: #1a1a1a; color: #888; cursor: pointer; font-size: 13px;
+            padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--card); color: var(--muted); cursor: pointer; font-size: 13px;
             font-weight: 600; width: auto; transition: all .15s;
         }
-        .type-btn.sucre.selected    { background: rgba(255,180,50,0.18);  color: #ffc04a; border-color: #ffc04a; }
-        .type-btn.proteine.selected { background: rgba(100,200,120,0.18); color: #6fcf7a; border-color: #6fcf7a; }
+        .type-btn.sucre.selected    { background: rgba(201, 138, 27, 0.12);  color: #a8751a; border-color: #a8751a; }
+        .type-btn.proteine.selected { background: rgba(90, 143, 60, 0.12); color: #5a8f3c; border-color: #5a8f3c; }
 
         /* ── Suggestion appâts par défaut ── */
         .suggestion-grid {
@@ -142,12 +142,12 @@
         }
         .suggestion-chip {
             display: inline-flex; align-items: center; gap: 6px;
-            background: #1a1a1a; border: 1px dashed #444; border-radius: 20px;
-            padding: 5px 12px; font-size: 13px; color: #aaa; cursor: pointer;
+            background: var(--card); border: 1px dashed var(--border); border-radius: 20px;
+            padding: 5px 12px; font-size: 13px; color: var(--muted); cursor: pointer;
             transition: border-color .15s, color .15s;
         }
         .suggestion-chip:hover { border-color: var(--yellow); color: var(--yellow); }
-        .suggestion-chip.imported { border-color: #555; color: #555; cursor: default; text-decoration: line-through; }
+        .suggestion-chip.imported { border-color: var(--border); color: var(--muted); cursor: default; text-decoration: line-through; }
 
         .hint { font-size: 12px; color: var(--muted); margin: 8px 0 0 0; }
 
@@ -156,9 +156,10 @@
         .toast {
             position: fixed; bottom: 30px; left: 50%;
             transform: translateX(-50%) translateY(60px);
-            background: #1a1a1a; border: 1px solid var(--yellow);
+            background: var(--card); border: 1px solid var(--yellow);
             color: var(--yellow); padding: 12px 28px; border-radius: 10px;
             font-weight: 600; font-size: 14px; z-index: 999;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
             opacity: 0; transition: opacity .3s, transform .3s;
         }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -556,8 +557,8 @@
         function toast(msg, erreur = false) {
             const el = document.getElementById('toast');
             el.textContent = erreur ? '⚠ ' + msg : '✓ ' + msg;
-            el.style.borderColor = erreur ? '#ff5555' : 'var(--yellow)';
-            el.style.color       = erreur ? '#ff5555' : 'var(--yellow)';
+            el.style.borderColor = erreur ? '#c05a5a' : 'var(--yellow)';
+            el.style.color       = erreur ? '#c05a5a' : 'var(--yellow)';
             el.classList.add('show');
             setTimeout(() => el.classList.remove('show'), 2500);
         }

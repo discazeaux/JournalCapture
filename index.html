@@ -8,13 +8,14 @@
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap');
 
         :root {
-            --bg: #0e0e0e;
-            --card: #181818;
-            --yellow: #ffd700;
-            --yellow-dim: rgba(255, 215, 0, 0.12);
-            --text: #ffffff;
-            --muted: #888;
-            --border: #2a2a2a;
+            --bg: #faf7f0;
+            --card: #ffffff;
+            --yellow: #b8860b;
+            --yellow-soft: #f5e6b8;
+            --yellow-dim: rgba(184, 134, 11, 0.08);
+            --text: #2d2a24;
+            --muted: #8a8578;
+            --border: #e8e2d4;
         }
 
         * {
@@ -43,7 +44,7 @@
             transform: translateX(-50%);
             width: 600px;
             height: 400px;
-            background: radial-gradient(ellipse, rgba(255, 215, 0, 0.07) 0%, transparent 70%);
+            background: radial-gradient(ellipse, rgba(184, 134, 11, 0.06) 0%, transparent 70%);
             pointer-events: none;
         }
 
@@ -59,7 +60,7 @@
             object-fit: cover;
             margin-bottom: 20px;
             display: inline-block;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
         }
 
         h1 {
@@ -100,6 +101,7 @@
             transition: border-color 0.3s, transform 0.2s, box-shadow 0.3s;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
         }
 
         /* Tintes d'ambiance propres à chaque univers */
@@ -113,16 +115,16 @@
         }
 
         .universe-frelon::before {
-            background: radial-gradient(ellipse at 20% 0%, rgba(255, 215, 0, 0.14) 0%, transparent 60%);
+            background: radial-gradient(ellipse at 20% 0%, rgba(184, 134, 11, 0.08) 0%, transparent 60%);
         }
 
         .universe-blog::before {
-            background: radial-gradient(ellipse at 20% 0%, rgba(184, 134, 11, 0.16) 0%, transparent 60%);
+            background: radial-gradient(ellipse at 20% 0%, rgba(184, 134, 11, 0.1) 0%, transparent 60%);
         }
 
         .universe:hover {
             transform: translateY(-4px);
-            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
         }
 
         .universe-frelon:hover {
@@ -130,7 +132,7 @@
         }
 
         .universe-blog:hover {
-            border-color: #b8860b;
+            border-color: var(--yellow);
         }
 
         .universe-icon {
@@ -146,7 +148,7 @@
             border-radius: 12px;
             object-fit: cover;
             display: inline-block;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
         }
 
         .universe-tag {
@@ -165,13 +167,13 @@
         .universe-frelon .universe-tag {
             background: var(--yellow-dim);
             color: var(--yellow);
-            border: 1px solid rgba(255, 215, 0, 0.3);
+            border: 1px solid rgba(184, 134, 11, 0.3);
         }
 
         .universe-blog .universe-tag {
-            background: rgba(184, 134, 11, 0.12);
-            color: #d4a017;
-            border: 1px solid rgba(184, 134, 11, 0.35);
+            background: var(--yellow-dim);
+            color: var(--yellow);
+            border: 1px solid rgba(184, 134, 11, 0.3);
         }
 
         .universe-title {
@@ -187,7 +189,7 @@
         }
 
         .universe-blog .universe-title {
-            color: #d4a017;
+            color: var(--yellow);
         }
 
         .universe-desc {
@@ -211,7 +213,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(184, 134, 11, 0.04);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 12px 14px;
@@ -229,9 +231,9 @@
         }
 
         .universe-blog .universe-entry:hover {
-            border-color: #b8860b;
-            background: rgba(184, 134, 11, 0.1);
-            color: #d4a017;
+            border-color: var(--yellow);
+            background: var(--yellow-dim);
+            color: var(--yellow);
         }
 
         .universe-entry span {
@@ -290,7 +292,7 @@
         <!-- ── Univers 2 : La ruche résiste ── -->
         <div class="universe universe-blog">
             <span class="universe-tag">Partage & Actualité</span>
-            <span class="universe-icon" style="filter: drop-shadow(0 0 20px rgba(184, 134, 11, 0.35));">📖 
+            <span class="universe-icon" style="filter: drop-shadow(0 0 20px rgba(184, 134, 11, 0.2));">📖 
 
                 
             </span>
@@ -299,7 +301,7 @@
             </p>
             <div class="universe-entries">
                 <a class="universe-entry" href="blog.html"><span>📖</span> Le blog</a>
-                <a class="universe-entry" href="article.html"><span>📄</span> Derniers articles</a>
+                <a class="universe-entry" href="blog.html" id="lienDernierArticle"><span>📄</span> Derniers articles</a>
             </div>
         </div>
 
@@ -336,6 +338,25 @@
                 connexionEntry.href = 'stat.html';
                 connexionEntry.innerHTML = '<span>📊</span> Mes stats';
             }
+        }
+
+        // Lien "Derniers articles" : rediriger vers le dernier article publié
+        const lienDernierArticle = document.getElementById('lienDernierArticle');
+        if (lienDernierArticle) {
+            lienDernierArticle.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const { data: articles } = await supabase
+                    .from('articles')
+                    .select('slug')
+                    .eq('publie', true)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+                if (articles && articles.length > 0) {
+                    window.location.href = `article.html?slug=${encodeURIComponent(articles[0].slug)}`;
+                } else {
+                    window.location.href = 'blog.html';
+                }
+            });
         }
     </script>
 
