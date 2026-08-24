@@ -9,63 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="navigation.css">
     <link rel="stylesheet" href="styles.css">
-    <style>
-        .btn-supprimer {
-            background: none;
-            border: 1px solid var(--border);
-            color: #c05a5a;
-            border-radius: 5px;
-            padding: 3px 9px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: background .15s, color .15s;
-        }
-        .btn-supprimer:hover {
-            background: rgba(192, 90, 90, 0.12);
-            border-color: #c05a5a;
-        }
-        .efficacite { color: #4a9d8f; font-weight: 600; }
-        .efficacite-na { color: var(--muted); font-size: 12px; }
-        .stat-row-perso {
-            display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;
-        }
-        .stat-row-perso .stat { flex: 1 1 180px; }
-
-        /* Contrôle fenêtre glissante */
-        .tendance-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-        .tendance-controls label {
-            display: inline;
-            margin: 0;
-            font-size: 13px;
-            color: var(--muted);
-            white-space: nowrap;
-        }
-        .tendance-controls select {
-            width: auto;
-            padding: 5px 10px;
-            font-size: 13px;
-            border-radius: 6px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            color: var(--text);
-        }
-        .tendance-legende {
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-            font-size: 12px;
-            color: var(--muted);
-            margin-top: 8px;
-        }
-        .tendance-legende span { display: flex; align-items: center; gap: 5px; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-    </style>
 </head>
 
 <body>
@@ -138,7 +81,7 @@
                     <div class="stat">
                         <div class="stat-title">Efficacité moyenne 🎯</div>
                         <div class="valeur efficacite" id="efficaciteMoyenne">—</div>
-                        <div class="stat-title" style="font-size:12px; margin-top:4px;">frelons / min (sessions chronométrées)</div>
+                        <div class="stat-title stat-title-small">frelons / min (sessions chronométrées)</div>
                     </div>
                 </div>
 
@@ -175,7 +118,10 @@
                 </table>
 
                 <!-- Liste des captures avec suppression -->
-                <h3>Liste des captures</h3>
+                <div class="liste-header">
+                    <h3>Liste des captures</h3>
+                    <button class="btn-export" id="btnExportExcel" title="Exporter en Excel">📥 Exporter en Excel</button>
+                </div>
                 <table id="tableMesCaptures">
                     <thead>
                         <tr>
@@ -409,7 +355,7 @@
             headerRow.innerHTML = '<th>Semaine</th>';
             methodes.forEach(m => { const th = document.createElement("th"); th.textContent = m; headerRow.appendChild(th); });
             const thTotal = document.createElement("th");
-            thTotal.textContent = 'Total 🐝'; thTotal.style.color = 'var(--yellow)';
+            thTotal.textContent = 'Total 🐝'; thTotal.className = 'table-total';
             headerRow.appendChild(thTotal);
 
             const tbody = document.querySelector("#tableSemaine tbody");
@@ -425,15 +371,15 @@
                 const tr = document.createElement("tr");
                 tr.innerHTML = `<td><strong>${s}</strong></td>` +
                     methodes.map(m => `<td>${parSemaineMethode[s][m] || 0}</td>`).join('') +
-                    `<td><strong style="color:var(--yellow)">${ligneTotal}</strong></td>`;
+                    `<td><strong class="table-total">${ligneTotal}</strong></td>`;
                 tbody.appendChild(tr);
             });
             // Ligne totaux
             const trFoot = document.createElement("tr");
             trFoot.style.borderTop = '2px solid var(--border)';
-            trFoot.innerHTML = `<td><strong style="color:var(--muted)">Total</strong></td>` +
+            trFoot.innerHTML = `<td><strong class="table-cell-muted">Total</strong></td>` +
                 methodes.map(m => `<td><strong>${totauxMethode[m]}</strong></td>`).join('') +
-                `<td><strong style="color:var(--yellow)">${grandTotal}</strong></td>`;
+                `<td><strong class="table-total">${grandTotal}</strong></td>`;
             tbody.appendChild(trFoot);
         }
 
@@ -450,6 +396,61 @@
         let chartMesStats = null;
         let dataPersoParJour = {};
         let chartTendancePerso = null;
+        let capturesData = [];  // données des captures pour l'export
+
+        // ── Export Excel (CSV compatible) ─────────────────────────
+        function exporterExcel() {
+            if (!capturesData.length) {
+                alert("Aucune capture à exporter.");
+                return;
+            }
+
+            // En-têtes du fichier
+            const headers = [
+                "Date", "Heure", "Méthode", "Durée (s)",
+                "Frelons asiatiques tués", "Frelons européens tués", "Autres tués",
+                "Frelons asiatiques observés", "Frelons européens observés", "Autres observés",
+                "Lieu", "Notes", "Température (°C)", "Conditions météo"
+            ];
+
+            // Lignes de données
+            const rows = capturesData.map(c => [
+                c.date_capture || '',
+                c.heure_capture || '',
+                c.methode || '',
+                c.duree || 0,
+                c.nombre || 0,
+                c.nombre_europeen || 0,
+                c.nombre_autres || 0,
+                c.nombre_obs_asiatique || 0,
+                c.nombre_obs_europeen || 0,
+                c.nombre_obs_autres || 0,
+                c.lieu || '',
+                (c.notes || '').replace(/\n/g, ' '),
+                c.meteo_temp !== null && c.meteo_temp !== undefined ? c.meteo_temp : '',
+                c.meteo_conditions || ''
+            ]);
+
+            // Construire le CSV
+            const csvContent = [headers, ...rows]
+                .map(row => row.map(cell => {
+                    const str = String(cell ?? '');
+                    // Échapper les guillemets et entourer de guillemets si nécessaire
+                    return '"' + str.replace(/"/g, '""') + '"';
+                }).join(';'))
+                .join('\n');
+
+            // Ajouter le BOM UTF-8 pour Excel
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'mes_captures.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
 
         async function chargerMesStats() {
             if (!session) {
@@ -468,6 +469,9 @@
                 .order('date_capture', { ascending: false });
 
             if (error) { console.error(error); alert(error.message); return; }
+
+            // Stocker les données pour l'export
+            capturesData = data || [];
 
             // Chiffres clés
             const totalNombre = data.reduce((t, c) => t + (c.nombre || 0), 0);
@@ -574,7 +578,7 @@
             headerRow.innerHTML = '<th>Date</th>';
             methodes.forEach(m => { const th = document.createElement('th'); th.textContent = m; headerRow.appendChild(th); });
             const thTotalMes = document.createElement('th');
-            thTotalMes.textContent = 'Total 🐝'; thTotalMes.style.color = 'var(--yellow)';
+            thTotalMes.textContent = 'Total 🐝'; thTotalMes.className = 'table-total';
             headerRow.appendChild(thTotalMes);
 
             const tbodySemaine = document.querySelector('#tableSemaineMes tbody');
@@ -589,14 +593,14 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `<td><strong>${jour}</strong></td>` +
                     methodes.map(m => `<td>${parJourMethode[jour][m] || 0}</td>`).join('') +
-                    `<td><strong style="color:var(--yellow)">${ligneTotal}</strong></td>`;
+                    `<td><strong class="table-total">${ligneTotal}</strong></td>`;
                 tbodySemaine.appendChild(tr);
             });
             const trFootMes = document.createElement('tr');
             trFootMes.style.borderTop = '2px solid var(--border)';
-            trFootMes.innerHTML = `<td><strong style="color:var(--muted)">Total</strong></td>` +
+            trFootMes.innerHTML = `<td><strong class="table-cell-muted">Total</strong></td>` +
                 methodes.map(m => `<td><strong>${totauxMethodeMes[m]}</strong></td>`).join('') +
-                `<td><strong style="color:var(--yellow)">${grandTotalMes}</strong></td>`;
+                `<td><strong class="table-total">${grandTotalMes}</strong></td>`;
             tbodySemaine.appendChild(trFootMes);
         }
 
@@ -608,6 +612,9 @@
         }
 
         document.getElementById('fenetrePerso').addEventListener('change', renderTendancePerso);
+
+        // ── Bouton export Excel ───────────────────────────────────
+        document.getElementById('btnExportExcel').addEventListener('click', exporterExcel);
 
         // ── Setup ─────────────────────────────────────────────────
         async function setup() {

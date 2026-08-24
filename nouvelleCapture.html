@@ -5,115 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nouvelle capture — Suivi de la pression du frelon</title>
     <link rel="stylesheet" href="navigation.css">
-    <script src="navigation.js"></script>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        #detailsPiege {
-            background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-            padding: 16px 18px; margin-top: 8px; animation: slideDown .2s ease;
-        }
-        @keyframes slideDown {
-            from { opacity:0; transform:translateY(-8px); }
-            to   { opacity:1; transform:translateY(0); }
-        }
-        #detailsPiege h4 {
-            color: var(--yellow); margin: 0 0 14px 0;
-            font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;
-        }
-        #detailsPiege p { margin: 0 0 12px 0; }
-        #detailsPiege p:last-child { margin-bottom: 0; }
-
-        #dureeBlock { display: none; }
-
-        /* Fiche poste */
-        .fiche-poste {
-            background: var(--yellow-dim); border: 1px solid var(--border);
-            border-radius: 8px; padding: 12px 14px; margin-top: 8px;
-            font-size: 13px; display: none;
-        }
-        .fiche-poste.visible { display: block; }
-        .fiche-poste-titre { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--yellow); margin-bottom: 8px; }
-        .fiche-poste-ligne { color: var(--text-secondary); margin-bottom: 4px; }
-        .fiche-poste-ligne:last-child { margin-bottom: 0; }
-
-        /* Fiche recette */
-        .fiche-recette {
-            background: var(--yellow-dim); border: 1px solid var(--border);
-            border-radius: 8px; padding: 10px 14px; margin-top: 8px;
-            font-size: 13px; color: var(--text-secondary); line-height: 1.5; display: none;
-        }
-        .fiche-recette.visible { display: block; }
-        .fiche-recette-titre { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--yellow); margin-bottom: 4px; }
-
-        .badge-appat-type {
-            display: inline-block; font-size: 11px; font-weight: 700;
-            border-radius: 10px; padding: 2px 9px; margin-left: 8px; vertical-align: middle;
-        }
-        .badge-sucre    { background: rgba(201, 138, 27, 0.12); color: #a8751a; border: 1px solid rgba(201, 138, 27, 0.3); }
-        .badge-proteine { background: rgba(90, 143, 60, 0.12); color: #5a8f3c; border: 1px solid rgba(90, 143, 60, 0.3); }
-
-        .no-postes-hint {
-            font-size: 13px; color: var(--muted); padding: 10px 0;
-        }
-        .no-postes-hint a { color: var(--yellow); }
-        /* Grille captures */
-        .capture-grid {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 4px;
-        }
-        .capture-grid th {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--muted);
-            padding: 0 0 8px 0;
-            text-align: center;
-            border-bottom: 1px solid var(--border);
-        }
-        .capture-grid th:first-child { text-align: left; }
-        .capture-grid td {
-            padding: 6px 4px;
-            text-align: center;
-            border-bottom: 1px solid var(--border);
-        }
-        .capture-grid td:first-child {
-            text-align: left;
-            font-size: 13px;
-            color: var(--text-secondary);
-            padding-right: 12px;
-            white-space: nowrap;
-        }
-        .capture-grid input[type="number"] {
-            width: 72px;
-            padding: 8px 10px;
-            text-align: center;
-            font-size: 15px;
-            font-weight: 600;
-            margin: 0;
-        }
-        .capture-grid .espece-label { font-weight: 600; }
-        .capture-grid .espece-sub   { font-size: 11px; color: var(--muted); display: block; }
-
-        
-        /* Météo */
-        .meteo-bloc {
-            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-            background: var(--yellow-dim); border: 1px solid var(--border);
-            border-radius: 8px; padding: 10px 14px; margin-top: 4px;
-        }
-        .meteo-icone { font-size: 26px; line-height: 1; }
-        .meteo-info  { flex: 1; min-width: 120px; }
-        .meteo-ligne { font-size: 13px; color: var(--text-secondary); margin-bottom: 2px; }
-        .meteo-ligne strong { color: var(--text); }
-        .meteo-status { font-size: 12px; color: var(--muted); font-style: italic; }
-        .meteo-edit { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-        .meteo-edit input[type="number"] { width: 80px; padding: 7px 10px; font-size: 14px; margin: 0; }
-        .meteo-edit select { flex: 1; min-width: 140px; padding: 7px 10px; font-size: 14px; margin: 0; }
-        .meteo-edit label { font-size: 12px; color: var(--muted); margin: 0 0 4px 0; display: block; }
-        .meteo-edit-groupe { display: flex; flex-direction: column; }
-    </style>
+    <script src="navigation.js"></script>
 </head>
 <body>
     <div class="user-bar" id="userBar"></div>
@@ -187,19 +80,18 @@
         <div id="dureeBlock">
             <p>
                 <label>Durée de capture</label>
-                <div id="chrono" style="font-size:28px; color:var(--yellow); text-align:center; margin-bottom:10px;">00:00</div>
-                <input id="duree_capture" type="text" value="00:00" placeholder="mm:ss"
-                    style="width:100%; padding:10px; margin-bottom:12px; background:var(--input-bg); border:1px solid var(--input-border); border-radius:6px; color:var(--text);" />
+                <div id="chrono">00:00</div>
+                <input id="duree_capture" type="text" value="00:00" placeholder="mm:ss" />
                 <button type="button" id="startChrono">Démarrer</button>
                 <button type="button" id="stopChrono" disabled>Arrêter</button>
-                <button type="button" id="resetChrono" style="margin-top:8px; background:var(--bg-darker); color:var(--muted); border:1px solid var(--border); border-radius:6px; padding:8px 14px; cursor:pointer; font-size:13px;">
+                <button type="button" id="resetChrono">
                     🔄 Remettre à zéro
                 </button>
             </p>
             
             <p>
 
-            <p style="font-size: 12px; color: var(--muted); margin: 0 0 6px 0; display: flex; align-items: center; gap: 6px;">
+            <p class="meteo-note">
                     📍 La localisation est utilisée uniquement pour récupérer la météo locale — elle n'est pas enregistrée.
             </p>
                 <label>🌤 Météo</label>
@@ -231,7 +123,7 @@
             </p>
         </div>
          <p>
-       <label>Captures &amp; observations</label>
+       <label>Captures & observations</label>
             <table class="capture-grid">
                 <thead>
                     <tr>
