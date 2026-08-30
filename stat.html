@@ -211,11 +211,17 @@
             return ((nombre / dureeSecondes) * 60).toFixed(2);
         }
         function getNumeroSemaine(dateStr) {
-            const date  = new Date(dateStr);
-            const debut = new Date(date.getFullYear(), 0, 1);
-            const joursDepuisDebut = Math.floor((date - debut) / 86400000);
-            const semaine = Math.ceil((joursDepuisDebut + debut.getDay() + 1) / 7);
-            return date.getFullYear() + "-S" + String(semaine).padStart(2, "0");
+            // Norme ISO 8601 : la semaine commence le lundi,
+            // la semaine 1 est celle qui contient le premier jeudi de l'année.
+            // Utilisation UTC pour éviter les décalages de fuseau sur dates YYYY-MM-DD.
+            const d = new Date(dateStr + 'T00:00:00Z');
+            const jour = d.getUTCDay() || 7;              // 1 = lundi … 7 = dimanche
+            // Remonter au jeudi de la semaine ISO
+            const jeudi = new Date(d);
+            jeudi.setUTCDate(d.getUTCDate() + 4 - jour);
+            const debutAnnee = new Date(Date.UTC(jeudi.getUTCFullYear(), 0, 1));
+            const semaine = Math.ceil((((jeudi - debutAnnee) / 86400000) + 1) / 7);
+            return jeudi.getUTCFullYear() + "-S" + String(semaine).padStart(2, "0");
         }
 
         const couleurs = ["#b8860b","#c05a5a","#4a9d8f","#8a7fb8","#c98a6b","#7a9d6a","#c9a86b","#5a8fb4"];

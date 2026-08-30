@@ -37,7 +37,7 @@
                 <div class="hub-stat-emoji">🐝</div>
                 <div class="hub-stat-valeur" id="statSemaine">0</div>
                 <div class="hub-stat-libelle">Cette semaine</div>
-                <div class="hub-stat-detail">frelons neutralisés sur 7 jours</div>
+                <div class="hub-stat-detail">lundi → dimanche</div>
             </div>
             <div class="hub-stat">
                 <div class="hub-stat-emoji">🌻</div>
@@ -50,6 +50,12 @@
                 <div class="hub-stat-valeur hub-stat-methode" id="statMethode">—</div>
                 <div class="hub-stat-libelle">Méthode du moment</div>
                 <div class="hub-stat-detail" id="statMethodeDetail">cette semaine</div>
+            </div>
+            <div class="hub-stat">
+                <div class="hub-stat-emoji">🍯</div>
+                <div class="hub-stat-valeur hub-stat-methode" id="statAppat">—</div>
+                <div class="hub-stat-libelle">Appât du moment</div>
+                <div class="hub-stat-detail" id="statAppatDetail">cette semaine · pièges</div>
             </div>
         </div>
 
@@ -178,29 +184,45 @@
             }
         }
 
-        // ── Mini-stats : communauté (7 jours, saison, meilleure méthode) ──
-        const { data: captures } = await supabase
-            .from('captures')
-            .select('date_capture, methode, nombre');
+        // ── Mini-stats : communauté (semaine, saison, méthode, appât) ──
+        const [{ data: captures }, { data: appats }] = await Promise.all([
+            supabase.from('captures').select('date_capture, methode, nombre, appat_id'),
+            supabase.from('appats').select('id, nom')
+        ]);
+
+        // Mapping appat id → nom (pour afficher le "Appât du moment")
+        const nomsAppats = {};
+        (appats || []).forEach(a => { if (a.id) nomsAppats[a.id] = a.nom || 'Appât'; });
 
         if (captures && captures.length) {
             const annee = new Date().getFullYear();
-            const depuis = new Date();
-            depuis.setDate(depuis.getDate() - 6);            // dernier point = hier
-            const depuisStr = depuis.toISOString().split('T')[0];
             const prefixeSaison = annee + '-';
+
+            // Semaine civile : du lundi 00:00 au dimanche 23:59 (aujourd'hui inclus)
+            const aujourdhui = new Date();
+            const jourSemaine = aujourdhui.getDay();          // 0 = dimanche, 1 = lundi …
+            const decalageLundi = jourSemaine === 0 ? 6 : jourSemaine - 1;
+            const lundi = new Date(aujourdhui);
+            lundi.setDate(aujourdhui.getDate() - decalageLundi);
+            const lundiStr = lundi.toISOString().split('T')[0];
 
             let totalSemaine = 0;
             let totalSaison = 0;
             const parMethode = {};
+            const parAppat = {};   // frelons par nom d'appât, uniquement les pièges
 
             captures.forEach(c => {
                 const n = c.nombre || 0;
                 const d = c.date_capture || '';
-                if (d >= depuisStr) {
+                if (d >= lundiStr) {
                     totalSemaine += n;
                     const m = c.methode || 'Inconnue';
                     parMethode[m] = (parMethode[m] || 0) + n;
+                    // Appât : seulement pour les pièges avec un appât enregistré
+                    if (c.methode === 'Piège' && c.appat_id) {
+                        const nomAppat = nomsAppats[c.appat_id] || 'Appât';
+                        parAppat[nomAppat] = (parAppat[nomAppat] || 0) + n;
+                    }
                 }
                 if (d.startsWith(prefixeSaison)) totalSaison += n;
             });
@@ -218,6 +240,17 @@
                 document.getElementById('statMethode').textContent = meilleureMethode;
                 document.getElementById('statMethodeDetail').textContent =
                     `${meilleurTotal} frelons cette semaine`;
+            }
+
+            let meilleurAppat = null;
+            let meilleurAppatTotal = 0;
+            for (const [a, t] of Object.entries(parAppat)) {
+                if (t > meilleurAppatTotal) { meilleurAppat = a; meilleurAppatTotal = t; }
+            }
+            if (meilleurAppat) {
+                document.getElementById('statAppat').textContent = meilleurAppat;
+                document.getElementById('statAppatDetail').textContent =
+                    `${meilleurAppatTotal} frelons cette semaine · pièges`;
             }
         }
     </script>

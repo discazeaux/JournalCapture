@@ -2264,7 +2264,7 @@ td {
 /* ── Mini-stats de l'accueil ─────────────────────────── */
 .hub-stats {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 12px;
 }
 
@@ -2320,6 +2320,12 @@ td {
     font-size: 11px;
     color: var(--muted);
     line-height: 1.4;
+}
+
+@media (max-width: 920px) {
+    .hub-stats {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 
 @media (max-width: 720px) {
