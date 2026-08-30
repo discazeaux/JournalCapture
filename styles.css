@@ -403,6 +403,24 @@ textarea {
     margin-top: 5px;
 }
 
+.forgot-password {
+    text-align: center;
+    margin-top: 14px;
+}
+
+.forgot-password a {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.2s;
+}
+
+.forgot-password a:hover {
+    color: var(--yellow);
+}
+
 /* ── Messages ─────────────────────────────────────────── */
 .message {
     margin-top: 16px;

@@ -44,6 +44,9 @@
                 <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
             </div>
             <button class="btn" id="btnConnexion" onclick="seConnecter()">Se connecter</button>
+            <p class="forgot-password">
+                <a href="#" id="lienMotDePasseOublie" onclick="envoyerResetPassword(event)">Mot de passe oublié ?</a>
+            </p>
         </div>
 
         <!-- Formulaire inscription -->
@@ -104,6 +107,21 @@
         if (params.get('onglet') === 'inscription') {
             afficherOnglet('inscription');
         }
+
+        window.envoyerResetPassword = async function (e) {
+            if (e) e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            if (!email) {
+                afficherMessage('Indiquez d\'abord votre email ci-dessus.', 'error');
+                return;
+            }
+            const { error } = await supabase.auth.resetPasswordForEmail(email);
+            if (error) {
+                afficherMessage('Impossible d\'envoyer le lien : ' + error.message, 'error');
+            } else {
+                afficherMessage('Lien de réinitialisation envoyé à ' + email + '. Vérifiez votre boîte mail.', 'success');
+            }
+        };
 
         function afficherMessage(texte, type) {
             const el = document.getElementById('message');
