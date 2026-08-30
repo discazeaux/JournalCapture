@@ -18,47 +18,66 @@
 </head>
 <body class="hub-page">
 
+    <!-- Barre utilisateur (connue sur les autres pages) : pseudo + déconnexion -->
+    <div class="user-bar" id="userBar" style="display:none">
+        <!-- rempli par JS -->
+    </div>
+
     <div class="hero">
         <img class="hero-img" src="ruche.png" alt="Ruche" aria-label="Ruche">
         <h1>La ruche résiste</h1>
-        <p class="subtitle">Ce site est la mémoire d'un rucher.</p>
+        <p class="subtitle">Enregistrer vos captures de frelon, suivez les tendances de votre rucher et comparer avec la communauté</p>
     </div>
 
-    <nav class="hub">
+    <nav class="hub hub-nouveau">
 
-        <!-- ── Univers 1 : Suivi de la pression du frelon ── -->
-        <div class="universe universe-frelon">
-            <span class="universe-tag">Suivi & Outils</span>
-            <span class="universe-icon">
-                <img class="universe-img" src="mordre.png" alt="Frelon" aria-label="Frelon">
-            </span>
-            <div class="universe-title">Suivi de la pression du frelon</div>
-            <p class="universe-desc">
-                Enregistrez vos sessions de capture, suivez vos statistiques
-                et gérez vos postes de piégeage et appâts.
-            </p>
-            <div class="universe-entries">
-                <a class="universe-entry" href="nouvelleCapture.html"><span>📋</span> Nouvelle capture</a>
-                <a class="universe-entry" href="stat.html"><span>📊</span> Statistiques</a>
-                <a class="universe-entry" href="settings.html"><span>⚙️</span> Paramètres</a>
-                <a class="universe-entry" href="login.html"><span>🔐</span> Connexion</a>
+        <!-- ── Mini-stats (communauté) ── -->
+        <div class="hub-stats">
+            <div class="hub-stat">
+                <div class="hub-stat-emoji">🐝</div>
+                <div class="hub-stat-valeur" id="statSemaine">0</div>
+                <div class="hub-stat-libelle">Cette semaine</div>
+                <div class="hub-stat-detail">frelons neutralisés sur 7 jours</div>
+            </div>
+            <div class="hub-stat">
+                <div class="hub-stat-emoji">🌻</div>
+                <div class="hub-stat-valeur" id="statSaison">0</div>
+                <div class="hub-stat-libelle" id="statSaisonLibelle">Saison 2026</div>
+                <div class="hub-stat-detail">frelons neutralisés</div>
+            </div>
+            <div class="hub-stat">
+                <div class="hub-stat-emoji">🎯</div>
+                <div class="hub-stat-valeur hub-stat-methode" id="statMethode">—</div>
+                <div class="hub-stat-libelle">Méthode du moment</div>
+                <div class="hub-stat-detail" id="statMethodeDetail">cette semaine</div>
             </div>
         </div>
 
-        <!-- ── Univers 2 : La ruche résiste ── -->
-        <div class="universe universe-blog">
-            <span class="universe-tag">Partage & Actualité</span>
-            <span class="universe-icon universe-icon-glow">📖 
+        <!-- ── Accès rapide : tous les liens ── -->
+        <div class="rapide">
+            <a class="hub-btn" href="blog.html"><span>📖</span> Le blog</a>
+            <a class="hub-btn" href="stat.html"><span>📊</span> Statistiques</a>
+            <!-- Visible uniquement si connecté -->
+            <a class="hub-btn" id="lienMesStats" href="stat.html" style="display:none"><span>📊</span> Mes stats</a>
+            <a class="hub-btn hub-protege" href="nouvelleCapture.html"><span>📋</span> Nouvelle capture</a>
+            <a class="hub-btn hub-protege" href="settings.html"><span>⚙️</span> Paramètres</a>
+        </div>
 
-                
-            </span>
-            <div class="universe-title">Les nouvelles</div>
-            <p class="universe-desc">Observations, expériences et vie du rucher — des notes de terrain au fil des saisons.
-            </p>
-            <div class="universe-entries">
-                <a class="universe-entry" href="blog.html"><span>📖</span> Le blog</a>
-                <a class="universe-entry" href="blog.html" id="lienDernierArticle"><span>📄</span> Derniers articles</a>
-            </div>
+        <!-- ── Dernier article publié (à la une) ── -->
+        <section class="featured" id="featuredArticle" style="display:none">
+            <a class="featured-link" id="featuredLien" href="#">
+                <span class="featured-tag">📖 Dernier article</span>
+                <h2 class="featured-title" id="featuredTitre"></h2>
+                <div class="featured-date" id="featuredDate"></div>
+                <p class="featured-extrait" id="featuredExtrait"></p>
+                <span class="featured-cta">Lire l'article →</span>
+            </a>
+        </section>
+
+        <!-- ── Connexion / inscription ── -->
+        <div class="auth-buttons">
+            <a class="auth-button auth-connexion" id="lienConnexion" href="login.html">🔐 Se connecter</a>
+            <a class="auth-button auth-inscription" id="lienInscription" href="login.html?onglet=inscription">✨ Créer un compte</a>
         </div>
 
     </nav>
@@ -82,42 +101,124 @@
 
         // Liens protégés (univers frelon) : uniquement visibles si connecté.
         // "Statistiques" reste accessible sans connexion (stats communauté publiques).
-        const liensProteges = ['nouvelleCapture.html', 'settings.html'];
-        const frelonEntries = document.querySelectorAll('.universe-frelon .universe-entry');
+        if (!session) {
+            document.querySelectorAll('.hub-protege').forEach(entry => {
+                entry.style.display = 'none';
+            });
+        } else {
+            // Connecté : on affiche "Mes stats" dans la grille d'accès rapide,
+            // et on masque les boutons d'authentification en bas.
+            const lienMesStats = document.getElementById('lienMesStats');
+            if (lienMesStats) lienMesStats.style.display = '';
 
-        frelonEntries.forEach(entry => {
-            const href = entry.getAttribute('href');
-            if (liensProteges.includes(href)) {
-                entry.style.display = session ? '' : 'none';
-            }
-        });
+            ['lienConnexion', 'lienInscription'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+            const authWrap = document.querySelector('.auth-buttons');
+            if (authWrap) authWrap.style.display = 'none';
 
-        // Mettre à jour le lien "Connexion" selon l'état de session
-        const connexionEntry = document.querySelector('.universe-frelon .universe-entry:last-child');
-        if (connexionEntry) {
-            if (session) {
-                connexionEntry.href = 'stat.html';
-                connexionEntry.innerHTML = '<span>📊</span> Mes stats';
+            // Barre utilisateur (pseudo + déconnexion) comme sur les autres pages
+            const bar = document.getElementById('userBar');
+            if (bar) {
+                const { data: profil } = await supabase
+                    .from('profils')
+                    .select('pseudo')
+                    .eq('id', session.user.id)
+                    .single();
+
+                const pseudo = profil?.pseudo || session.user.email;
+                bar.innerHTML = `
+                    <span class="bee-small">🐝</span>
+                    <span class="pseudo">${pseudo}</span>
+                    <button id="btnDeconnexion">Se déconnecter</button>
+                `;
+                bar.style.display = '';
+
+                document.getElementById('btnDeconnexion').addEventListener('click', async () => {
+                    await supabase.auth.signOut();
+                    window.location.href = 'login.html';
+                });
             }
         }
 
-        // Lien "Derniers articles" : rediriger vers le dernier article publié
-        const lienDernierArticle = document.getElementById('lienDernierArticle');
-        if (lienDernierArticle) {
-            lienDernierArticle.addEventListener('click', async (e) => {
-                e.preventDefault();
-                const { data: articles } = await supabase
-                    .from('articles')
-                    .select('slug')
-                    .eq('publie', true)
-                    .order('created_at', { ascending: false })
-                    .limit(1);
-                if (articles && articles.length > 0) {
-                    window.location.href = `article.html?slug=${encodeURIComponent(articles[0].slug)}`;
-                } else {
-                    window.location.href = 'blog.html';
+        // ── Carte "Dernier article" à la une ──
+        function extraireExtrait(contenu, max = 180) {
+            if (!contenu) return '';
+            return (contenu
+                .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')         // images markdown
+                .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')       // liens markdown
+                .replace(/[#>*_`~-]/g, ' ')                    // syntaxe markdown
+                .replace(/\s+/g, ' ')
+                .trim()
+            ).slice(0, max);
+        }
+
+        const featured = document.getElementById('featuredArticle');
+        if (featured) {
+            const { data: dernier } = await supabase
+                .from('articles')
+                .select('slug, titre, created_at, contenu')
+                .eq('publie', true)
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (dernier && dernier.length > 0) {
+                const a = dernier[0];
+                const date = new Date(a.created_at).toLocaleDateString('fr-FR', {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                });
+                document.getElementById('featuredLien').href = `article.html?slug=${encodeURIComponent(a.slug)}`;
+                document.getElementById('featuredTitre').textContent = a.titre || 'Sans titre';
+                document.getElementById('featuredDate').textContent = date;
+                const extrait = extraireExtrait(a.contenu);
+                document.getElementById('featuredExtrait').textContent = extrait
+                    ? `${extrait}…` : '';
+                featured.style.display = 'block';
+            }
+        }
+
+        // ── Mini-stats : communauté (7 jours, saison, meilleure méthode) ──
+        const { data: captures } = await supabase
+            .from('captures')
+            .select('date_capture, methode, nombre');
+
+        if (captures && captures.length) {
+            const annee = new Date().getFullYear();
+            const depuis = new Date();
+            depuis.setDate(depuis.getDate() - 6);            // dernier point = hier
+            const depuisStr = depuis.toISOString().split('T')[0];
+            const prefixeSaison = annee + '-';
+
+            let totalSemaine = 0;
+            let totalSaison = 0;
+            const parMethode = {};
+
+            captures.forEach(c => {
+                const n = c.nombre || 0;
+                const d = c.date_capture || '';
+                if (d >= depuisStr) {
+                    totalSemaine += n;
+                    const m = c.methode || 'Inconnue';
+                    parMethode[m] = (parMethode[m] || 0) + n;
                 }
+                if (d.startsWith(prefixeSaison)) totalSaison += n;
             });
+
+            document.getElementById('statSemaine').textContent = totalSemaine;
+            document.getElementById('statSaison').textContent = totalSaison;
+            document.getElementById('statSaisonLibelle').textContent = `Saison ${annee}`;
+
+            let meilleureMethode = null;
+            let meilleurTotal = 0;
+            for (const [m, t] of Object.entries(parMethode)) {
+                if (t > meilleurTotal) { meilleureMethode = m; meilleurTotal = t; }
+            }
+            if (meilleureMethode) {
+                document.getElementById('statMethode').textContent = meilleureMethode;
+                document.getElementById('statMethodeDetail').textContent =
+                    `${meilleurTotal} frelons cette semaine`;
+            }
         }
     </script>
 </body>

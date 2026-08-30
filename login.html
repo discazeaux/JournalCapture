@@ -99,6 +99,12 @@
             document.getElementById('message').className = 'message';
         };
 
+        // Ouvrir directement l'onglet "Créer un compte" si demandé via ?onglet=inscription
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('onglet') === 'inscription') {
+            afficherOnglet('inscription');
+        }
+
         function afficherMessage(texte, type) {
             const el = document.getElementById('message');
             el.textContent = texte;
