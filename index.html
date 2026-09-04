@@ -56,6 +56,10 @@
                 <div class="hub-stat-valeur hub-stat-methode" id="statAppat">—</div>
                 <div class="hub-stat-libelle">Appât du moment</div>
                 <div class="hub-stat-detail" id="statAppatDetail">cette semaine · pièges</div>
+                <div class="hub-stat-recette" id="statAppatRecette" hidden>
+                    <span class="hub-stat-recette-infos">📖 Recette</span>
+                    <span class="hub-stat-recette-texte" id="statAppatRecetteTexte"></span>
+                </div>
             </div>
         </div>
 
@@ -185,14 +189,11 @@
         }
 
         // ── Mini-stats : communauté (semaine, saison, méthode, appât) ──
-        const [{ data: captures }, { data: appats }] = await Promise.all([
-            supabase.from('captures').select('date_capture, methode, nombre, appat_id'),
-            supabase.from('appats').select('id, nom')
-        ]);
-
-        // Mapping appat id → nom (pour afficher le "Appât du moment")
-        const nomsAppats = {};
-        (appats || []).forEach(a => { if (a.id) nomsAppats[a.id] = a.nom || 'Appât'; });
+        // L'appât est mémorisé sur la capture (appat_nom / appat_recette) :
+        // aucune lecture de la table appats nécessaire -> droits inchangés.
+        const { data: captures } = await supabase
+            .from('captures')
+            .select('date_capture, methode, nombre, appat_id, appat_nom, appat_recette');
 
         if (captures && captures.length) {
             const annee = new Date().getFullYear();
@@ -219,9 +220,13 @@
                     const m = c.methode || 'Inconnue';
                     parMethode[m] = (parMethode[m] || 0) + n;
                     // Appât : seulement pour les pièges avec un appât enregistré
-                    if (c.methode === 'Piège' && c.appat_id) {
-                        const nomAppat = nomsAppats[c.appat_id] || 'Appât';
-                        parAppat[nomAppat] = (parAppat[nomAppat] || 0) + n;
+                    if (c.methode === 'Piège' && c.appat_nom) {
+                        const nom = c.appat_nom;
+                        if (!parAppat[nom]) parAppat[nom] = { total: 0, recette: '' };
+                        parAppat[nom].total += n;
+                        if (c.appat_recette && !parAppat[nom].recette) {
+                            parAppat[nom].recette = c.appat_recette;
+                        }
                     }
                 }
                 if (d.startsWith(prefixeSaison)) totalSaison += n;
@@ -244,13 +249,30 @@
 
             let meilleurAppat = null;
             let meilleurAppatTotal = 0;
-            for (const [a, t] of Object.entries(parAppat)) {
-                if (t > meilleurAppatTotal) { meilleurAppat = a; meilleurAppatTotal = t; }
+            let meilleurAppatRecette = '';
+            for (const [nom, info] of Object.entries(parAppat)) {
+                if (info.total > meilleurAppatTotal) {
+                    meilleurAppat = nom;
+                    meilleurAppatTotal = info.total;
+                    meilleurAppatRecette = info.recette;
+                }
             }
             if (meilleurAppat) {
                 document.getElementById('statAppat').textContent = meilleurAppat;
                 document.getElementById('statAppatDetail').textContent =
                     `${meilleurAppatTotal} frelons cette semaine · pièges`;
+
+                // Info-bulle recette (si une recette existe pour cet appât)
+                const recetteEl = document.getElementById('statAppatRecette');
+                if (recetteEl) {
+                    if (meilleurAppatRecette && meilleurAppatRecette.trim()) {
+                        document.getElementById('statAppatRecetteTexte').textContent = meilleurAppatRecette.trim();
+                        recetteEl.hidden = false;
+                    } else {
+                        document.getElementById('statAppatRecetteTexte').textContent = '';
+                        recetteEl.hidden = true;
+                    }
+                }
             }
         }
     </script>

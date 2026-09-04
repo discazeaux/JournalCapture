@@ -461,7 +461,18 @@
             const estPiege = methodeChoisie === 'Piège';
             const estRaquette = methodeChoisie === 'Raquette électrique';
             const poste_id = estPiege ? (document.getElementById('selectPoste').value || null) : null;
-            const appat_id = estPiege ? (document.getElementById('appat').value || null) : null;
+
+            // Mémoriser l'appât sur la capture : id + nom + recette
+            // (le nom/recette évitent de devoir lire la table appats pour les stats publiques)
+            let appat_id = null, appat_nom = null, appat_recette = null;
+            if (estPiege) {
+                appat_id = document.getElementById('appat').value || null;
+                const appChoisi = appats.find(a => a.id === appat_id);
+                if (appChoisi) {
+                    appat_nom = appChoisi.nom || null;
+                    appat_recette = appChoisi.recette || null;
+                }
+            }
             if (!estRaquette) {
                 secondes = 0;
             }
@@ -491,6 +502,8 @@
                     notes:         notes,
                     poste_id:      poste_id,
                     appat_id:      appat_id,
+                    appat_nom:     appat_nom,
+                    appat_recette: appat_recette,
                     meteo_temp:       estRaquette && document.getElementById('meteo_temp').value !== '' ? parseFloat(document.getElementById('meteo_temp').value) : null,
                     meteo_conditions: estRaquette ? (document.getElementById('meteo_conditions').value || null) : null
                 });
