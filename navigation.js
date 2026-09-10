@@ -49,8 +49,8 @@
     try {
       const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
       const supabase = createClient(
-        "https://pvqfwozqfndlpfzypbza.supabase.co",
-        "sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
+        window.CONFIG.SUPABASE_URL,
+        window.CONFIG.SUPABASE_ANON_KEY
       );
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return { estConnecte: false, estAdmin: false };

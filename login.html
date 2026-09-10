@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/ruche4.png">
     <title>Connexion — La ruche résiste</title>
+    <script src="js/config.js"></script>
     <script src="navigation.js"></script>
     <link rel="stylesheet" href="navigation.css">
     <link rel="stylesheet" href="styles.css"><!-- Google tag (gtag.js) -->
@@ -87,12 +88,7 @@
     </script>
 
     <script type="module">
-        import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-        const supabase = createClient(
-            "https://pvqfwozqfndlpfzypbza.supabase.co",
-            "sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
-        );
+        import { supabase } from "./js/supabase.js";
 
         window.afficherOnglet = function (onglet) {
             document.getElementById('formConnexion').style.display = onglet === 'connexion' ? 'block' : 'none';

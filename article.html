@@ -8,6 +8,7 @@
     <title>Article — la ruche résiste</title>
     <link rel="stylesheet" href="navigation.css">
     <link rel="stylesheet" href="styles.css">
+    <script src="js/config.js"></script>
     <script src="navigation.js"></script>
     <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-6E1WMD3WXD"></script>
@@ -45,47 +46,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script type="module">
-        import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+        import { supabase } from "./js/supabase.js";
+        import { initUserBar } from "./js/auth.js";
 
-        const supabase = createClient(
-            "https://pvqfwozqfndlpfzypbza.supabase.co",
-            "sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
-        );
-
-        const bar = document.getElementById("userBar");
         const container = document.getElementById("articleContainer");
 
-        const { data: { session } } = await supabase.auth.getSession();
-
-        let estAdmin = false;
-        if (session) {
-            const { data: profil } = await supabase
-                .from("profils")
-                .select("pseudo, role")
-                .eq("id", session.user.id)
-                .single();
-
-            const pseudo = profil?.pseudo || session.user.email;
-            estAdmin = profil?.role === 'admin';
-
-            bar.innerHTML = `
-                <span class="bee-small">🐝</span>
-                <span class="pseudo">${pseudo}</span>
-                <button id="btnDeconnexion">Se déconnecter</button>
-            `;
-
-            document.getElementById("btnDeconnexion").addEventListener("click", async () => {
-                await supabase.auth.signOut();
-                window.location.href = "login.html";
-            });
-        } else {
-            bar.innerHTML = `
-                <button id="btnConnexion">Se connecter</button>
-            `;
-            document.getElementById("btnConnexion").addEventListener("click", () => {
-                window.location.href = "login.html";
-            });
-        }
+        // Barre utilisateur (pseudo + déconnexion / bouton connexion)
+        const { session, profil } = await initUserBar({ elementId: "userBar" });
+        const estAdmin = profil?.role === 'admin';
 
         // Lire le paramètre ?slug=... dans l'URL
         const params = new URLSearchParams(window.location.search);

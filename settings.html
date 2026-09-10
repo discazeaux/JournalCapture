@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/ruche4.png">
     <title>Paramètres — La ruche résiste</title>
+    <script src="js/config.js"></script>
     <script src="navigation.js"></script>
     <link rel="stylesheet" href="navigation.css">
     <link rel="stylesheet" href="styles.css"><!-- Google tag (gtag.js) -->
@@ -93,11 +94,8 @@
     </script>
 
     <script type="module">
-        import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-        const supabase = createClient(
-            "https://pvqfwozqfndlpfzypbza.supabase.co",
-            "sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
-        );
+        import { supabase } from "./js/supabase.js";
+        import { initUserBar } from "./js/auth.js";
 
         // ── État ──────────────────────────────────────────────────
         let appats  = [];   // [{ id, nom, type, recette, defaut }]
@@ -106,26 +104,17 @@
         let typeSelectionneGlobal = 'sucre';
 
         // ── Auth ──────────────────────────────────────────────────
-        const bar = document.getElementById("userBar");
-        const { data, error } = await supabase.auth.getSession();
-        const session = data?.session;
+        // Barre utilisateur (pseudo + déconnexion / bouton connexion)
+        const { session } = await initUserBar({ elementId: "userBar" });
 
         function afficherConnexionRequise() {
             // Page protégée : rediriger vers la connexion
             window.location.href = 'login.html';
         }
 
-        if (error || !session) {
-            console.error(error || 'Aucune session');
+        if (!session) {
             afficherConnexionRequise();
         } else {
-            const { data: profil, error: profilError } = await supabase.from("profils").select("pseudo").eq("id", session.user.id).single();
-            if (profilError) { console.error(profilError); }
-            const pseudo = profil?.pseudo || session.user.email;
-            bar.innerHTML = `<span class="bee-small">🐝</span><span class="pseudo">${pseudo}</span><button id="btnDeco">Se déconnecter</button>`;
-            document.getElementById("btnDeco").addEventListener("click", async () => {
-                await supabase.auth.signOut(); window.location.href = "login.html";
-            });
             await init();
         }
 

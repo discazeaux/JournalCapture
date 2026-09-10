@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/ruche4.png">
     <title>Statistiques des captures de frelon</title>
+    <script src="js/config.js"></script>
     <script src="navigation.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="navigation.css">
@@ -161,14 +162,9 @@
     </script>
 
     <script type="module">
-        import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+        import { supabase } from "./js/supabase.js";
+        import { initUserBar } from "./js/auth.js";
 
-        const supabase = createClient(
-            "https://pvqfwozqfndlpfzypbza.supabase.co",
-            "sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
-        );
-
-        const bar = document.getElementById("userBar");
         const tabCommunaute       = document.getElementById("tabCommunaute");
         const tabMesStats         = document.getElementById("tabMesStats");
         const sectionCommunaute   = document.getElementById("sectionCommunaute");
@@ -176,7 +172,8 @@
         const mesStatsContent     = document.getElementById("mesStatsContent");
         const myStatsNotConnected = document.getElementById("myStatsNotConnected");
 
-        const { data: { session } } = await supabase.auth.getSession();
+        // Barre utilisateur (pseudo + déconnexion / bouton connexion)
+        const { session } = await initUserBar({ elementId: "userBar" });
 
         // ── Onglets ───────────────────────────────────────────────
         function showTab(tab) {
@@ -640,25 +637,9 @@
         // ── Setup ─────────────────────────────────────────────────
         async function setup() {
             if (!session) {
-                bar.innerHTML = `<button id="btnConnexion">Se connecter</button>`;
-                document.getElementById("btnConnexion").addEventListener("click", () => {
-                    window.location.href = "login.html";
-                });
                 myStatsNotConnected.style.display = 'block';
                 mesStatsContent.style.display = 'none';
             } else {
-                const { data: profil } = await supabase
-                    .from("profils").select("pseudo").eq("id", session.user.id).single();
-                const pseudo = profil?.pseudo || session.user.email;
-                bar.innerHTML = `
-                    <span class="bee-small">🐝</span>
-                    <span class="pseudo">${pseudo}</span>
-                    <button id="btnDeconnexion">Se déconnecter</button>
-                `;
-                document.getElementById("btnDeconnexion").addEventListener("click", async () => {
-                    await supabase.auth.signOut();
-                    window.location.href = "login.html";
-                });
                 await chargerMesStats();
             }
 

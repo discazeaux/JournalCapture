@@ -7,6 +7,7 @@
     <title>Nouvelle capture — Suivi de la pression du frelon</title>
     <link rel="stylesheet" href="navigation.css">
     <link rel="stylesheet" href="styles.css">
+    <script src="js/config.js"></script>
     <script src="navigation.js"></script><!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-6E1WMD3WXD"></script>
 <script>
@@ -195,34 +196,23 @@
     </script>
 
     <script type="module">
-        import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-        const supabase = createClient(
-            "https://pvqfwozqfndlpfzypbza.supabase.co",
-            "sb_publishable_PVbd_09mi39UIQ-9QGS3ug_ftskAI9t"
-        );
+        import { supabase } from "./js/supabase.js";
+        import { initUserBar } from "./js/auth.js";
 
         // ── Session ───────────────────────────────────────────────
-        const bar = document.getElementById("userBar");
-        const { data: { session } } = await supabase.auth.getSession();
+        // Barre utilisateur (pseudo + déconnexion / bouton connexion)
+        const { session, profil } = await initUserBar({ elementId: "userBar" });
+
+        // Lieu proposé par défaut = code postal du profil, sinon "maison"
         let lieuDefaut = 'maison';
+        if (session && profil?.codePostal) {
+            lieuDefaut = profil.codePostal;
+        }
 
         // Page protégée : rediriger vers la connexion si non connecté
         if (!session) {
             window.location.href = 'login.html';
             document.getElementById('captureForm').style.display = 'none';
-        }
-
-        if (session) {
-            const { data: profil } = await supabase
-                .from("profils").select("pseudo, codePostal").eq("id", session.user.id).single();
-            const pseudo = profil?.pseudo || session.user.email;
-            lieuDefaut = profil?.codePostal || 'maison';
-            bar.innerHTML = `<span class="bee-small">🐝</span><span class="pseudo">${pseudo}</span><button id="btnDeco">Se déconnecter</button>`;
-            document.getElementById("btnDeco").addEventListener("click", async () => {
-                await supabase.auth.signOut(); window.location.href = "login.html";
-            });
-        } else {
-            bar.innerHTML = `<button onclick="location.href='login.html'">Se connecter</button>`;
         }
 
         // ── Données Supabase ──────────────────────────────────────
