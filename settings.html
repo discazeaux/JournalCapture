@@ -6,18 +6,10 @@
     <link rel="icon" type="image/png" href="/img/ruche4.png">
     <title>Paramètres — La ruche résiste</title>
     <script src="js/config.js"></script>
+    <script src="js/cookies.js"></script>
     <script src="js/navigation.js"></script>
     <link rel="stylesheet" href="navigation.css">
     <link rel="stylesheet" href="styles.css">
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6E1WMD3WXD"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-6E1WMD3WXD');
-    </script>
 
 </head>
 <body>
@@ -83,12 +75,21 @@
         </div>
     </div>
 
+            <!-- ── Cookies / consentement ── -->
+        <div class="settings-section">
+            <h3>🍪 Mes préférences de consentement</h3>
+            <p class="section-subtitle">Google Analytics (mesure d'audience) n'est activé qu'avec votre accord explicite.</p>
+            <p class="hint" id="hintConsentement"></p>
+            <button type="button" class="consent-btn consent-accept" id="btnModifierConsentement">🍪 Modifier mon consentement</button>
+        </div>
+
     <div class="toast" id="toast"></div>
     <footer>
          <div class="flaticon-credit">
             <a href="https://www.flaticon.com/fr/icones-gratuites/apiculture" title="apiculture icônes">Apiculture icônes créées par iconixar - Flaticon</a>
             </div><div><a href="https://www.flaticon.com/fr/icones-gratuites/abeille" title="abeille icônes">Abeille icônes créées par iconixar - Flaticon</a>
         </div>
+        <div class="footer-legal"><a href="confidentialite.html">Confidentialité &amp; cookies</a></div>
     </footer>
     <script>
         initNavigation({ univers: 'frelon', sectionActive: 'settings' });
@@ -96,6 +97,18 @@
 
     <script type="module">
         import './js/pages/settings.js';
+    </script>
+    <script>
+        (function () {
+            var btn = document.getElementById('btnModifierConsentement');
+            if (btn) btn.addEventListener('click', function () { window.CookiesConsent.modifierChoix(); });
+            var hint = document.getElementById('hintConsentement');
+            if (hint && window.CookiesConsent) {
+                var libs = { accepted: "vous acceptez la mesure d'audience.", refused: "vous refusez la mesure d'audience.", unknown: "aucun choix enregistré pour le moment." };
+                var etat = window.CookiesConsent.getEtat();
+                hint.textContent = "État actuel : " + (libs[etat] || libs.unknown);
+            }
+        })();
     </script>
 </body>
 </html>

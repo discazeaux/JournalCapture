@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/ruche4.png">
+    <title>Politique de confidentialité &amp; cookies — La ruche résiste</title>
+    <link rel="stylesheet" href="navigation.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="js/config.js"></script>
+    <script src="js/cookies.js"></script>
+    <script src="js/navigation.js"></script>
+</head>
+<body>
+
+    <div class="user-bar" id="userBar">
+        <!-- rempli par JS -->
+    </div>
+
+    <div class="container">
+        <div class="page-intro">
+            <h1>🔒 Politique de confidentialité &amp; cookies</h1>
+            <p class="section-subtitle">Dernière mise à jour : 2026</p>
+        </div>
+
+        <div class="settings-section">
+            <h3>1. Qui sommes-nous ?</h3>
+            <p>Le site « La ruche résiste » (JournalCapture) a pour objet le suivi de la pression du frelon et la publication d'un blog apicole.</p>
+        </div>
+
+        <div class="settings-section">
+            <h3>2. Données collectées via Google Analytics</h3>
+            <p>Nous utilisons Google Analytics 4 pour mesurer l'audience du site : nombre de visites, pages consultées, durée de visite, type d'appareil et navigateur, région approximative.</p>
+            <p>Les adresses IP ne sont ni enregistrées ni stockées : elles ne sont utilisées que de façon transitoire pour déterminer la région approximative, puis sont immédiatement ignorées.</p>
+            <p>Ces données sont <strong>agrégées et anonymes</strong> : elles ne permettent pas de vous identifier personnellement.</p>
+        </div>
+
+        <div class="settings-section">
+            <h3>3. Base légale &amp; consentement</h3>
+            <p>Conformément à la directive ePrivacy (2002/58/CE) et au RGPD (UE 2016/679), la dépose de cookies de mesure d'audience est soumise à votre <strong>consentement préalable</strong>. Le bandeau vous permet d'accepter ou de refuser à tout moment.</p>
+            <p>Votre choix est conservé localement pendant <strong>6 mois</strong> maximum, après quoi le bandeau réapparaît pour demander à nouveau votre accord.</p>
+        </div>
+
+        <div class="settings-section">
+            <h3>4. Cookies déposés</h3>
+            <ul>
+                <li><strong>_ga</strong> — Google Analytics (conservation 2 ans)</li>
+                <li><strong>_gid</strong> — Google Analytics (conservation 24 h)</li>
+                <li><strong>_ga_*</strong> — Google Analytics (état de session)</li>
+            </ul>
+            <p>Aucun cookie de mesure n'est déposé si vous refusez.</p>
+        </div>
+
+        <div class="settings-section">
+            <h3>5. Durée de conservation</h3>
+            <p>Les données de mesure sont conservées au maximum <strong>14 mois</strong> (durée par défaut configurée dans Google Analytics 4), puis supprimées ou agrégées par Google.</p>
+        </div>
+
+        <div class="settings-section">
+            <h3>6. Transferts hors Union européenne</h3>
+            <p>Google Analytics transfère certaines données vers des serveurs situés notamment aux États-Unis. Ces transferts sont encadrés par le <strong>Data Privacy Framework (DPF)</strong>, décision d'adéquation de la Commission européenne.</p>
+        </div>
+
+        <div class="settings-section">
+            <h3>7. Vos droits</h3>
+            <p>Vous disposez d'un droit d'accès, de rectification et d'effacement de vos données. Pour l'exercer, contactez-nous : <a href="mailto:contact@larucheresiste.fr">contact@larucheresiste.fr</a>. Vous pouvez également saisir la CNIL (www.cnil.fr).</p>
+        </div>
+
+        <div class="settings-section">
+            <h3>🍪 Gérer mon consentement</h3>
+            <p class="section-subtitle">Vous pouvez à tout moment modifier ou retirer votre choix concernant la mesure d'audience.</p>
+            <button type="button" class="consent-btn consent-accept" id="btnModifierConsentement">🍪 Modifier mon consentement</button>
+        </div>
+    </div>
+
+    <footer>
+        <div class="flaticon-credit">
+            <a href="https://www.flaticon.com/fr/icones-gratuites/apiculture" title="apiculture icônes">Apiculture icônes créées par iconixar - Flaticon</a>
+        </div><div><a href="https://www.flaticon.com/fr/icones-gratuites/abeille" title="abeille icônes">Abeille icônes créées par iconixar - Flaticon</a>
+        </div>
+        <div class="footer-legal"><a href="confidentialite.html">Confidentialité &amp; cookies</a></div>
+    </footer>
+
+    <script>
+        initNavigation({ univers: 'blog', sectionActive: '' });
+        var btn = document.getElementById('btnModifierConsentement');
+        if (btn) {
+            btn.addEventListener('click', function () {
+                window.CookiesConsent.modifierChoix();
+            });
+        }
+    </script>
+</body>
+</html>

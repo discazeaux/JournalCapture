@@ -2622,3 +2622,67 @@ body.login-page {
         transform: none;
     }
 }
+/* ── Consentement cookies (RGPD / ePrivacy) ───────────── */
+.cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 990;
+    background: var(--bg-dark);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+    padding: 16px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+.cookie-banner-texte {
+    flex: 1 1 auto;
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+.cookie-banner-texte a {
+    color: var(--yellow);
+    font-weight: 600;
+}
+.cookie-banner-buttons {
+    display: flex;
+    gap: 10px;
+    flex: 0 0 auto;
+}
+.consent-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-primary);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+}
+.consent-btn.consent-accept {
+    background: var(--yellow);
+    border-color: var(--yellow);
+    color: #fff;
+}
+.consent-btn.consent-accept:hover {
+    background: var(--button-hover);
+}
+.consent-btn.consent-refuse {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text-primary);
+}
+.consent-btn.consent-refuse:hover {
+    background: var(--bg-darker);
+}
+.footer-legal {
+    margin-top: 10px;
+}
+.footer-legal a {
+    color: var(--yellow);
+    font-weight: 600;
+}
