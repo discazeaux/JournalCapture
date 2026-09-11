@@ -511,6 +511,9 @@ document.getElementById('fenetrePerso').addEventListener('change', renderTendanc
 document.getElementById('btnExportExcel').addEventListener('click', exporterExcel);
 
 async function setup() {
+  const params = new URLSearchParams(window.location.search);
+  const ongletMesStats = params.get('onglet') === 'mesStats';
+
   if (!session) {
     myStatsNotConnected.style.display = 'block';
     mesStatsContent.style.display = 'none';
@@ -518,7 +521,8 @@ async function setup() {
     await chargerMesStats();
   }
 
-  showTab('communaute');
+  // Ouvre l'onglet demandé via l'URL (?onglet=mesStats), sinon communauté.
+  showTab(ongletMesStats ? 'mesStats' : 'communaute');
   await chargerCommunauteStats();
 }
 
