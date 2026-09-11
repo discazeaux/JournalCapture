@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/ruche4.png">
+    <link rel="icon" type="image/png" href="/img/ruche4.png">
     <title>Paramètres — La ruche résiste</title>
     <script src="js/config.js"></script>
-    <script src="navigation.js"></script>
+    <script src="js/navigation.js"></script>
     <link rel="stylesheet" href="navigation.css">
-    <link rel="stylesheet" href="styles.css"><!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6E1WMD3WXD"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <link rel="stylesheet" href="styles.css">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6E1WMD3WXD"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
-  gtag('config', 'G-6E1WMD3WXD');
-</script>
+      gtag('config', 'G-6E1WMD3WXD');
+    </script>
 
 </head>
 <body>
@@ -46,10 +47,10 @@
                 <div class="form-row">
                     <label>Type :</label>
                     <div class="type-toggle">
-                        <button type="button" class="type-btn sucre selected" id="btnTypeSucre" onclick="selectType('sucre')">🍯 Sucré</button>
-                        <button type="button" class="type-btn proteine" id="btnTypeProteine" onclick="selectType('proteine')">🥩 Protéiné</button>
+                        <button type="button" class="type-btn sucre selected" id="btnTypeSucre">🍯 Sucré</button>
+                        <button type="button" class="type-btn proteine" id="btnTypeProteine">🥩 Protéiné</button>
                     </div>
-                    <button type="button" class="btn-add" onclick="ajouterAppat()">＋ Ajouter</button>
+                    <button type="button" class="btn-add" id="btnAjouterAppat">＋ Ajouter</button>
                 </div>
             </div>
             <p class="hint">★ = appât par défaut &nbsp;·&nbsp; 📖 = recette &nbsp;·&nbsp; Vous pouvez importer les appâts suggérés ci-dessus.</p>
@@ -71,11 +72,11 @@
                     <label>Type :</label>
                     <input type="text" id="inputTypePiege" placeholder="Type de piège…" maxlength="60" class="flex-1">
                 </div>
-                    <div class="form-row">
+                <div class="form-row">
                     <label>Nombre :</label>
                     <input type="number" id="inputNombrePostes" min="1" max="99" value="1" class="w-80 flex-none">
                     <span class="text-small">piège(s) sur ce poste</span>
-                    <button type="button" class="btn-add ml-auto" onclick="ajouterPoste()">＋ Ajouter</button>
+                    <button type="button" class="btn-add ml-auto" id="btnAjouterPoste">＋ Ajouter</button>
                 </div>
             </div>
             <p class="hint">Les postes inactifs n'apparaissent plus dans le formulaire de capture.</p>
@@ -94,322 +95,7 @@
     </script>
 
     <script type="module">
-        import { supabase } from "./js/supabase.js";
-        import { initUserBar } from "./js/auth.js";
-
-        // ── État ──────────────────────────────────────────────────
-        let appats  = [];   // [{ id, nom, type, recette, defaut }]
-        let postes  = [];   // [{ id, nom, type_piege, nombre, actif }]
-        let suggDef = [];   // appats_defaut
-        let typeSelectionneGlobal = 'sucre';
-
-        // ── Auth ──────────────────────────────────────────────────
-        // Barre utilisateur (pseudo + déconnexion / bouton connexion)
-        const { session } = await initUserBar({ elementId: "userBar" });
-
-        function afficherConnexionRequise() {
-            // Page protégée : rediriger vers la connexion
-            window.location.href = 'login.html';
-        }
-
-        if (!session) {
-            afficherConnexionRequise();
-        } else {
-            await init();
-        }
-
-        // ── Init ──────────────────────────────────────────────────
-        async function init() {
-            await Promise.all([chargerAppats(), chargerSuggestions()]);
-            await chargerPostes();
-        }
-
-        async function chargerAppats() {
-            const { data, error } = await supabase
-                .from('appats').select('*').eq('user_id', session.user.id).order('created_at');
-            if (error) {
-                console.error(error);
-                appats = [];
-                renderAppats();
-                return;
-            }
-            appats = Array.isArray(data) ? data : [];
-            renderAppats();
-        }
-
-        async function chargerSuggestions() {
-            const { data } = await supabase.from('appats_defaut').select('*').order('nom');
-            suggDef = data || [];
-            renderSuggestions();
-        }
-
-        async function chargerPostes() {
-            const { data, error } = await supabase
-                .from('postes_pieges')
-                .select('*')
-                .eq('user_id', session.user.id)
-                .order('created_at');
-            if (error) { console.error(error); return; }
-            postes = data || [];
-            renderPostes();
-        }
-
-        // ── Rendu appâts ──────────────────────────────────────────
-        function renderAppats() {
-            const list = document.getElementById('listAppats');
-            list.innerHTML = '';
-            if (!appats.length) {
-                list.innerHTML = '<p class="empty">Aucun appât. Ajoutez-en un ci-dessous ou importez une suggestion.</p>';
-                return;
-            }
-            appats.forEach(a => {
-                const card = document.createElement('div');
-                card.className = 'appat-card' + (a.defaut ? ' is-default' : '');
-                const typeBadge = a.type === 'proteine'
-                    ? '<span class="badge-type badge-proteine">🥩 Protéiné</span>'
-                    : '<span class="badge-type badge-sucre">🍯 Sucré</span>';
-                const defBadge = a.defaut ? '<span class="badge-default">★ défaut</span>' : '';
-                card.innerHTML = `
-                    <div class="appat-header">
-                        <span class="appat-nom">${a.nom}</span>
-                        ${typeBadge} ${defBadge}
-                        <div class="item-actions">
-                            <button class="btn-defaut ${a.defaut ? 'active' : ''}" data-id="${a.id}" title="Définir comme défaut">★</button>
-                            <button class="btn-recette" data-id="${a.id}" title="Recette">📖</button>
-                            <button class="btn-rm" data-id="${a.id}" title="Supprimer">✕</button>
-                        </div>
-                    </div>
-                    <div class="appat-recette-panel" id="rp-${a.id}">
-                        <label>Recette / composition</label>
-                        <textarea placeholder="Ingrédients, proportions…" data-id="${a.id}">${a.recette || ''}</textarea>
-                        <button type="button" class="btn-save-recipe" onclick="sauvegarderRecette('${a.id}')">💾 Enregistrer la recette</button>
-                    </div>
-                `;
-                list.appendChild(card);
-            });
-
-            list.querySelectorAll('.btn-defaut').forEach(btn => btn.addEventListener('click', () => setDefaut(btn.dataset.id)));
-            list.querySelectorAll('.btn-recette').forEach(btn => btn.addEventListener('click', () => {
-                document.getElementById(`rp-${btn.dataset.id}`).classList.toggle('open');
-            }));
-            list.querySelectorAll('.btn-rm').forEach(btn => btn.addEventListener('click', () => supprimerAppat(btn.dataset.id)));
-        }
-
-        // ── Rendu suggestions ─────────────────────────────────────
-        function renderSuggestions() {
-            const section = document.getElementById('sectionSuggestions');
-            const grid    = document.getElementById('gridSuggestions');
-            if (!suggDef.length) { section.style.display = 'none'; return; }
-            section.style.display = '';
-            grid.innerHTML = '';
-            suggDef.forEach(s => {
-                const dejaImporte = appats.some(a => a.nom.toLowerCase() === s.nom.toLowerCase());
-                const chip = document.createElement('span');
-                chip.className = 'suggestion-chip' + (dejaImporte ? ' imported' : '');
-                chip.innerHTML = `${s.type === 'proteine' ? '🥩' : '🍯'} ${s.nom}`;
-                if (!dejaImporte) chip.addEventListener('click', () => importerSuggestion(s));
-                grid.appendChild(chip);
-            });
-        }
-
-        // ── Rendu postes ──────────────────────────────────────────
-        function renderPostes() {
-            const list = document.getElementById('listPostes');
-            list.innerHTML = '';
-            if (!postes.length) {
-                list.innerHTML = '<p class="empty">Aucun poste. Ajoutez-en un ci-dessous. Si vous n’avez pas encore d’appât, commencez par créer un appât.</p>';
-                return;
-            }
-            postes.forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'poste-card' + (p.actif ? '' : ' inactif');
-                const defautBadge = p.defaut ? '<span class="badge-default">★ défaut</span>' : '';
-                const actifBadge = p.actif
-                    ? '<span class="badge-actif">● Actif</span>'
-                    : '<span class="badge-inactif">○ Inactif</span>';
-                card.innerHTML = `
-                    <div class="poste-header">
-                        <span class="poste-nom">${p.nom}</span>
-                        ${defautBadge}
-                        ${actifBadge}
-                        <div class="item-actions">
-                            <button class="btn-defaut ${p.defaut ? 'active' : ''}" data-id="${p.id}" title="Définir comme poste par défaut">★</button>
-                            <button class="btn-toggle" data-id="${p.id}" data-actif="${p.actif}" title="${p.actif ? 'Désactiver' : 'Activer'}">${p.actif ? '⏸' : '▶'}</button>
-                            <button class="btn-rm" data-id="${p.id}" title="Supprimer">✕</button>
-                        </div>
-                    </div>
-                    <div class="poste-details">
-                        <span>🪤 ${p.type_piege || '—'}</span>
-                        <span>× ${p.nombre} piège(s)</span>
-                    </div>
-                `;
-                list.appendChild(card);
-            });
-
-            list.querySelectorAll('.btn-defaut').forEach(btn => btn.addEventListener('click', () => setDefautPoste(btn.dataset.id)));
-            list.querySelectorAll('.btn-toggle').forEach(btn => btn.addEventListener('click', () =>
-                togglePoste(btn.dataset.id, btn.dataset.actif === 'true')
-            ));
-            list.querySelectorAll('.btn-rm').forEach(btn => btn.addEventListener('click', () => supprimerPoste(btn.dataset.id)));
-        }
-
-        async function setDefautPoste(id) {
-            await supabase.from('postes_pieges').update({ defaut: false }).eq('user_id', session.user.id);
-            await supabase.from('postes_pieges').update({ defaut: true }).eq('id', id);
-            postes.forEach(p => p.defaut = p.id === id);
-            renderPostes();
-            toast('Poste par défaut mis à jour ✓');
-        }
-
-        // ── Select appât dans formulaire poste ────────────────────
-        function remplirSelectAppat() {
-            const sel = document.getElementById('selectAppat');
-            if (!sel) return;
-            const val = sel.value;
-            sel.innerHTML = '<option value="">— choisir —</option>';
-            if (!appats.length) {
-                const opt = document.createElement('option');
-                opt.value = '';
-                opt.textContent = 'Aucun appât disponible';
-                opt.disabled = true;
-                sel.appendChild(opt);
-                sel.disabled = true;
-                return;
-            }
-            sel.disabled = false;
-            appats.forEach(a => {
-                const opt = document.createElement('option');
-                opt.value = a.id;
-                opt.textContent = `${a.type === 'proteine' ? '🥩' : '🍯'} ${a.nom}`;
-                if (a.id === val) opt.selected = true;
-                sel.appendChild(opt);
-            });
-        }
-
-        // ── Actions appâts ────────────────────────────────────────
-        window.selectType = function(type) {
-            typeSelectionneGlobal = type;
-            document.getElementById('btnTypeSucre').classList.toggle('selected', type === 'sucre');
-            document.getElementById('btnTypeProteine').classList.toggle('selected', type === 'proteine');
-        };
-
-        window.ajouterAppat = async function() {
-            const nom = document.getElementById('inputNouvelAppat').value.trim();
-            if (!nom) return;
-            // Premier appât → défaut automatique
-            const premierDefaut = appats.length === 0;
-            const { data, error } = await supabase.from('appats').insert({
-                user_id: session.user.id,
-                nom,
-                type: typeSelectionneGlobal,
-                recette: '',
-                defaut: premierDefaut
-            }).select().single();
-            if (error) { toast('Erreur : ' + error.message, true); return; }
-            appats.push(data);
-            document.getElementById('inputNouvelAppat').value = '';
-            renderAppats();
-            renderSuggestions();
-            remplirSelectAppat();
-            toast('Appât ajouté ✓');
-        };
-
-        async function setDefaut(id) {
-            // Retirer le défaut de tous, mettre sur celui-ci
-            await supabase.from('appats').update({ defaut: false }).eq('user_id', session.user.id);
-            await supabase.from('appats').update({ defaut: true  }).eq('id', id);
-            appats.forEach(a => a.defaut = (a.id === id));
-            renderAppats();
-            toast('Appât par défaut mis à jour ✓');
-        }
-
-        window.sauvegarderRecette = async function(id) {
-            const ta = document.querySelector(`textarea[data-id="${id}"]`);
-            if (!ta) return;
-            const { error } = await supabase.from('appats').update({ recette: ta.value }).eq('id', id);
-            if (error) { toast('Erreur : ' + error.message, true); return; }
-            const a = appats.find(x => x.id === id);
-            if (a) a.recette = ta.value;
-            toast('Recette enregistrée ✓');
-        };
-
-        async function supprimerAppat(id) {
-            if (!confirm('Supprimer cet appât ? Les postes liés perdront leur appât.')) return;
-            const { error } = await supabase.from('appats').delete().eq('id', id);
-            if (error) { toast('Erreur : ' + error.message, true); return; }
-            appats = appats.filter(a => a.id !== id);
-            renderAppats();
-            renderSuggestions();
-            remplirSelectAppat();
-            toast('Appât supprimé');
-        }
-
-        async function importerSuggestion(s) {
-            const { data, error } = await supabase.from('appats').insert({
-                user_id: session.user.id,
-                nom: s.nom,
-                type: s.type,
-                recette: s.recette || '',
-                defaut: appats.length === 0
-            }).select().single();
-            if (error) { toast('Erreur : ' + error.message, true); return; }
-            appats.push(data);
-            renderAppats();
-            renderSuggestions();
-            remplirSelectAppat();
-            toast(`"${s.nom}" importé ✓`);
-        }
-
-        // ── Actions postes ────────────────────────────────────────
-        window.ajouterPoste = async function() {
-            const nom       = document.getElementById('inputNomPoste').value.trim();
-            const typePiege = document.getElementById('inputTypePiege').value.trim();
-            const nombre    = parseInt(document.getElementById('inputNombrePostes').value) || 1;
-            if (!nom) { toast('Donnez un nom au poste', true); return; }
-            const premierDefaut = postes.length === 0;
-            const { data, error } = await supabase.from('postes_pieges').insert({
-                user_id: session.user.id, nom, type_piege: typePiege, nombre, actif: true, defaut: premierDefaut
-            }).select('*').single();
-            if (error) { toast('Erreur : ' + error.message, true); return; }
-            postes.push(data);
-            document.getElementById('inputNomPoste').value = '';
-            document.getElementById('inputTypePiege').value = '';
-            document.getElementById('inputNombrePostes').value = 1;
-            renderPostes();
-            toast('Poste ajouté ✓');
-        };
-
-        async function togglePoste(id, estActif) {
-            const { error } = await supabase.from('postes_pieges').update({ actif: !estActif }).eq('id', id);
-            if (error) { toast('Erreur : ' + error.message, true); return; }
-            const p = postes.find(x => x.id === id);
-            if (p) p.actif = !estActif;
-            renderPostes();
-            toast(estActif ? 'Poste désactivé' : 'Poste activé ✓');
-        }
-
-        async function supprimerPoste(id) {
-            if (!confirm('Supprimer ce poste ?')) return;
-            const { error } = await supabase.from('postes_pieges').delete().eq('id', id);
-            if (error) { toast('Erreur : ' + error.message, true); return; }
-            postes = postes.filter(p => p.id !== id);
-            renderPostes();
-            toast('Poste supprimé');
-        }
-
-        // ── Toast ─────────────────────────────────────────────────
-        function toast(msg, erreur = false) {
-            const el = document.getElementById('toast');
-            el.textContent = erreur ? '⚠ ' + msg : '✓ ' + msg;
-            el.style.borderColor = erreur ? '#c05a5a' : 'var(--yellow)';
-            el.style.color       = erreur ? '#c05a5a' : 'var(--yellow)';
-            el.classList.add('show');
-            setTimeout(() => el.classList.remove('show'), 2500);
-        }
-
-        // Enter rapide
-        document.getElementById('inputNouvelAppat').addEventListener('keydown', e => { if (e.key === 'Enter') window.ajouterAppat(); });
-        document.getElementById('inputNomPoste').addEventListener('keydown',   e => { if (e.key === 'Enter') window.ajouterPoste(); });
+        import './js/pages/settings.js';
     </script>
 </body>
 </html>

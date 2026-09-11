@@ -40,22 +40,26 @@
 
   // Libellés des univers
   const UNIVERS_LABELS = {
-    frelon: { label: 'Suivi de la pression du frelon', emoji: '<img class="universe-img" src="ruche3.png" alt="Frelon" aria-label="Frelon">', href: 'index.html' },
-    blog: { label: 'La ruche résiste', emoji: '<img class="universe-img" src="ruche3.png" alt="Frelon" aria-label="Frelon">', href: 'index.html' }
+    frelon: { label: 'Suivi de la pression du frelon', emoji: '<img class="universe-img" src="img/ruche3.png" alt="Frelon" aria-label="Frelon">', href: 'index.html' },
+    blog: { label: 'La ruche résiste', emoji: '<img class="universe-img" src="img/ruche3.png" alt="Frelon" aria-label="Frelon">', href: 'index.html' }
   };
 
   // Vérifie si l'utilisateur est connecté via Supabase et son rôle
   async function verifierSession() {
     try {
-      const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
-      const supabase = createClient(
-        window.CONFIG.SUPABASE_URL,
-        window.CONFIG.SUPABASE_ANON_KEY
-      );
+      let supabase = window.supabase;
+
+      if (!supabase) {
+        const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+        supabase = createClient(
+          window.CONFIG.SUPABASE_URL,
+          window.CONFIG.SUPABASE_ANON_KEY
+        );
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return { estConnecte: false, estAdmin: false };
 
-      // Vérifier le rôle admin
       let estAdmin = false;
       try {
         const { data: profil } = await supabase
@@ -63,7 +67,7 @@
           .select("role")
           .eq("id", session.user.id)
           .single();
-        estAdmin = profil?.role === 'admin';
+        estAdmin = profil?.role === window.CONFIG.ROLE_ADMIN;
       } catch (e) {
         estAdmin = false;
       }
@@ -114,7 +118,7 @@
           </a>
 
           <div class="site-nav-univers">
-            <a class="site-nav-tab ${config.univers === 'frelon' ? 'active' : ''}" href="stat.html"><img class="universe-img" src="mordre3.png" alt="Frelon" aria-label="Frelon"> Frelons</a>
+            <a class="site-nav-tab ${config.univers === 'frelon' ? 'active' : ''}" href="stat.html"><img class="universe-img" src="img/mordre3.png" alt="Frelon" aria-label="Frelon"> Frelons</a>
             <a class="site-nav-tab ${config.univers === 'blog' ? 'active' : ''}" href="blog.html">📖 Blog</a>
           </div>
         </div>

@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/ruche4.png">
+    <link rel="icon" type="image/png" href="/img/ruche4.png">
     <title>Le journal de la ruche résiste</title>
     <link rel="stylesheet" href="navigation.css">
     <link rel="stylesheet" href="styles.css">
     <script src="js/config.js"></script>
-    <script src="navigation.js"></script><!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6E1WMD3WXD"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <script src="js/navigation.js"></script>
 
-  gtag('config', 'G-6E1WMD3WXD');
-</script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6E1WMD3WXD"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-6E1WMD3WXD');
+    </script>
 
 </head>
 <body>
@@ -47,98 +49,6 @@
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script type="module">
-        import { supabase } from "./js/supabase.js";
-        import { initUserBar } from "./js/auth.js";
-
-        const articlesEl = document.getElementById("articles");
-
-        // Barre utilisateur (pseudo + déconnexion / bouton connexion)
-        const { session, profil } = await initUserBar({ elementId: "userBar" });
-        const estAdmin = profil?.role === 'admin';
-
-        // Partie réservée à l'admin : afficher les brouillons
-        if (estAdmin) {
-            const { data: brouillons } = await supabase
-                .from("articles")
-                .select("id, titre, slug, created_at")
-                .eq("publie", false)
-                .order("created_at", { ascending: false });
-
-            if (brouillons && brouillons.length > 0) {
-                const brouillonsHtml = brouillons.map(b => {
-                    const date = new Date(b.created_at).toLocaleDateString("fr-FR", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric"
-                    });
-                    return `
-                        <a class="brouillon-card" href="rediger.html?slug=${encodeURIComponent(b.slug)}">
-                            <div>
-                                <h3>${b.titre || "Sans titre"}</h3>
-                                <div class="date">${date} — brouillon</div>
-                            </div>
-                            <span class="edit-link">✏️ Reprendre</span>
-                        </a>
-                    `;
-                }).join("");
-
-                articlesEl.insertAdjacentHTML("afterbegin", `
-                    <div class="section-title">📝 Brouillons <span class="count">${brouillons.length}</span></div>
-                    <div class="brouillons-list">${brouillonsHtml}</div>
-                `);
-            }
-        }
-
-        // Charger les articles publiés
-        const { data: articles, error } = await supabase
-            .from("articles")
-            .select("id, titre, slug, created_at, contenu")
-            .eq("publie", true)
-            .order("created_at", { ascending: false });
-
-        if (error) {
-            console.error("Erreur chargement articles:", error);
-            articlesEl.insertAdjacentHTML("beforeend", `<div class="empty">Erreur lors du chargement des articles.</div>`);
-        } else if (!articles || articles.length === 0) {
-            articlesEl.insertAdjacentHTML("beforeend", `
-                <div class="empty">
-                    <span class="bee"><img class="bee-svg" src="rucher2.png" alt="Ruche" aria-label="Ruche"></span>
-                    Aucun article publié pour le moment.
-                </div>
-            `);
-        } else {
-            articlesEl.insertAdjacentHTML("beforeend", articles.map(a => {
-                const date = new Date(a.created_at).toLocaleDateString("fr-FR", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric"
-                });
-                // Convertir le Markdown en texte pour l'extrait
-                const excerpt = marked.parse(a.contenu || "")
-                    .replace(/<[^>]*>/g, "")
-                    .replace(/\s+/g, " ")
-                    .trim()
-                    .slice(0, 200);
-                return `
-                    <a class="article-card" href="article.html?slug=${encodeURIComponent(a.slug)}">
-                        ${estAdmin ? `<span class="article-actions" data-slug="${encodeURIComponent(a.slug)}">✏️ Modifier</span>` : ''}
-                        <h2>${a.titre}</h2>
-                        <div class="date">${date}</div>
-                        <p class="excerpt">${excerpt}...</p>
-                    </a>
-                `;
-            }).join(""));
-
-            // Bouton "Modifier" : rediriger vers l'édition sans ouvrir l'article
-            document.querySelectorAll('.article-actions').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    window.location.href = `rediger.html?slug=${btn.dataset.slug}`;
-                });
-            });
-        }
-    </script>
+    <script type="module" src="./js/pages/blog.js"></script>
 </body>
 </html>

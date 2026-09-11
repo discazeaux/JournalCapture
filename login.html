@@ -4,34 +4,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/ruche4.png">
+    <link rel="icon" type="image/png" href="/img/ruche4.png">
     <title>Connexion — La ruche résiste</title>
     <script src="js/config.js"></script>
-    <script src="navigation.js"></script>
+    <script src="js/navigation.js"></script>
     <link rel="stylesheet" href="navigation.css">
-    <link rel="stylesheet" href="styles.css"><!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6E1WMD3WXD"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <link rel="stylesheet" href="styles.css">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6E1WMD3WXD"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
-  gtag('config', 'G-6E1WMD3WXD');
-</script>
+      gtag('config', 'G-6E1WMD3WXD');
+    </script>
 
 </head>
 
 <body class="login-page">
 
     <div class="login-content">
-        <span class="bee"><img class="login-emoji" src="mordre.png" alt="Frelon" aria-label="Frelon"></span>
+        <span class="bee"><img class="login-emoji" src="img/mordre.png" alt="Frelon" aria-label="Frelon"></span>
         <h1>Suivi de la pression du frelon</h1>
         <p class="subtitle">Connectez-vous pour accéder à l'application</p>
 
         <div class="card">
         <div class="tabs">
-            <button class="tab active" id="tabConnexion" onclick="afficherOnglet('connexion')">Connexion</button>
-            <button class="tab" id="tabInscription" onclick="afficherOnglet('inscription')">Créer un compte</button>
+            <button class="tab active" id="tabConnexion">Connexion</button>
+            <button class="tab" id="tabInscription">Créer un compte</button>
         </div>
 
         <!-- Formulaire connexion -->
@@ -44,9 +45,9 @@
                 <label>Mot de passe</label>
                 <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
             </div>
-            <button class="btn" id="btnConnexion" onclick="seConnecter()">Se connecter</button>
+            <button class="btn" id="btnConnexion">Se connecter</button>
             <p class="forgot-password">
-                <a href="#" id="lienMotDePasseOublie" onclick="envoyerResetPassword(event)">Mot de passe oublié ?</a>
+                <a href="#" id="lienMotDePasseOublie">Mot de passe oublié ?</a>
             </p>
         </div>
 
@@ -70,10 +71,10 @@
                 <input type="password" id="inscriptionPassword" placeholder="Minimum 6 caractères"
                     autocomplete="new-password">
             </div>
-            <button class="btn" id="btnInscription" onclick="sInscrire()">Créer mon compte</button>
+            <button class="btn" id="btnInscription">Créer mon compte</button>
         </div>
 
-            <div class="message" id="message"></div>
+        <div class="message" id="message"></div>
         </div>
     </div>
     <footer>
@@ -88,127 +89,8 @@
     </script>
 
     <script type="module">
-        import { supabase } from "./js/supabase.js";
-
-        window.afficherOnglet = function (onglet) {
-            document.getElementById('formConnexion').style.display = onglet === 'connexion' ? 'block' : 'none';
-            document.getElementById('formInscription').style.display = onglet === 'inscription' ? 'block' : 'none';
-            document.getElementById('tabConnexion').classList.toggle('active', onglet === 'connexion');
-            document.getElementById('tabInscription').classList.toggle('active', onglet === 'inscription');
-            document.getElementById('message').className = 'message';
-        };
-
-        // Ouvrir directement l'onglet "Créer un compte" si demandé via ?onglet=inscription
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('onglet') === 'inscription') {
-            afficherOnglet('inscription');
-        }
-
-        window.envoyerResetPassword = async function (e) {
-            if (e) e.preventDefault();
-            const email = document.getElementById('loginEmail').value.trim();
-            if (!email) {
-                afficherMessage('Indiquez d\'abord votre email ci-dessus.', 'error');
-                return;
-            }
-            const { error } = await supabase.auth.resetPasswordForEmail(email);
-            if (error) {
-                afficherMessage('Impossible d\'envoyer le lien : ' + error.message, 'error');
-            } else {
-                afficherMessage('Lien de réinitialisation envoyé à ' + email + '. Vérifiez votre boîte mail.', 'success');
-            }
-        };
-
-        function afficherMessage(texte, type) {
-            const el = document.getElementById('message');
-            el.textContent = texte;
-            el.className = 'message ' + type;
-        }
-
-        window.seConnecter = async function () {
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            const btn = document.getElementById('btnConnexion');
-
-            if (!email || !password) { afficherMessage('Veuillez remplir tous les champs.', 'error'); return; }
-
-            btn.disabled = true;
-            btn.textContent = 'Connexion…';
-
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-            if (error) {
-                afficherMessage('Email ou mot de passe incorrect.', 'error');
-                btn.disabled = false;
-                btn.textContent = 'Se connecter';
-            } else {
-                afficherMessage('Connexion réussie, redirection…', 'success');
-                setTimeout(() => window.location.href = 'index.html', 1000);
-            }
-        };
-
-        window.sInscrire = async function () {
-            const pseudo = document.getElementById('inscriptionPseudo').value.trim();
-            const codePostal = document.getElementById('inscriptionCodePostal').value.trim();
-            const email = document.getElementById('inscriptionEmail').value.trim();
-            const password = document.getElementById('inscriptionPassword').value;
-            const btn = document.getElementById('btnInscription');
-
-            if (!pseudo || !email || !password) { afficherMessage('Veuillez remplir tous les champs.', 'error'); return; }
-            if (password.length < 6) { afficherMessage('Le mot de passe doit faire au moins 6 caractères.', 'error'); return; }
-
-            btn.disabled = true;
-            btn.textContent = 'Création…';
-
-            const { data, error } = await supabase.auth.signUp({ email, password });
-
-            if (error) {
-                afficherMessage(error.message, 'error');
-                btn.disabled = false;
-                btn.textContent = 'Créer mon compte';
-                return;
-            }
-
-            // Sauvegarder le pseudo dans la table profils (rôle par défaut : user)
-            const { error: errorProfil } = await supabase
-                .from('profils')
-                .insert({ id: data.user.id, pseudo, codePostal, role: 'user' });
-
-            if (errorProfil) {
-                afficherMessage('Compte créé mais erreur sur le pseudo : ' + errorProfil.message, 'error');
-            } else {
-                afficherMessage('Compte créé ! Vous pouvez vous connecter.', 'success');
-                setTimeout(() => afficherOnglet('connexion'), 2000);
-            }
-
-            btn.disabled = false;
-            btn.textContent = 'Créer mon compte';
-        };
-
-        // Vérifier si déjà connecté (une seule fois, sans boucle)
-        let dejaRedirige = false;
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session && !dejaRedirige) {
-            dejaRedirige = true;
-            window.location.href = 'index.html';
-        }
-
-        // Écouter les changements d'état uniquement pour la connexion réussie
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN' && session && !dejaRedirige) {
-                dejaRedirige = true;
-                window.location.href = 'index.html';
-            }
-        });
-
-        // Connexion avec Entrée
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const ongletActif = document.getElementById('formConnexion').style.display !== 'none';
-                if (ongletActif) window.seConnecter();
-                else window.sInscrire();
-            }
-        });
+        import { initLoginPage } from "./js/pages/login.js";
+        initLoginPage();
     </script>
 </body>
 

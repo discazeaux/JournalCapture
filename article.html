@@ -1,24 +1,23 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/ruche4.png">
+    <link rel="icon" type="image/png" href="/img/ruche4.png">
     <title>Article — la ruche résiste</title>
     <link rel="stylesheet" href="navigation.css">
     <link rel="stylesheet" href="styles.css">
     <script src="js/config.js"></script>
-    <script src="navigation.js"></script>
+    <script src="js/navigation.js"></script>
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6E1WMD3WXD"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6E1WMD3WXD"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
-  gtag('config', 'G-6E1WMD3WXD');
-</script>
+      gtag('config', 'G-6E1WMD3WXD');
+    </script>
 
 </head>
 <body>
@@ -45,232 +44,6 @@
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script type="module">
-        import { supabase } from "./js/supabase.js";
-        import { initUserBar } from "./js/auth.js";
-
-        const container = document.getElementById("articleContainer");
-
-        // Barre utilisateur (pseudo + déconnexion / bouton connexion)
-        const { session, profil } = await initUserBar({ elementId: "userBar" });
-        const estAdmin = profil?.role === 'admin';
-
-        // Lire le paramètre ?slug=... dans l'URL
-        const params = new URLSearchParams(window.location.search);
-        const slug = params.get("slug");
-
-        if (!slug) {
-            container.innerHTML = `
-                <div class="not-found">
-                    <span class="bee">🐝</span>
-                    Aucun article spécifié.
-                </div>
-            `;
-        } else {
-            const { data: article, error } = await supabase
-                .from("articles")
-                .select("id, titre, contenu, created_at, auteur_id")
-                .eq("slug", slug)
-                .eq("publie", true)
-                .single();
-
-            if (error || !article) {
-                console.error("Erreur chargement article:", error);
-                container.innerHTML = `
-                    <div class="not-found">
-                        <span class="bee">🐝</span>
-                        Article introuvable ou non publié.
-                    </div>
-                `;
-            } else {
-                const date = new Date(article.created_at).toLocaleDateString("fr-FR", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric"
-                });
-
-                document.title = `${article.titre} — Suivi de la pression du frelon`;
-
-                // Convertir le Markdown en HTML
-                const htmlContenu = marked.parse(article.contenu || "");
-
-                container.innerHTML = `
-                    <article class="article">
-                        <h1>${article.titre}</h1>
-                        <div class="meta">
-                            <span>🐝</span>
-                            <span>${date}</span>
-                        </div>
-                        <div class="content">${htmlContenu}</div>
-                        ${estAdmin ? `
-                            <div class="article-edit-bar">
-                                <a class="edit-btn" href="rediger.html?slug=${encodeURIComponent(slug)}">✏️ Modifier cet article</a>
-                            </div>
-                        ` : ''}
-                    </article>
-                    <section class="comments-section" id="commentsSection">
-                        <h2 class="comments-title">💬 Commentaires <span class="count" id="commentsCount">0</span></h2>
-                        <div id="commentFormArea">
-                            <!-- formulaire ou invitation à se connecter -->
-                        </div>
-                        <div id="commentsListArea">
-                            <!-- liste des commentaires -->
-                        </div>
-                    </section>
-                `;
-
-                // ===== Gestion des commentaires =====
-                const commentFormArea = document.getElementById("commentFormArea");
-                const commentsListArea = document.getElementById("commentsListArea");
-                const commentsCount = document.getElementById("commentsCount");
-
-                // Charger les commentaires de l'article
-                async function chargerCommentaires() {
-                    const { data: commentaires, error } = await supabase
-                        .from("commentaires")
-                        .select("id, contenu, created_at, auteur_id, profils(pseudo)")
-                        .eq("article_id", article.id)
-                        .order("created_at", { ascending: false });
-
-                    if (error) {
-                        console.error("Erreur chargement commentaires:", error);
-                        commentsListArea.innerHTML = `
-                            <div class="comments-empty">
-                                <span class="bee">🐝</span>
-                                Erreur lors du chargement des commentaires.
-                            </div>
-                        `;
-                        return;
-                    }
-
-                    commentsCount.textContent = commentaires.length;
-
-                    if (!commentaires || commentaires.length === 0) {
-                        commentsListArea.innerHTML = `
-                            <div class="comments-empty">
-                                <span class="bee">🐝</span>
-                                Aucun commentaire pour le moment. Soyez le premier à commenter !
-                            </div>
-                        `;
-                        return;
-                    }
-
-                    commentsListArea.innerHTML = `
-                        <div class="comments-list">
-                            ${commentaires.map(c => {
-                                const dateC = new Date(c.created_at).toLocaleDateString("fr-FR", {
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit"
-                                });
-                                const pseudo = c.profils?.pseudo || "Utilisateur";
-                                return `
-                                    <div class="comment-item" data-id="${c.id}">
-                                        <div class="comment-header">
-                                            <span class="comment-author">
-                                                <span class="bee-small">🐝</span>
-                                                ${pseudo}
-                                            </span>
-                                            <div class="comment-actions">
-                                                <span class="comment-date">${dateC}</span>
-                                                ${estAdmin ? `
-                                                    <button class="delete-btn" data-id="${c.id}">🗑️ Supprimer</button>
-                                                ` : ''}
-                                            </div>
-                                        </div>
-                                        <div class="comment-body">${c.contenu}</div>
-                                    </div>
-                                `;
-                            }).join("")}
-                        </div>
-                    `;
-
-                    // Attacher les événements de suppression (admin uniquement)
-                    if (estAdmin) {
-                        document.querySelectorAll(".delete-btn").forEach(btn => {
-                            btn.addEventListener("click", async () => {
-                                const id = btn.dataset.id;
-                                if (!confirm("Supprimer ce commentaire ?")) return;
-
-                                const { error: errDel } = await supabase
-                                    .from("commentaires")
-                                    .delete()
-                                    .eq("id", id);
-
-                                if (errDel) {
-                                    alert("Erreur lors de la suppression : " + errDel.message);
-                                } else {
-                                    chargerCommentaires();
-                                }
-                            });
-                        });
-                    }
-                }
-
-                // Afficher le formulaire de commentaire ou l'invitation à se connecter
-                if (session) {
-                    commentFormArea.innerHTML = `
-                        <div class="comment-form">
-                            <textarea id="commentTextarea" placeholder="Écrivez votre commentaire…" maxlength="1000"></textarea>
-                            <div class="form-footer">
-                                <span class="hint">Maximum 1000 caractères</span>
-                                <button class="submit-btn" id="btnCommenter">Publier</button>
-                            </div>
-                            <div class="form-message" id="commentMessage"></div>
-                        </div>
-                    `;
-
-                    document.getElementById("btnCommenter").addEventListener("click", async () => {
-                        const textarea = document.getElementById("commentTextarea");
-                        const message = document.getElementById("commentMessage");
-                        const btn = document.getElementById("btnCommenter");
-                        const contenu = textarea.value.trim();
-
-                        if (!contenu) {
-                            message.textContent = "Veuillez écrire un commentaire.";
-                            message.className = "form-message error";
-                            return;
-                        }
-
-                        btn.disabled = true;
-                        btn.textContent = "Publication…";
-
-                        const { error: errInsert } = await supabase
-                            .from("commentaires")
-                            .insert({
-                                article_id: article.id,
-                                auteur_id: session.user.id,
-                                contenu
-                            });
-
-                        if (errInsert) {
-                            message.textContent = "Erreur : " + errInsert.message;
-                            message.className = "form-message error";
-                            btn.disabled = false;
-                            btn.textContent = "Publier";
-                        } else {
-                            message.textContent = "Commentaire publié !";
-                            message.className = "form-message success";
-                            textarea.value = "";
-                            btn.disabled = false;
-                            btn.textContent = "Publier";
-                            chargerCommentaires();
-                        }
-                    });
-                } else {
-                    commentFormArea.innerHTML = `
-                        <div class="comment-login-prompt">
-                            <a href="login.html">Connectez-vous</a> pour laisser un commentaire.
-                        </div>
-                    `;
-                }
-
-                // Charger les commentaires au démarrage
-                chargerCommentaires();
-            }
-        }
-    </script>
+    <script type="module" src="./js/pages/article.js"></script>
 </body>
 </html>

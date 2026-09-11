@@ -10,22 +10,12 @@
  *    initUserBar({ elementId, montrerConnexion }) -> Promise<{ session, profil }>
  *    chargerProfil()                                -> Promise<{ session, profil }>
  *    getPseudo(session, profil)                     -> string
- *    escapeHtml(str)                                -> string
  * ============================================================
  */
 import { supabase } from './supabase.js';
+import { escapeHtml } from './utils/escape.js';
 
-// Échappe les caractères HTML réservés pour une insertion sûre
-// dans `innerHTML` (évite les injections côté rendu).
-export function escapeHtml(str = '') {
-  return String(str).replace(/[&<>"']/g, (m) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
-  }[m]));
-}
+export { escapeHtml };
 
 // Charge la session courante et le profil (pseudo + rôle) si connecté.
 export async function chargerProfil() {
