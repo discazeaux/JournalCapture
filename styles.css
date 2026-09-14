@@ -2681,6 +2681,10 @@ body.login-page {
 }
 .footer-legal {
     margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
 }
 .footer-legal a {
     color: var(--yellow);
