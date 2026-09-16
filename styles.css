@@ -2262,6 +2262,21 @@ td {
 }
 
 /* ── Mini-stats de l'accueil ─────────────────────────── */
+.hub-stats-head {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+
+.hub-stats-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent-yellow);
+    letter-spacing: -0.3px;
+    margin: 0;
+}
+
 .hub-stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2347,7 +2362,7 @@ td {
 .ccm-title {
     font-size: 22px;
     font-weight: 700;
-    color: var(--text);
+    color: var(--accent-yellow);
     letter-spacing: -0.3px;
     margin: 0;
 }

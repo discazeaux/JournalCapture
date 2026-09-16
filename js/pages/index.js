@@ -11,6 +11,10 @@ if (!session) {
   const lienMesStats = document.getElementById('lienMesStats');
   if (lienMesStats) lienMesStats.style.display = '';
 
+  // Connecté : masquer la section d'explication "Comment ça marche"
+  const sectionCcm = document.querySelector('.ccm');
+  if (sectionCcm) sectionCcm.style.display = 'none';
+
   ['lienConnexion', 'lienInscription'].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
