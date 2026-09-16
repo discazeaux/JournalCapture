@@ -2337,6 +2337,19 @@ td {
     line-height: 1.4;
 }
 
+/* Ligne de comparaison avec la semaine précédente */
+.hub-stat-compare {
+    font-size: 10.5px;
+}
+
+.hub-stat-compare .cmp-up {
+    color: var(--success);
+}
+
+.hub-stat-compare .cmp-down {
+    color: var(--danger);
+}
+
 @media (max-width: 720px) {
     .hub-stats {
         grid-template-columns: 1fr;

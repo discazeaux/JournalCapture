@@ -80,8 +80,11 @@ if (captures && captures.length) {
   const lundi = new Date(aujourdhui);
   lundi.setDate(aujourdhui.getDate() - decalageLundi);
   const lundiStr = lundi.toISOString().split('T')[0];
+  const prevLundi = new Date(lundi.getTime() - 7 * 86400000);
+  const prevLundiStr = prevLundi.toISOString().split('T')[0];
 
   let totalSemaine = 0;
+  let totalSemainePrecedente = 0;
   let totalSaison = 0;
   const parMethode = {};
   const parAppat = {};
@@ -99,6 +102,8 @@ if (captures && captures.length) {
         const nomAppat = nomsAppats[c.appat_id] || 'Appât';
         parAppat[nomAppat] = (parAppat[nomAppat] || 0) + n;
       }
+    } else if (d >= prevLundiStr) {
+      totalSemainePrecedente += n;
     }
 
     if (d.startsWith(prefixeSaison)) totalSaison += n;
@@ -107,6 +112,18 @@ if (captures && captures.length) {
   document.getElementById('statSemaine').textContent = totalSemaine;
   document.getElementById('statSaison').textContent = totalSaison;
   document.getElementById('statSaisonLibelle').textContent = `Saison ${annee}`;
+
+  const compareEl = document.getElementById('statSemaineCompare');
+  if (compareEl) {
+    const diff = totalSemaine - totalSemainePrecedente;
+    if (diff > 0) {
+      compareEl.innerHTML = `<span class="cmp-up">▲ ${diff} de plus</span> que la semaine dernière`;
+    } else if (diff < 0) {
+      compareEl.innerHTML = `<span class="cmp-down">▼ ${Math.abs(diff)} de moins</span> que la semaine dernière`;
+    } else {
+      compareEl.textContent = '≈ autant que la semaine dernière';
+    }
+  }
 
   let meilleureMethode = null;
   let meilleurTotal = 0;
