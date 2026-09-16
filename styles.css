@@ -2264,7 +2264,7 @@ td {
 /* ── Mini-stats de l'accueil ─────────────────────────── */
 .hub-stats {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: 1fr 1fr;
     gap: 12px;
 }
 
@@ -2322,12 +2322,6 @@ td {
     line-height: 1.4;
 }
 
-@media (max-width: 920px) {
-    .hub-stats {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
 @media (max-width: 720px) {
     .hub-stats {
         grid-template-columns: 1fr;
@@ -2339,6 +2333,75 @@ td {
     .auth-buttons {
         grid-template-columns: 1fr;
     }
+}
+
+/* ── Section "Comment ça marche" ───────────────────────── */
+.ccm-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+
+.ccm-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+    margin: 0;
+}
+
+.ccm-steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ccm-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 14px 4px;
+}
+
+.ccm-step + .ccm-step {
+    border-top: 1px solid var(--border);
+}
+
+.ccm-num {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--yellow);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    box-shadow: 0 2px 8px rgba(184, 134, 11, 0.25);
+}
+
+.ccm-step-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.ccm-step-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 4px;
+}
+
+.ccm-step-desc {
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.55;
+    margin: 0;
 }
 
 /* ── Navigation (ancienne) ────────────────────────────── */
