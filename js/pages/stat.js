@@ -58,6 +58,18 @@ function getNumeroSemaine(dateStr) {
 
 const couleurs = ['#b8860b', '#c05a5a', '#4a9d8f', '#8a7fb8', '#c98a6b', '#7a9d6a', '#c9a86b', '#5a8fb4'];
 
+// Conditions météo (ordre d'affichage) pour le graphe "raquette selon la météo"
+const METEO_ORDER = ['ensoleillé', 'nuageux', 'couvert', 'bruine', 'pluie', 'orage', 'inconnu'];
+const METEO_LABELS = {
+  'ensoleillé': '☀️ Ensoleillé',
+  'nuageux': '⛅ Nuageux',
+  'couvert': '☁️ Couvert',
+  'bruine': '🌦 Bruine',
+  'pluie': '🌧 Pluie',
+  'orage': '⛈ Orage',
+  'inconnu': '— Inconnu'
+};
+
 function regrouperParFenetre(dataTotauxParJour, fenetre) {
   const jours = Object.keys(dataTotauxParJour).sort();
   if (!jours.length) return { labels: [], values: [] };
@@ -251,6 +263,38 @@ async function chargerCommunauteStats() {
     methodes.map((m) => `<td><strong>${totauxMethode[m]}</strong></td>`).join('') +
     `<td><strong class="table-total">${grandTotal}</strong></td>`;
   tbody.appendChild(trFoot);
+
+  // ── Frelons tués à la raquette électrique selon la météo ──
+  const parMeteoRaquette = {};
+  data.forEach((c) => {
+    if (c.methode === 'Raquette électrique') {
+      const cond = c.meteo_conditions || 'inconnu';
+      parMeteoRaquette[cond] = (parMeteoRaquette[cond] || 0) + (c.nombre || 0);
+    }
+  });
+
+  new Chart(document.getElementById('meteoRaquette'), {
+    type: 'bar',
+    data: {
+      labels: METEO_ORDER.map((k) => METEO_LABELS[k] || k),
+      datasets: [{
+        label: 'Frelons tués',
+        data: METEO_ORDER.map((k) => parMeteoRaquette[k] || 0),
+        backgroundColor: '#b8860bcc',
+        borderColor: '#b8860b',
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true, ticks: { color: '#8a8578' }, grid: { color: '#e8e2d4' } },
+        x: { ticks: { color: '#8a8578', maxRotation: 0 } }
+      },
+      plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }
+    }
+  });
 }
 
 function renderTendanceCommunaute() {
