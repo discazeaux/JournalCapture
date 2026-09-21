@@ -35,6 +35,11 @@ export const DOM_IDS = {
   },
 
   SETTINGS: {
+    LIST_RUCHERS: 'listRuchers',
+    INPUT_NOM_RUCHER: 'inputNomRucher',
+    INPUT_NOMBRE_RUCHES: 'inputNombreRuches',
+    INPUT_NOMBRE_RUCHETTES: 'inputNombreRuchettes',
+    BTN_AJOUTER_RUCHER: 'btnAjouterRucher',
     LIST_APPATS: 'listAppats',
     SECTION_SUGGESTIONS: 'sectionSuggestions',
     GRID_SUGGESTIONS: 'gridSuggestions',
@@ -67,6 +72,18 @@ export const UI_MESSAGES = {
   },
 
   settings: {
+    rucherAdded: 'Rucher ajouté ✓',
+    rucherUpdated: 'Nombre de ruches mis à jour ✓',
+    rucherDeleted: 'Rucher supprimé',
+    requireRucherName: 'Donnez un nom au rucher',
+    invalidRucherCounts: 'Les nombres doivent être des entiers positifs ou nuls',
+    deleteRucherConfirm: 'Supprimer ce rucher ?',
+    traitementAdded: 'Traitement ajouté ✓',
+    traitementDeleted: 'Traitement supprimé',
+    requireTraitementFields: 'Indiquez un intitulé et une date',
+    requireRappelDate: 'Indiquez la date du rappel',
+    traitementUpdated: 'Suivi du traitement mis à jour ✓',
+    deleteTraitementConfirm: 'Supprimer ce traitement ?',
     appatDeleted: 'Appât supprimé',
     appatAdded: 'Appât ajouté ✓',
     appatDefaultUpdated: 'Appât par défaut mis à jour ✓',

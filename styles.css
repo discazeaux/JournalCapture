@@ -106,6 +106,85 @@ h2 {
     margin-bottom: 56px;
 }
 
+.home-reminders {
+    max-width: 720px;
+    margin: 0 auto 28px;
+    padding: 18px 20px;
+    background: #fffdf7;
+    border: 1px solid var(--yellow-soft);
+    border-left: 4px solid var(--yellow);
+    border-radius: 12px;
+    text-align: left;
+}
+
+.home-reminders-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.home-reminders-head h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: 18px;
+    text-align: left;
+}
+
+.home-reminders-head span {
+    color: var(--amber);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.home-reminders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.home-reminder-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    cursor: pointer;
+    transition: opacity 0.2s, background 0.2s;
+}
+
+.home-reminder-row:hover {
+    background: var(--yellow-dim);
+}
+
+.home-reminder-row.is-done {
+    opacity: 0;
+}
+
+.home-reminder-row > input {
+    width: auto;
+    flex: none;
+}
+
+.home-reminder-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.home-reminder-content strong {
+    color: var(--text);
+    font-size: 14px;
+}
+
+.home-reminder-content small {
+    color: var(--muted);
+    font-size: 12px;
+}
+
 .hero-img {
     width: 88px;
     height: 88px;
@@ -788,6 +867,169 @@ td {
     border-radius: 10px;
     overflow: hidden;
     transition: border-color 0.2s;
+}
+
+.rucher-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.rucher-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    flex-wrap: wrap;
+}
+
+.rucher-nom {
+    font-size: 15px;
+    font-weight: 600;
+    flex: 1;
+    color: var(--yellow);
+}
+
+.rucher-details {
+    display: flex;
+    gap: 10px;
+    align-items: end;
+    padding: 0 14px 12px;
+    color: var(--muted);
+    font-size: 13px;
+    flex-wrap: wrap;
+}
+
+.rucher-details label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.rucher-details input {
+    width: 76px;
+    padding: 7px 8px;
+    margin: 0;
+    font-size: 13px;
+}
+
+.btn-save-rucher {
+    width: auto;
+    padding: 8px 12px;
+    border: 1px solid var(--yellow);
+    border-radius: 8px;
+    background: var(--yellow-dim);
+    color: var(--accent-yellow-dark);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.btn-save-rucher:hover {
+    background: var(--yellow-soft);
+}
+
+.traitements-panel {
+    border-top: 1px solid var(--border);
+    padding: 12px 14px 14px;
+    background: var(--bg);
+}
+
+.traitements-panel strong {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.traitements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.traitement-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.traitement-row > span {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    flex-wrap: wrap;
+}
+
+.traitement-row.traitement-fait > span {
+    text-decoration: line-through;
+    color: var(--muted);
+}
+
+.traitement-row small {
+    color: var(--muted);
+}
+
+.traitement-row .rappel-date {
+    color: var(--amber);
+}
+
+.traitement-check,
+.traitement-rappel-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.traitement-check input,
+.traitement-rappel-option input {
+    width: auto;
+}
+
+.traitements-empty {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.traitement-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.traitement-form input {
+    min-width: 120px;
+    padding: 8px 10px;
+    margin: 0;
+    font-size: 13px;
+}
+
+.traitement-form input[type="text"] {
+    flex: 1;
+}
+
+.traitement-form input[type="date"] {
+    width: 142px;
+}
+
+.traitement-form .btn-add {
+    width: auto;
+    padding: 9px 14px;
+    font-size: 13px;
+}
+
+.btn-rm-traitement {
+    padding: 2px 7px !important;
 }
 
 .poste-card.inactif {

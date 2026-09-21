@@ -4,6 +4,8 @@ import { APP_PATHS, DOM_IDS, UI_MESSAGES } from '../constants.js';
 import { escapeHtml } from '../utils/escape.js';
 
 const state = {
+  ruchers: [],
+  traitements: [],
   appats: [],
   postes: [],
   suggDef: [],
@@ -48,6 +50,286 @@ async function chargerAppats() {
 
   state.appats = Array.isArray(data) ? data : [];
   renderAppats();
+}
+
+async function chargerRuchers() {
+  const { data, error } = await supabase
+    .from('ruchers')
+    .select('*')
+    .eq('user_id', session.user.id)
+    .order('created_at');
+
+  if (error) {
+    console.error(error);
+    state.ruchers = [];
+    renderRuchers();
+    return;
+  }
+
+  state.ruchers = data || [];
+  renderRuchers();
+}
+
+async function chargerTraitements() {
+  const { data, error } = await supabase
+    .from('traitements_ruchers')
+    .select('*')
+    .eq('user_id', session.user.id)
+    .order('date_traitement', { ascending: false });
+
+  if (error) {
+    console.error(error);
+    state.traitements = [];
+    renderRuchers();
+    return;
+  }
+
+  state.traitements = data || [];
+  renderRuchers();
+}
+
+function afficherDate(date) {
+  if (!date) return '—';
+  return new Intl.DateTimeFormat('fr-FR').format(new Date(`${date}T00:00:00`));
+}
+
+function renderRuchers() {
+  const list = document.getElementById(DOM_IDS.SETTINGS.LIST_RUCHERS);
+  if (!list) return;
+
+  list.innerHTML = '';
+
+  if (!state.ruchers.length) {
+    list.innerHTML = '<p class="empty">Aucun rucher. Ajoutez-en un ci-dessous.</p>';
+    return;
+  }
+
+  state.ruchers.forEach((rucher) => {
+    const card = document.createElement('div');
+    card.className = 'rucher-card';
+    const traitements = state.traitements.filter((traitement) => traitement.rucher_id === rucher.id);
+    card.innerHTML = `
+      <div class="rucher-header">
+        <span class="rucher-nom">${escapeHtml(rucher.nom)}</span>
+        <div class="item-actions">
+          <button class="btn-rm" data-id="${rucher.id}" title="Supprimer">✕</button>
+        </div>
+      </div>
+      <div class="rucher-details">
+        <label>🐝 Ruches
+          <input type="number" class="input-nombre-ruches" data-rucher-id="${rucher.id}" min="0" max="9999" value="${rucher.nombre_ruches}">
+        </label>
+        <label>▣ Ruchettes
+          <input type="number" class="input-nombre-ruchettes" data-rucher-id="${rucher.id}" min="0" max="9999" value="${rucher.nombre_ruchettes}">
+        </label>
+        <button type="button" class="btn-save-rucher" data-rucher-id="${rucher.id}">💾 Enregistrer</button>
+      </div>
+      <div class="traitements-panel">
+        <strong>Traitements chimiques</strong>
+        <div class="traitements-list">
+          ${traitements.length
+            ? traitements.map((traitement) => `
+              <div class="traitement-row${traitement.rappel_fait ? ' traitement-fait' : ''}">
+                <span>
+                  ${escapeHtml(traitement.intitule)} <small>(${afficherDate(traitement.date_traitement)})</small>
+                  ${traitement.rappel_necessaire ? `<small class="rappel-date">Rappel : ${afficherDate(traitement.date_rappel)}</small>` : ''}
+                </span>
+                ${traitement.rappel_necessaire
+                  ? `<label class="traitement-check"><input type="checkbox" class="check-rappel-traitement" data-id="${traitement.id}" ${traitement.rappel_fait ? 'checked' : ''}> Action réalisée</label>`
+                  : ''}
+                <button class="btn-rm btn-rm-traitement" data-id="${traitement.id}" title="Supprimer">✕</button>
+              </div>
+            `).join('')
+            : '<span class="traitements-empty">Aucun traitement enregistré</span>'}
+        </div>
+        <div class="traitement-form">
+          <input type="text" class="input-intitule-traitement" data-rucher-id="${rucher.id}" placeholder="Intitulé du traitement" maxlength="100">
+          <input type="date" class="input-date-traitement" data-rucher-id="${rucher.id}" value="${new Date().toISOString().slice(0, 10)}">
+          <label class="traitement-rappel-option"><input type="checkbox" class="check-rappel-nouveau" data-rucher-id="${rucher.id}"> Prévoir un rappel</label>
+          <input type="date" class="input-date-rappel" data-rucher-id="${rucher.id}" title="Date du rappel" disabled>
+          <button type="button" class="btn-add btn-ajouter-traitement" data-rucher-id="${rucher.id}">＋ Ajouter</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  list.querySelectorAll('.rucher-header .btn-rm').forEach((btn) => {
+    btn.addEventListener('click', () => supprimerRucher(btn.dataset.id));
+  });
+
+  list.querySelectorAll('.btn-save-rucher').forEach((btn) => {
+    btn.addEventListener('click', () => modifierEffectifsRucher(btn.dataset.rucherId));
+  });
+
+  list.querySelectorAll('.btn-rm-traitement').forEach((btn) => {
+    btn.addEventListener('click', () => supprimerTraitement(btn.dataset.id));
+  });
+
+  list.querySelectorAll('.check-rappel-traitement').forEach((checkbox) => {
+    checkbox.addEventListener('change', () => modifierRappel(checkbox.dataset.id, checkbox.checked));
+  });
+
+  list.querySelectorAll('.check-rappel-nouveau').forEach((checkbox) => {
+    checkbox.addEventListener('change', () => {
+      const dateInput = document.querySelector(`.input-date-rappel[data-rucher-id="${checkbox.dataset.rucherId}"]`);
+      if (dateInput) dateInput.disabled = !checkbox.checked;
+    });
+  });
+
+  list.querySelectorAll('.btn-ajouter-traitement').forEach((btn) => {
+    btn.addEventListener('click', () => ajouterTraitement(btn.dataset.rucherId));
+  });
+}
+
+async function modifierEffectifsRucher(rucherId) {
+  const ruchesInput = document.querySelector(`.input-nombre-ruches[data-rucher-id="${rucherId}"]`);
+  const ruchettesInput = document.querySelector(`.input-nombre-ruchettes[data-rucher-id="${rucherId}"]`);
+  const nombreRuches = Number(ruchesInput?.value);
+  const nombreRuchettes = Number(ruchettesInput?.value);
+
+  if (!Number.isInteger(nombreRuches) || !Number.isInteger(nombreRuchettes)
+    || nombreRuches < 0 || nombreRuchettes < 0) {
+    toast(UI_MESSAGES.settings.invalidRucherCounts, true);
+    return;
+  }
+
+  const { error } = await supabase.from('ruchers').update({
+    nombre_ruches: nombreRuches,
+    nombre_ruchettes: nombreRuchettes
+  }).eq('id', rucherId).eq('user_id', session.user.id);
+
+  if (error) {
+    toast('Erreur : ' + error.message, true);
+    return;
+  }
+
+  const rucher = state.ruchers.find((item) => item.id === rucherId);
+  if (rucher) {
+    rucher.nombre_ruches = nombreRuches;
+    rucher.nombre_ruchettes = nombreRuchettes;
+  }
+
+  renderRuchers();
+  toast(UI_MESSAGES.settings.rucherUpdated);
+}
+
+async function ajouterTraitement(rucherId) {
+  const intituleInput = document.querySelector(`.input-intitule-traitement[data-rucher-id="${rucherId}"]`);
+  const dateInput = document.querySelector(`.input-date-traitement[data-rucher-id="${rucherId}"]`);
+  const rappelInput = document.querySelector(`.check-rappel-nouveau[data-rucher-id="${rucherId}"]`);
+  const dateRappelInput = document.querySelector(`.input-date-rappel[data-rucher-id="${rucherId}"]`);
+  const intitule = intituleInput?.value.trim();
+  const dateTraitement = dateInput?.value;
+  const rappelNecessaire = rappelInput?.checked || false;
+  const dateRappel = dateRappelInput?.value || null;
+
+  if (!intitule || !dateTraitement) {
+    toast(UI_MESSAGES.settings.requireTraitementFields, true);
+    return;
+  }
+
+  if (rappelNecessaire && !dateRappel) {
+    toast(UI_MESSAGES.settings.requireRappelDate, true);
+    return;
+  }
+
+  const { data, error } = await supabase.from('traitements_ruchers').insert({
+    user_id: session.user.id,
+    rucher_id: rucherId,
+    intitule,
+    date_traitement: dateTraitement,
+    rappel_necessaire: rappelNecessaire,
+    date_rappel: rappelNecessaire ? dateRappel : null,
+    rappel_fait: false
+  }).select('*').single();
+
+  if (error) {
+    toast('Erreur : ' + error.message, true);
+    return;
+  }
+
+  state.traitements.push(data);
+  renderRuchers();
+  toast(UI_MESSAGES.settings.traitementAdded);
+}
+
+async function modifierRappel(id, rappelFait) {
+  const { error } = await supabase.from('traitements_ruchers')
+    .update({ rappel_fait: rappelFait })
+    .eq('id', id)
+    .eq('user_id', session.user.id);
+
+  if (error) {
+    toast('Erreur : ' + error.message, true);
+    renderRuchers();
+    return;
+  }
+
+  const traitement = state.traitements.find((item) => item.id === id);
+  if (traitement) traitement.rappel_fait = rappelFait;
+  renderRuchers();
+  toast(UI_MESSAGES.settings.traitementUpdated);
+}
+
+async function supprimerTraitement(id) {
+  if (!confirm(UI_MESSAGES.settings.deleteTraitementConfirm)) return;
+
+  const { error } = await supabase.from('traitements_ruchers').delete().eq('id', id);
+
+  if (error) {
+    toast('Erreur : ' + error.message, true);
+    return;
+  }
+
+  state.traitements = state.traitements.filter((traitement) => traitement.id !== id);
+  renderRuchers();
+  toast(UI_MESSAGES.settings.traitementDeleted);
+}
+
+async function ajouterRucher() {
+  const nom = document.getElementById(DOM_IDS.SETTINGS.INPUT_NOM_RUCHER)?.value.trim();
+  const nombreRuches = parseInt(document.getElementById(DOM_IDS.SETTINGS.INPUT_NOMBRE_RUCHES)?.value, 10);
+  const nombreRuchettes = parseInt(document.getElementById(DOM_IDS.SETTINGS.INPUT_NOMBRE_RUCHETTES)?.value, 10);
+
+  if (!nom) {
+    toast(UI_MESSAGES.settings.requireRucherName, true);
+    return;
+  }
+
+  const { data, error } = await supabase.from('ruchers').insert({
+    user_id: session.user.id,
+    nom,
+    nombre_ruches: Number.isNaN(nombreRuches) ? 0 : nombreRuches,
+    nombre_ruchettes: Number.isNaN(nombreRuchettes) ? 0 : nombreRuchettes
+  }).select('*').single();
+
+  if (error) {
+    toast('Erreur : ' + error.message, true);
+    return;
+  }
+
+  state.ruchers.push(data);
+  document.getElementById(DOM_IDS.SETTINGS.INPUT_NOM_RUCHER).value = '';
+  document.getElementById(DOM_IDS.SETTINGS.INPUT_NOMBRE_RUCHES).value = 0;
+  document.getElementById(DOM_IDS.SETTINGS.INPUT_NOMBRE_RUCHETTES).value = 0;
+  renderRuchers();
+  toast(UI_MESSAGES.settings.rucherAdded);
+}
+
+async function supprimerRucher(id) {
+  if (!confirm(UI_MESSAGES.settings.deleteRucherConfirm)) return;
+
+  const { error } = await supabase.from('ruchers').delete().eq('id', id);
+
+  if (error) {
+    toast('Erreur : ' + error.message, true);
+    return;
+  }
+
+  state.ruchers = state.ruchers.filter((rucher) => rucher.id !== id);
+  renderRuchers();
+  toast(UI_MESSAGES.settings.rucherDeleted);
 }
 
 async function chargerSuggestions() {
@@ -411,13 +693,19 @@ async function supprimerPoste(id) {
 }
 
 function bindStaticEvents() {
+  const inputNomRucher = document.getElementById(DOM_IDS.SETTINGS.INPUT_NOM_RUCHER);
   const inputNouvelAppat = document.getElementById(DOM_IDS.SETTINGS.INPUT_NOUVEL_APPAT);
   const inputNomPoste = document.getElementById(DOM_IDS.SETTINGS.INPUT_NOM_POSTE);
 
   document.getElementById(DOM_IDS.SETTINGS.BTN_TYPE_SUCRE)?.addEventListener('click', () => selectType('sucre'));
   document.getElementById(DOM_IDS.SETTINGS.BTN_TYPE_PROTEINE)?.addEventListener('click', () => selectType('proteine'));
-  document.querySelector('.btn-add')?.addEventListener('click', ajouterAppat);
-  document.querySelector('.btn-add.ml-auto')?.addEventListener('click', ajouterPoste);
+  document.getElementById(DOM_IDS.SETTINGS.BTN_AJOUTER_APPAT)?.addEventListener('click', ajouterAppat);
+  document.getElementById(DOM_IDS.SETTINGS.BTN_AJOUTER_POSTE)?.addEventListener('click', ajouterPoste);
+  document.getElementById(DOM_IDS.SETTINGS.BTN_AJOUTER_RUCHER)?.addEventListener('click', ajouterRucher);
+
+  inputNomRucher?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') ajouterRucher();
+  });
 
   inputNouvelAppat?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') ajouterAppat();
@@ -439,7 +727,7 @@ async function initSettingsPage() {
 
   bindStaticEvents();
   selectType('sucre');
-  await Promise.all([chargerAppats(), chargerSuggestions()]);
+  await Promise.all([chargerRuchers(), chargerTraitements(), chargerAppats(), chargerSuggestions()]);
   await chargerPostes();
 }
 

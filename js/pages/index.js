@@ -1,5 +1,6 @@
 import { supabase } from '../supabase.js';
 import { initUserBar } from '../auth.js';
+import { escapeHtml } from '../utils/escape.js';
 
 const { session } = await initUserBar({ elementId: 'userBar', montrerConnexion: false });
 
@@ -23,6 +24,75 @@ if (!session) {
   const authWrap = document.querySelector('.auth-buttons');
   if (authWrap) authWrap.style.display = 'none';
 }
+
+function afficherDateRappel(date) {
+  if (!date) return 'Date non précisée';
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: 'numeric', month: 'long', year: 'numeric'
+  }).format(new Date(`${date}T00:00:00`));
+}
+
+async function chargerRappels() {
+  if (!session) return;
+
+  const section = document.getElementById('homeReminders');
+  const list = document.getElementById('homeRemindersList');
+  const count = document.getElementById('homeRemindersCount');
+  if (!section || !list) return;
+
+  const { data: rappels, error } = await supabase
+    .from('traitements_ruchers')
+    .select('id, intitule, date_rappel, ruchers(nom)')
+    .eq('user_id', session.user.id)
+    .eq('rappel_necessaire', true)
+    .eq('rappel_fait', false)
+    .order('date_rappel', { ascending: true });
+
+  if (error || !rappels?.length) return;
+
+  list.innerHTML = rappels.map((rappel) => `
+    <label class="home-reminder-row" data-id="${rappel.id}">
+      <input type="checkbox" class="home-reminder-check" data-id="${rappel.id}">
+      <span class="home-reminder-content">
+        <strong>${escapeHtml(rappel.intitule)}</strong>
+        <small>${escapeHtml(rappel.ruchers?.nom || 'Rucher')} · ${afficherDateRappel(rappel.date_rappel)}</small>
+      </span>
+    </label>
+  `).join('');
+  count.textContent = `${rappels.length} action${rappels.length > 1 ? 's' : ''}`;
+  section.style.display = '';
+
+  list.querySelectorAll('.home-reminder-check').forEach((checkbox) => {
+    checkbox.addEventListener('change', () => validerRappel(checkbox));
+  });
+}
+
+async function validerRappel(checkbox) {
+  checkbox.disabled = true;
+  const id = checkbox.dataset.id;
+  const { error } = await supabase.from('traitements_ruchers')
+    .update({ rappel_fait: true })
+    .eq('id', id)
+    .eq('user_id', session.user.id);
+
+  if (error) {
+    checkbox.checked = false;
+    checkbox.disabled = false;
+    return;
+  }
+
+  const row = checkbox.closest('.home-reminder-row');
+  row?.classList.add('is-done');
+  setTimeout(() => {
+    row?.remove();
+    const remaining = document.querySelectorAll('.home-reminder-row').length;
+    const count = document.getElementById('homeRemindersCount');
+    if (count) count.textContent = `${remaining} action${remaining > 1 ? 's' : ''}`;
+    if (!remaining) document.getElementById('homeReminders')?.remove();
+  }, 250);
+}
+
+chargerRappels();
 
 function extraireExtrait(contenu, max = 180) {
   if (!contenu) return '';
