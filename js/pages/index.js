@@ -42,24 +42,30 @@ async function chargerRappels() {
 
   const { data: rappels, error } = await supabase
     .from('traitements_ruchers')
-    .select('id, intitule, date_rappel, ruchers(nom)')
+    .select('id, intitule, date_traitement, date_changement_lanieres, date_retrait_lanieres, changement_lanieres_fait, retrait_lanieres_fait, ruchers(nom)')
     .eq('user_id', session.user.id)
-    .eq('rappel_necessaire', true)
-    .eq('rappel_fait', false)
-    .order('date_rappel', { ascending: true });
+    .order('date_traitement', { ascending: false });
 
   if (error || !rappels?.length) return;
 
-  list.innerHTML = rappels.map((rappel) => `
-    <label class="home-reminder-row" data-id="${rappel.id}">
-      <input type="checkbox" class="home-reminder-check" data-id="${rappel.id}">
+  const elements = rappels.flatMap((rappel) => [
+    { ...rappel, etape: 'Changer les lanières', etapeCle: 'changement', date: rappel.date_changement_lanieres, fait: rappel.changement_lanieres_fait },
+    { ...rappel, etape: 'Enlever les lanières', etapeCle: 'retrait', date: rappel.date_retrait_lanieres, fait: rappel.retrait_lanieres_fait }
+  ]).filter((rappel) => rappel.date && !rappel.fait);
+
+  if (!elements.length) return;
+
+  list.innerHTML = elements.map((rappel) => `
+    <label class="home-reminder-row">
+      <input type="checkbox" class="home-reminder-check" data-id="${rappel.id}" data-etape="${rappel.etapeCle}"
+        aria-label="Valider : ${escapeHtml(rappel.etape)}">
       <span class="home-reminder-content">
-        <strong>${escapeHtml(rappel.intitule)}</strong>
-        <small>${escapeHtml(rappel.ruchers?.nom || 'Rucher')} · ${afficherDateRappel(rappel.date_rappel)}</small>
+        <strong>${escapeHtml(rappel.etape)} — ${escapeHtml(rappel.intitule)}</strong>
+        <small>${escapeHtml(rappel.ruchers?.nom || 'Rucher')} · ${afficherDateRappel(rappel.date)}</small>
       </span>
     </label>
   `).join('');
-  count.textContent = `${rappels.length} action${rappels.length > 1 ? 's' : ''}`;
+  count.textContent = `${elements.length} rappel${elements.length > 1 ? 's' : ''}`;
   section.style.display = '';
 
   list.querySelectorAll('.home-reminder-check').forEach((checkbox) => {
@@ -68,11 +74,14 @@ async function chargerRappels() {
 }
 
 async function validerRappel(checkbox) {
+  const colonne = checkbox.dataset.etape === 'changement'
+    ? 'changement_lanieres_fait'
+    : 'retrait_lanieres_fait';
   checkbox.disabled = true;
-  const id = checkbox.dataset.id;
+
   const { error } = await supabase.from('traitements_ruchers')
-    .update({ rappel_fait: true })
-    .eq('id', id)
+    .update({ [colonne]: true })
+    .eq('id', checkbox.dataset.id)
     .eq('user_id', session.user.id);
 
   if (error) {
@@ -87,7 +96,7 @@ async function validerRappel(checkbox) {
     row?.remove();
     const remaining = document.querySelectorAll('.home-reminder-row').length;
     const count = document.getElementById('homeRemindersCount');
-    if (count) count.textContent = `${remaining} action${remaining > 1 ? 's' : ''}`;
+    if (count) count.textContent = `${remaining} rappel${remaining > 1 ? 's' : ''}`;
     if (!remaining) document.getElementById('homeReminders')?.remove();
   }, 250);
 }

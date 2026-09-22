@@ -73,12 +73,13 @@ export const UI_MESSAGES = {
 
   settings: {
     rucherAdded: 'Rucher ajouté ✓',
-    rucherUpdated: 'Nombre de ruches mis à jour ✓',
+    rucherUpdated: 'Effectif du rucher mis à jour ✓',
     rucherDeleted: 'Rucher supprimé',
     requireRucherName: 'Donnez un nom au rucher',
     invalidRucherCounts: 'Les nombres doivent être des entiers positifs ou nuls',
     deleteRucherConfirm: 'Supprimer ce rucher ?',
     traitementAdded: 'Traitement ajouté ✓',
+    traitementRemindersUpdated: 'Rappels du traitement mis à jour ✓',
     traitementDeleted: 'Traitement supprimé',
     requireTraitementFields: 'Indiquez un intitulé et une date',
     requireRappelDate: 'Indiquez la date du rappel',

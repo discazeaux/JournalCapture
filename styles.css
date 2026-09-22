@@ -160,6 +160,11 @@ h2 {
     background: var(--yellow-dim);
 }
 
+.home-reminder-row > input {
+    width: auto;
+    flex: none;
+}
+
 .home-reminder-row.is-done {
     opacity: 0;
 }
@@ -914,23 +919,6 @@ td {
     font-size: 13px;
 }
 
-.btn-save-rucher {
-    width: auto;
-    padding: 8px 12px;
-    border: 1px solid var(--yellow);
-    border-radius: 8px;
-    background: var(--yellow-dim);
-    color: var(--accent-yellow-dark);
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.btn-save-rucher:hover {
-    background: var(--yellow-soft);
-}
-
 .traitements-panel {
     border-top: 1px solid var(--border);
     padding: 12px 14px 14px;
@@ -955,7 +943,7 @@ td {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 4px;
     color: var(--text-secondary);
     font-size: 13px;
 }
@@ -965,6 +953,61 @@ td {
     gap: 6px;
     align-items: baseline;
     flex-wrap: wrap;
+}
+
+.traitement-rappels-edit {
+    display: flex;
+    align-items: end;
+    gap: 8px;
+    flex-wrap: wrap;
+    flex: 1;
+    margin-left: 12px;
+}
+
+.traitement-rappels-edit label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.traitement-etape > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.traitement-etape > span input[type="checkbox"] {
+    width: auto;
+}
+
+.traitement-etape.etape-faite > span {
+    color: var(--muted);
+    text-decoration: line-through;
+}
+
+.traitement-etape em {
+    color: var(--success);
+    font-size: 11px;
+    font-style: normal;
+}
+
+.traitement-rappels-edit input {
+    width: 138px;
+    padding: 6px 7px;
+    margin: 0;
+    font-size: 12px;
+}
+
+.traitement-row .btn-rm-traitement {
+    align-self: center;
+    height: 31px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .traitement-row.traitement-fait > span {
@@ -1024,8 +1067,9 @@ td {
 
 .traitement-form .btn-add {
     width: auto;
-    padding: 9px 14px;
-    font-size: 13px;
+    padding: 10px 18px;
+    font-size: 14px;
+    border-radius: 12px;
 }
 
 .btn-rm-traitement {
@@ -1112,7 +1156,8 @@ td {
     margin: 0;
 }
 
-.add-form button.btn-add {
+.add-form button.btn-add,
+.traitement-form button.btn-add {
     width: auto;
     padding: 10px 18px;
     font-size: 14px;
@@ -1128,13 +1173,15 @@ td {
     transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
 }
 
-.add-form button.btn-add:hover {
+.add-form button.btn-add:hover,
+.traitement-form button.btn-add:hover {
     background: var(--button-hover);
     transform: translateY(-1px);
     box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
 }
 
-.add-form button.btn-add:active {
+.add-form button.btn-add:active,
+.traitement-form button.btn-add:active {
     transform: translateY(0);
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
 }

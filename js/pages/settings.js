@@ -93,6 +93,12 @@ function afficherDate(date) {
   return new Intl.DateTimeFormat('fr-FR').format(new Date(`${date}T00:00:00`));
 }
 
+function ajouterJours(date, jours) {
+  const resultat = new Date(`${date}T00:00:00`);
+  resultat.setDate(resultat.getDate() + jours);
+  return resultat.toISOString().slice(0, 10);
+}
+
 function renderRuchers() {
   const list = document.getElementById(DOM_IDS.SETTINGS.LIST_RUCHERS);
   if (!list) return;
@@ -122,21 +128,26 @@ function renderRuchers() {
         <label>▣ Ruchettes
           <input type="number" class="input-nombre-ruchettes" data-rucher-id="${rucher.id}" min="0" max="9999" value="${rucher.nombre_ruchettes}">
         </label>
-        <button type="button" class="btn-save-rucher" data-rucher-id="${rucher.id}">💾 Enregistrer</button>
       </div>
       <div class="traitements-panel">
         <strong>Traitements chimiques</strong>
         <div class="traitements-list">
           ${traitements.length
             ? traitements.map((traitement) => `
-              <div class="traitement-row${traitement.rappel_fait ? ' traitement-fait' : ''}">
+              <div class="traitement-row">
                 <span>
                   ${escapeHtml(traitement.intitule)} <small>(${afficherDate(traitement.date_traitement)})</small>
-                  ${traitement.rappel_necessaire ? `<small class="rappel-date">Rappel : ${afficherDate(traitement.date_rappel)}</small>` : ''}
                 </span>
-                ${traitement.rappel_necessaire
-                  ? `<label class="traitement-check"><input type="checkbox" class="check-rappel-traitement" data-id="${traitement.id}" ${traitement.rappel_fait ? 'checked' : ''}> Action réalisée</label>`
-                  : ''}
+                <div class="traitement-rappels-edit">
+                  <label class="traitement-etape ${traitement.changement_lanieres_fait ? 'etape-faite' : ''}">
+                    <span><input type="checkbox" class="check-etape-traitement" data-id="${traitement.id}" data-etape="changement" ${traitement.changement_lanieres_fait ? 'checked' : ''}> Changer les lanières</span>
+                    ${traitement.changement_lanieres_fait ? `<em>Fait le ${afficherDate(traitement.date_changement_lanieres)}</em>` : `<input type="date" class="input-changement-lanieres" data-id="${traitement.id}" value="${traitement.date_changement_lanieres || ''}">`}
+                  </label>
+                  <label class="traitement-etape ${traitement.retrait_lanieres_fait ? 'etape-faite' : ''}">
+                    <span><input type="checkbox" class="check-etape-traitement" data-id="${traitement.id}" data-etape="retrait" ${traitement.retrait_lanieres_fait ? 'checked' : ''}> Enlever les lanières</span>
+                    ${traitement.retrait_lanieres_fait ? `<em>Fait le ${afficherDate(traitement.date_retrait_lanieres)}</em>` : `<input type="date" class="input-retrait-lanieres" data-id="${traitement.id}" value="${traitement.date_retrait_lanieres || ''}">`}
+                  </label>
+                </div>
                 <button class="btn-rm btn-rm-traitement" data-id="${traitement.id}" title="Supprimer">✕</button>
               </div>
             `).join('')
@@ -145,8 +156,6 @@ function renderRuchers() {
         <div class="traitement-form">
           <input type="text" class="input-intitule-traitement" data-rucher-id="${rucher.id}" placeholder="Intitulé du traitement" maxlength="100">
           <input type="date" class="input-date-traitement" data-rucher-id="${rucher.id}" value="${new Date().toISOString().slice(0, 10)}">
-          <label class="traitement-rappel-option"><input type="checkbox" class="check-rappel-nouveau" data-rucher-id="${rucher.id}"> Prévoir un rappel</label>
-          <input type="date" class="input-date-rappel" data-rucher-id="${rucher.id}" title="Date du rappel" disabled>
           <button type="button" class="btn-add btn-ajouter-traitement" data-rucher-id="${rucher.id}">＋ Ajouter</button>
         </div>
       </div>
@@ -158,23 +167,32 @@ function renderRuchers() {
     btn.addEventListener('click', () => supprimerRucher(btn.dataset.id));
   });
 
-  list.querySelectorAll('.btn-save-rucher').forEach((btn) => {
-    btn.addEventListener('click', () => modifierEffectifsRucher(btn.dataset.rucherId));
+  list.querySelectorAll('.input-nombre-ruches, .input-nombre-ruchettes').forEach((input) => {
+    input.addEventListener('change', () => modifierEffectifRucher(
+      input.dataset.rucherId,
+      input.classList.contains('input-nombre-ruches') ? 'nombre_ruches' : 'nombre_ruchettes',
+      input.value
+    ));
   });
 
   list.querySelectorAll('.btn-rm-traitement').forEach((btn) => {
     btn.addEventListener('click', () => supprimerTraitement(btn.dataset.id));
   });
 
-  list.querySelectorAll('.check-rappel-traitement').forEach((checkbox) => {
-    checkbox.addEventListener('change', () => modifierRappel(checkbox.dataset.id, checkbox.checked));
+  list.querySelectorAll('.input-changement-lanieres, .input-retrait-lanieres').forEach((input) => {
+    input.addEventListener('change', () => modifierDateRappel(
+      input.dataset.id,
+      input.classList.contains('input-changement-lanieres') ? 'changement' : 'retrait',
+      input.value
+    ));
   });
 
-  list.querySelectorAll('.check-rappel-nouveau').forEach((checkbox) => {
-    checkbox.addEventListener('change', () => {
-      const dateInput = document.querySelector(`.input-date-rappel[data-rucher-id="${checkbox.dataset.rucherId}"]`);
-      if (dateInput) dateInput.disabled = !checkbox.checked;
-    });
+  list.querySelectorAll('.check-etape-traitement').forEach((checkbox) => {
+    checkbox.addEventListener('change', () => modifierEtapeTraitement(
+      checkbox.dataset.id,
+      checkbox.dataset.etape,
+      checkbox.checked
+    ));
   });
 
   list.querySelectorAll('.btn-ajouter-traitement').forEach((btn) => {
@@ -182,22 +200,66 @@ function renderRuchers() {
   });
 }
 
-async function modifierEffectifsRucher(rucherId) {
-  const ruchesInput = document.querySelector(`.input-nombre-ruches[data-rucher-id="${rucherId}"]`);
-  const ruchettesInput = document.querySelector(`.input-nombre-ruchettes[data-rucher-id="${rucherId}"]`);
-  const nombreRuches = Number(ruchesInput?.value);
-  const nombreRuchettes = Number(ruchettesInput?.value);
+async function modifierEtapeTraitement(id, etape, faite) {
+  const colonne = etape === 'changement' ? 'changement_lanieres_fait' : 'retrait_lanieres_fait';
+  const { error } = await supabase.from('traitements_ruchers').update({
+    [colonne]: faite
+  })
+    .eq('id', id).eq('user_id', session.user.id);
 
-  if (!Number.isInteger(nombreRuches) || !Number.isInteger(nombreRuchettes)
-    || nombreRuches < 0 || nombreRuchettes < 0) {
+  if (error) {
+    toast('Erreur : ' + error.message, true);
+    renderRuchers();
+    return;
+  }
+
+  const traitement = state.traitements.find((item) => item.id === id);
+  if (traitement) {
+    traitement[colonne] = faite;
+  }
+  renderRuchers();
+  toast(UI_MESSAGES.settings.traitementRemindersUpdated || 'Rappels du traitement mis à jour ✓');
+}
+
+async function modifierDateRappel(id, etape, date) {
+  const traitement = state.traitements.find((item) => item.id === id);
+
+  if (!date) {
+    toast('Indiquez une date de rappel du traitement', true);
+    return;
+  }
+
+  const colonne = etape === 'changement' ? 'date_changement_lanieres' : 'date_retrait_lanieres';
+  const valeurs = { [colonne]: date };
+  if (etape === 'changement') valeurs.date_rappel = date;
+
+  const { error } = await supabase.from('traitements_ruchers').update({
+    ...valeurs
+  }).eq('id', id).eq('user_id', session.user.id);
+
+  if (error) {
+    toast('Erreur : ' + error.message, true);
+    return;
+  }
+
+  if (traitement) {
+    traitement[colonne] = date;
+    if (etape === 'changement') traitement.date_rappel = date;
+  }
+
+  toast(UI_MESSAGES.settings.traitementRemindersUpdated || 'Rappels du traitement mis à jour ✓');
+}
+
+async function modifierEffectifRucher(rucherId, colonne, valeur) {
+  const nombre = Number(valeur);
+
+  if (!Number.isInteger(nombre) || nombre < 0) {
     toast(UI_MESSAGES.settings.invalidRucherCounts, true);
     return;
   }
 
-  const { error } = await supabase.from('ruchers').update({
-    nombre_ruches: nombreRuches,
-    nombre_ruchettes: nombreRuchettes
-  }).eq('id', rucherId).eq('user_id', session.user.id);
+  const { error } = await supabase.from('ruchers').update({ [colonne]: nombre })
+    .eq('id', rucherId).eq('user_id', session.user.id);
 
   if (error) {
     toast('Erreur : ' + error.message, true);
@@ -205,32 +267,19 @@ async function modifierEffectifsRucher(rucherId) {
   }
 
   const rucher = state.ruchers.find((item) => item.id === rucherId);
-  if (rucher) {
-    rucher.nombre_ruches = nombreRuches;
-    rucher.nombre_ruchettes = nombreRuchettes;
-  }
+  if (rucher) rucher[colonne] = nombre;
 
-  renderRuchers();
   toast(UI_MESSAGES.settings.rucherUpdated);
 }
 
 async function ajouterTraitement(rucherId) {
   const intituleInput = document.querySelector(`.input-intitule-traitement[data-rucher-id="${rucherId}"]`);
   const dateInput = document.querySelector(`.input-date-traitement[data-rucher-id="${rucherId}"]`);
-  const rappelInput = document.querySelector(`.check-rappel-nouveau[data-rucher-id="${rucherId}"]`);
-  const dateRappelInput = document.querySelector(`.input-date-rappel[data-rucher-id="${rucherId}"]`);
   const intitule = intituleInput?.value.trim();
   const dateTraitement = dateInput?.value;
-  const rappelNecessaire = rappelInput?.checked || false;
-  const dateRappel = dateRappelInput?.value || null;
 
   if (!intitule || !dateTraitement) {
     toast(UI_MESSAGES.settings.requireTraitementFields, true);
-    return;
-  }
-
-  if (rappelNecessaire && !dateRappel) {
-    toast(UI_MESSAGES.settings.requireRappelDate, true);
     return;
   }
 
@@ -239,9 +288,12 @@ async function ajouterTraitement(rucherId) {
     rucher_id: rucherId,
     intitule,
     date_traitement: dateTraitement,
-    rappel_necessaire: rappelNecessaire,
-    date_rappel: rappelNecessaire ? dateRappel : null,
-    rappel_fait: false
+    rappel_necessaire: true,
+    date_rappel: ajouterJours(dateTraitement, 21),
+    date_changement_lanieres: ajouterJours(dateTraitement, 21),
+    date_retrait_lanieres: ajouterJours(dateTraitement, 42),
+    changement_lanieres_fait: false,
+    retrait_lanieres_fait: false
   }).select('*').single();
 
   if (error) {
@@ -252,24 +304,6 @@ async function ajouterTraitement(rucherId) {
   state.traitements.push(data);
   renderRuchers();
   toast(UI_MESSAGES.settings.traitementAdded);
-}
-
-async function modifierRappel(id, rappelFait) {
-  const { error } = await supabase.from('traitements_ruchers')
-    .update({ rappel_fait: rappelFait })
-    .eq('id', id)
-    .eq('user_id', session.user.id);
-
-  if (error) {
-    toast('Erreur : ' + error.message, true);
-    renderRuchers();
-    return;
-  }
-
-  const traitement = state.traitements.find((item) => item.id === id);
-  if (traitement) traitement.rappel_fait = rappelFait;
-  renderRuchers();
-  toast(UI_MESSAGES.settings.traitementUpdated);
 }
 
 async function supprimerTraitement(id) {
