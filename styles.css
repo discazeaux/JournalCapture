@@ -53,6 +53,7 @@ body {
     font-family: 'Space Grotesk', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     min-height: 100vh;
     padding: 20px;
+    padding-bottom: 80px;
 }
 
 /* Halo d'ambiance en arrière-plan */
@@ -232,6 +233,8 @@ h2 {
 
 footer {
     margin-top: 56px;
+    margin-bottom: 40px;
+    padding-bottom: 32px;
     color: var(--border);
     font-size: 12px;
     letter-spacing: 0.5px;
@@ -2240,6 +2243,7 @@ td {
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding-bottom: 80px;
 }
 
 .hub {
@@ -3069,4 +3073,6 @@ body.login-page {
 .footer-legal a {
     color: var(--yellow);
     font-weight: 600;
+    padding: 6px 4px;
 }
+
