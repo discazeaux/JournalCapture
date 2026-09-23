@@ -1,14 +1,14 @@
 /*
  * ============================================================
  *  Navigation commune — JournalCapture
- *  Génère la barre de navigation (univers frelon + univers blog)
+ *  Génère la barre de navigation (univers frelon + blog + rucher)
  *  Utilisée par toutes les pages du site.
  *
  *  Usage :
  *    <script src="navigation.js"></script>
  *    <script>
  *      initNavigation({
- *        univers: 'frelon' | 'blog',
+ *        univers: 'frelon' | 'blog' | 'rucher',
  *        : 'accueil' | 'nouvelleCapture' | 'stat' | 'settings' | 'blog' | 'article'
  *      });
  *    </script>
@@ -29,19 +29,24 @@
   // Sections par univers
   const SECTIONS = {
     frelon: [
+      { id: 'suiviRucher', label: '🐝 Suivi du rucher', href: 'suiviRucher.html' },
       { id: 'nouvelleCapture', label: '📋 Nouvelle capture', href: 'nouvelleCapture.html' },
       { id: 'stat', label: '📊 Statistiques', href: 'stat.html' },
       { id: 'settings', label: '⚙️ Paramètres', href: 'settings.html' }
     ],
     blog: [
       { id: 'blog', label: '📖 Le blog', href: 'blog.html' }
+    ],
+    rucher: [
+      { id: 'suiviRucher', label: '🐝 Mes ruchers', href: 'suiviRucher.html' }
     ]
   };
 
   // Libellés des univers
   const UNIVERS_LABELS = {
     frelon: { label: 'Suivi de la pression du frelon', emoji: '<img class="universe-img" src="img/ruche3.png" alt="Frelon" aria-label="Frelon">', href: 'index.html' },
-    blog: { label: 'La ruche résiste', emoji: '<img class="universe-img" src="img/ruche3.png" alt="Frelon" aria-label="Frelon">', href: 'index.html' }
+    blog: { label: 'La ruche résiste', emoji: '<img class="universe-img" src="img/ruche3.png" alt="Frelon" aria-label="Frelon">', href: 'index.html' },
+    rucher: { label: 'Mes ruchers', emoji: '<img class="universe-img" src="img/ruche3.png" alt="Rucher" aria-label="Rucher">', href: 'suiviRucher.html' }
   };
 
   // Vérifie si l'utilisateur est connecté via Supabase et son rôle
@@ -92,9 +97,9 @@
 
     // Sections protégées (univers frelon) : uniquement visibles si connecté.
     // "Statistiques" reste accessible sans connexion (stats communauté publiques).
-    const sectionsProtegees = ['nouvelleCapture', 'settings'];
+    const sectionsProtegees = ['suiviRucher', 'nouvelleCapture', 'settings'];
     const sections = (SECTIONS[config.univers] || []).filter(s => {
-      if (config.univers === 'frelon' && !estConnecte && sectionsProtegees.includes(s.id)) {
+      if ((config.univers === 'frelon' || config.univers === 'rucher') && !estConnecte && sectionsProtegees.includes(s.id)) {
         return false; // masquer les sections protégées si non connecté
       }
       return true;
@@ -120,6 +125,7 @@
           <div class="site-nav-univers">
             <a class="site-nav-tab ${config.univers === 'frelon' ? 'active' : ''}" href="stat.html"><img class="universe-img" src="img/mordre3.png" alt="Frelon" aria-label="Frelon"> Frelons</a>
             <a class="site-nav-tab ${config.univers === 'blog' ? 'active' : ''}" href="blog.html">📖 Blog</a>
+            <a class="site-nav-tab ${config.univers === 'rucher' ? 'active' : ''}" href="suiviRucher.html">🐝 Mes ruchers</a>
           </div>
         </div>
 

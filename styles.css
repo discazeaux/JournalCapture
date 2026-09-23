@@ -729,6 +729,38 @@ td {
     letter-spacing: 0.05em;
 }
 
+.suivi-rucher-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.beta-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border: 1px solid var(--yellow);
+    border-radius: 999px;
+    color: var(--yellow);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.suivi-rucher-auth p {
+    color: var(--muted);
+    line-height: 1.6;
+    margin: 0 0 18px;
+}
+
+.suivi-rucher-auth .auth-button {
+    display: inline-flex;
+    width: auto;
+    text-decoration: none;
+}
+
 .section-subtitle {
     color: var(--muted);
     font-size: 12px;
@@ -922,10 +954,193 @@ td {
     font-size: 13px;
 }
 
+.sante-rucher {
+    border-top: 1px solid var(--border);
+    padding: 12px 14px 14px;
+    background: var(--bg);
+}
+
+.sante-rucher > strong {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.sante-total {
+    float: right;
+    color: var(--yellow);
+    font-weight: 700;
+}
+
+.sante-options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.sante-compteur {
+    display: flex;
+    min-width: 0;
+}
+
+.sante-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    flex: 1;
+    padding: 8px 9px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    text-align: left;
+}
+
+.sante-option:hover {
+    border-color: currentColor;
+    color: var(--text-secondary);
+}
+
+.sante-nombre {
+    margin-left: auto;
+    font-size: 15px;
+}
+
+.sante-decrement {
+    flex: 0 0 28px;
+    border: 1px solid var(--border);
+    border-left: 0;
+    border-radius: 0 8px 8px 0;
+    background: var(--card);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.sante-decrement:hover {
+    color: var(--text-secondary);
+    border-color: currentColor;
+}
+
+.sante-emoji {
+    flex: 0 0 auto;
+    font-size: 16px;
+}
+
+.sante-aide {
+    display: inline-block;
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.sante-excellente { color: #2f8f5b; }
+.sante-bonne { color: #4e9b67; }
+.sante-equilibree { color: #b8860b; }
+.sante-faible { color: #b87832; }
+.sante-surveiller { color: #c05a5a; }
+.sante-critique { color: #a83232; }
+
+@media (max-width: 560px) {
+    .sante-options {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 .traitements-panel {
     border-top: 1px solid var(--border);
     padding: 12px 14px 14px;
     background: var(--bg);
+}
+
+.pertes-panel {
+    border-top: 1px solid var(--border);
+    padding: 12px 14px 14px;
+    background: var(--bg);
+}
+
+.pertes-panel > strong {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.pertes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.perte-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+}
+
+.perte-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.perte-content strong {
+    color: var(--yellow);
+    font-size: 14px;
+}
+
+.perte-content small {
+    color: var(--muted);
+}
+
+.pertes-empty {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.perte-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    align-items: center;
+}
+
+.perte-form input {
+    min-width: 0;
+    width: 100%;
+    padding: 8px 10px;
+    margin: 0;
+    font-size: 12px;
+}
+
+.perte-form .btn-add {
+    width: auto;
+    white-space: nowrap;
+    grid-column: 1 / -1;
+    justify-self: start;
+}
+
+@media (max-width: 720px) {
+    .perte-form {
+        grid-template-columns: 1fr;
+    }
+
+    .perte-form .btn-add {
+        grid-column: 1 / -1;
+    }
 }
 
 .traitements-panel strong {

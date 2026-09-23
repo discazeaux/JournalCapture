@@ -1,11 +1,12 @@
 import { supabase } from '../supabase.js';
 import { initUserBar } from '../auth.js';
-import { APP_PATHS, DOM_IDS, UI_MESSAGES } from '../constants.js';
+import { DOM_IDS, UI_MESSAGES } from '../constants.js';
 import { escapeHtml } from '../utils/escape.js';
 
 const state = {
   ruchers: [],
   traitements: [],
+  pertes: [],
   appats: [],
   postes: [],
   suggDef: [],
@@ -13,6 +14,15 @@ const state = {
 };
 
 let session = null;
+
+const ETATS_SANTE_RUCHER = [
+  { id: 'tres_populeuse', emoji: '🐝🐝', label: 'Très populeuse', classe: 'sante-excellente' },
+  { id: 'populeuse', emoji: '🐝', label: 'Populeuse', classe: 'sante-bonne' },
+  { id: 'equilibree', emoji: '⚖️', label: 'Équilibrée', classe: 'sante-equilibree' },
+  { id: 'faible', emoji: '🌱', label: 'Faible', classe: 'sante-faible' },
+  { id: 'a_surveiller', emoji: '👀', label: 'À surveiller', classe: 'sante-surveiller' },
+  { id: 'critique', emoji: '⚠️', label: 'Critique', classe: 'sante-critique' }
+];
 
 function toast(msg, erreur = false) {
   const el = document.getElementById(DOM_IDS.SETTINGS.TOAST);
@@ -88,6 +98,24 @@ async function chargerTraitements() {
   renderRuchers();
 }
 
+async function chargerPertes() {
+  const { data, error } = await supabase
+    .from('pertes_colonies')
+    .select('*')
+    .eq('user_id', session.user.id)
+    .order('date_constat', { ascending: false });
+
+  if (error) {
+    console.error(error);
+    state.pertes = [];
+    renderRuchers();
+    return;
+  }
+
+  state.pertes = data || [];
+  renderRuchers();
+}
+
 function afficherDate(date) {
   if (!date) return '—';
   return new Intl.DateTimeFormat('fr-FR').format(new Date(`${date}T00:00:00`));
@@ -97,6 +125,24 @@ function ajouterJours(date, jours) {
   const resultat = new Date(`${date}T00:00:00`);
   resultat.setDate(resultat.getDate() + jours);
   return resultat.toISOString().slice(0, 10);
+}
+
+function obtenirEtatSante(id) {
+  return ETATS_SANTE_RUCHER.find((etat) => etat.id === id) || ETATS_SANTE_RUCHER[2];
+}
+
+function obtenirRepartitionSante(rucher) {
+  try {
+    const repartition = typeof rucher.sante_ruches === 'string'
+      ? JSON.parse(rucher.sante_ruches)
+      : rucher.sante_ruches;
+    if (!repartition || typeof repartition !== 'object' || Array.isArray(repartition)) return {};
+    return Object.fromEntries(ETATS_SANTE_RUCHER
+      .filter((etat) => Number.isInteger(repartition[etat.id]) && repartition[etat.id] > 0)
+      .map((etat) => [etat.id, repartition[etat.id]]));
+  } catch {
+    return {};
+  }
 }
 
 function renderRuchers() {
@@ -114,6 +160,10 @@ function renderRuchers() {
     const card = document.createElement('div');
     card.className = 'rucher-card';
     const traitements = state.traitements.filter((traitement) => traitement.rucher_id === rucher.id);
+    const pertes = state.pertes.filter((perte) => perte.rucher_id === rucher.id);
+    const repartitionSante = obtenirRepartitionSante(rucher);
+    const totalRuchesSante = Object.values(repartitionSante).reduce((total, nombre) => total + nombre, 0);
+    const nombreUnites = (Number(rucher.nombre_ruches) || 0) + (Number(rucher.nombre_ruchettes) || 0);
     card.innerHTML = `
       <div class="rucher-header">
         <span class="rucher-nom">${escapeHtml(rucher.nom)}</span>
@@ -128,6 +178,49 @@ function renderRuchers() {
         <label>▣ Ruchettes
           <input type="number" class="input-nombre-ruchettes" data-rucher-id="${rucher.id}" min="0" max="9999" value="${rucher.nombre_ruchettes}">
         </label>
+      </div>
+      <div class="sante-rucher">
+        <strong>État de santé <span class="sante-total">${totalRuchesSante}/${nombreUnites}</span></strong>
+        <div class="sante-options" aria-label="Répartition de l’état de santé des ruches et ruchettes">
+          ${ETATS_SANTE_RUCHER.map((etat) => `
+            <div class="sante-compteur ${etat.classe}">
+              <button type="button" class="sante-option" data-rucher-id="${rucher.id}" data-etat-sante="${etat.id}" title="Ajouter une ruche : ${etat.label}">
+                <span class="sante-emoji" aria-hidden="true">${etat.emoji}</span>
+                <span>${etat.label}</span>
+                <strong class="sante-nombre">${repartitionSante[etat.id] || 0}</strong>
+              </button>
+              <button type="button" class="sante-decrement" data-rucher-id="${rucher.id}" data-etat-sante="${etat.id}" title="Retirer une ruche : ${etat.label}" aria-label="Retirer une ruche ${etat.label}">−</button>
+            </div>
+          `).join('')}
+        </div>
+        <span class="sante-aide">Cliquez sur un état pour ajouter une ruche à ce compteur.</span>
+      </div>
+      <div class="pertes-panel">
+        <strong>Pertes de colonies</strong>
+        <div class="pertes-list">
+          ${pertes.length
+            ? pertes.map((perte) => `
+              <div class="perte-row">
+                <div class="perte-content">
+                  <strong>${escapeHtml(perte.colonie)}</strong>
+                  <small>Constat : ${afficherDate(perte.date_constat)}</small>
+                  <span><b>Cause :</b> ${escapeHtml(perte.cause_probable)}</span>
+                  <span><b>État :</b> ${escapeHtml(perte.etat)}</span>
+                  <span><b>Mesures :</b> ${escapeHtml(perte.mesures)}</span>
+                </div>
+                <button class="btn-rm btn-rm-perte" data-id="${perte.id}" title="Supprimer">✕</button>
+              </div>
+            `).join('')
+            : '<span class="pertes-empty">Aucune perte enregistrée</span>'}
+        </div>
+        <div class="perte-form">
+          <input type="date" class="input-date-perte" data-rucher-id="${rucher.id}" title="Date de constat">
+          <input type="text" class="input-colonie-perte" data-rucher-id="${rucher.id}" placeholder="Colonie (ex. R003)" maxlength="40">
+          <input type="text" class="input-cause-perte" data-rucher-id="${rucher.id}" placeholder="Cause probable" maxlength="160">
+          <input type="text" class="input-etat-perte" data-rucher-id="${rucher.id}" placeholder="État de la colonie" maxlength="160">
+          <input type="text" class="input-mesures-perte" data-rucher-id="${rucher.id}" placeholder="Mesures prises" maxlength="200">
+          <button type="button" class="btn-add btn-ajouter-perte" data-rucher-id="${rucher.id}">＋ Ajouter</button>
+        </div>
       </div>
       <div class="traitements-panel">
         <strong>Traitements chimiques</strong>
@@ -175,8 +268,28 @@ function renderRuchers() {
     ));
   });
 
+  list.querySelectorAll('.sante-option').forEach((button) => {
+    button.addEventListener('click', () => modifierEtatSante(
+      button.dataset.rucherId,
+      button.dataset.etatSante,
+      1
+    ));
+  });
+
+  list.querySelectorAll('.sante-decrement').forEach((button) => {
+    button.addEventListener('click', () => modifierEtatSante(
+      button.dataset.rucherId,
+      button.dataset.etatSante,
+      -1
+    ));
+  });
+
   list.querySelectorAll('.btn-rm-traitement').forEach((btn) => {
     btn.addEventListener('click', () => supprimerTraitement(btn.dataset.id));
+  });
+
+  list.querySelectorAll('.btn-rm-perte').forEach((btn) => {
+    btn.addEventListener('click', () => supprimerPerte(btn.dataset.id));
   });
 
   list.querySelectorAll('.input-changement-lanieres, .input-retrait-lanieres').forEach((input) => {
@@ -198,6 +311,93 @@ function renderRuchers() {
   list.querySelectorAll('.btn-ajouter-traitement').forEach((btn) => {
     btn.addEventListener('click', () => ajouterTraitement(btn.dataset.rucherId));
   });
+
+  list.querySelectorAll('.btn-ajouter-perte').forEach((btn) => {
+    btn.addEventListener('click', () => ajouterPerte(btn.dataset.rucherId));
+  });
+}
+
+async function modifierEtatSante(rucherId, etatSante, variation) {
+  const etat = obtenirEtatSante(etatSante);
+  const rucher = state.ruchers.find((item) => item.id === rucherId);
+  if (!rucher) return;
+
+  const repartition = obtenirRepartitionSante(rucher);
+  const total = Object.values(repartition).reduce((somme, nombre) => somme + nombre, 0);
+  const nouveauNombre = (repartition[etat.id] || 0) + variation;
+
+  if (nouveauNombre < 0) return;
+  const nombreUnites = (Number(rucher.nombre_ruches) || 0) + (Number(rucher.nombre_ruchettes) || 0);
+  if (variation > 0 && nombreUnites > 0 && total >= nombreUnites) {
+    toast('Toutes les ruches et ruchettes sont déjà comptées', true);
+    return;
+  }
+
+  if (nouveauNombre === 0) delete repartition[etat.id];
+  else repartition[etat.id] = nouveauNombre;
+
+  const { error } = await supabase.from('ruchers').update({
+    sante_ruches: repartition,
+    etat_sante: etat.id
+  })
+    .eq('id', rucherId).eq('user_id', session.user.id);
+
+  if (error) {
+    toast('Erreur : ' + error.message, true);
+    return;
+  }
+
+  rucher.sante_ruches = repartition;
+  rucher.etat_sante = etat.id;
+  renderRuchers();
+  toast('État de santé mis à jour ✓');
+}
+
+async function ajouterPerte(rucherId) {
+  const valeur = (classe) => document.querySelector(`${classe}[data-rucher-id="${rucherId}"]`)?.value.trim();
+  const dateConstat = valeur('.input-date-perte');
+  const colonie = valeur('.input-colonie-perte');
+  const causeProbable = valeur('.input-cause-perte');
+  const etat = valeur('.input-etat-perte');
+  const mesures = valeur('.input-mesures-perte');
+
+  if (!dateConstat || !colonie || !causeProbable || !etat || !mesures) {
+    toast('Indiquez la date, la colonie, la cause, l’état et les mesures', true);
+    return;
+  }
+
+  const { data, error } = await supabase.from('pertes_colonies').insert({
+    user_id: session.user.id,
+    rucher_id: rucherId,
+    date_constat: dateConstat,
+    colonie,
+    cause_probable: causeProbable,
+    etat,
+    mesures
+  }).select('*').single();
+
+  if (error) {
+    toast('Erreur : ' + error.message, true);
+    return;
+  }
+
+  state.pertes.push(data);
+  renderRuchers();
+  toast('Perte de colonie enregistrée ✓');
+}
+
+async function supprimerPerte(id) {
+  if (!confirm('Supprimer cette perte de colonie ?')) return;
+
+  const { error } = await supabase.from('pertes_colonies').delete().eq('id', id).eq('user_id', session.user.id);
+  if (error) {
+    toast('Erreur : ' + error.message, true);
+    return;
+  }
+
+  state.pertes = state.pertes.filter((perte) => perte.id !== id);
+  renderRuchers();
+  toast('Perte supprimée');
 }
 
 async function modifierEtapeTraitement(id, etape, faite) {
@@ -269,6 +469,7 @@ async function modifierEffectifRucher(rucherId, colonne, valeur) {
   const rucher = state.ruchers.find((item) => item.id === rucherId);
   if (rucher) rucher[colonne] = nombre;
 
+  renderRuchers();
   toast(UI_MESSAGES.settings.rucherUpdated);
 }
 
@@ -755,14 +956,21 @@ async function initSettingsPage() {
   session = currentSession;
 
   if (!session) {
-    window.location.href = APP_PATHS.LOGIN;
+    const suiviRucherAuth = document.getElementById('suiviRucherAuth');
+    const suiviRucherSection = document.getElementById(DOM_IDS.SETTINGS.LIST_RUCHERS)?.closest('.settings-section');
+    if (suiviRucherAuth) suiviRucherAuth.style.display = '';
+    if (suiviRucherSection) suiviRucherSection.style.display = 'none';
     return;
   }
 
   bindStaticEvents();
   selectType('sucre');
-  await Promise.all([chargerRuchers(), chargerTraitements(), chargerAppats(), chargerSuggestions()]);
-  await chargerPostes();
+  if (document.getElementById(DOM_IDS.SETTINGS.LIST_RUCHERS)) {
+    await Promise.all([chargerRuchers(), chargerTraitements(), chargerPertes()]);
+  } else {
+    await Promise.all([chargerAppats(), chargerSuggestions()]);
+    await chargerPostes();
+  }
 }
 
 initSettingsPage();
