@@ -53,6 +53,56 @@ where date_rappel is not null;
 
 notify pgrst, 'reload schema';
 
+create table if not exists public.causes_pertes (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  nom text not null check (char_length(trim(nom)) > 0),
+  ordre integer not null default 1000,
+  created_at timestamptz not null default now(),
+  unique (user_id, nom)
+);
+
+alter table public.causes_pertes enable row level security;
+
+drop policy if exists "Users can view their own colony loss causes" on public.causes_pertes;
+create policy "Users can view their own colony loss causes"
+  on public.causes_pertes for select using (auth.uid() = user_id);
+
+drop policy if exists "Users can create their own colony loss causes" on public.causes_pertes;
+create policy "Users can create their own colony loss causes"
+  on public.causes_pertes for insert with check (auth.uid() = user_id);
+
+drop policy if exists "Users can delete their own colony loss causes" on public.causes_pertes;
+create policy "Users can delete their own colony loss causes"
+  on public.causes_pertes for delete using (auth.uid() = user_id);
+
+notify pgrst, 'reload schema';
+
+create table if not exists public.traitements_possibles (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  nom text not null check (char_length(trim(nom)) > 0),
+  ordre integer not null default 1000,
+  created_at timestamptz not null default now(),
+  unique (user_id, nom)
+);
+
+alter table public.traitements_possibles enable row level security;
+
+drop policy if exists "Users can view their own possible treatments" on public.traitements_possibles;
+create policy "Users can view their own possible treatments"
+  on public.traitements_possibles for select using (auth.uid() = user_id);
+
+drop policy if exists "Users can create their own possible treatments" on public.traitements_possibles;
+create policy "Users can create their own possible treatments"
+  on public.traitements_possibles for insert with check (auth.uid() = user_id);
+
+drop policy if exists "Users can delete their own possible treatments" on public.traitements_possibles;
+create policy "Users can delete their own possible treatments"
+  on public.traitements_possibles for delete using (auth.uid() = user_id);
+
+notify pgrst, 'reload schema';
+
 create table if not exists public.pertes_colonies (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -60,10 +110,44 @@ create table if not exists public.pertes_colonies (
   date_constat date not null,
   colonie text not null check (char_length(trim(colonie)) > 0),
   cause_probable text not null check (char_length(trim(cause_probable)) > 0),
-  etat text not null check (char_length(trim(etat)) > 0),
-  mesures text not null check (char_length(trim(mesures)) > 0),
+  observation_mesure text not null check (char_length(trim(observation_mesure)) > 0),
   created_at timestamptz not null default now()
 );
+
+alter table public.pertes_colonies
+  add column if not exists causes_probables text[] not null default '{}';
+
+do $$
+begin
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'pertes_colonies'
+      and column_name = 'etat'
+  ) and not exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'pertes_colonies'
+      and column_name = 'observation_mesure'
+  ) then
+    alter table public.pertes_colonies rename column etat to observation_mesure;
+  end if;
+end $$;
+
+do $$
+begin
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'pertes_colonies'
+      and column_name = 'mesures'
+  ) then
+    alter table public.pertes_colonies alter column mesures drop not null;
+  end if;
+end $$;
 
 alter table public.pertes_colonies enable row level security;
 

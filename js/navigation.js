@@ -38,7 +38,8 @@
       { id: 'blog', label: '📖 Le blog', href: 'blog.html' }
     ],
     rucher: [
-      { id: 'suiviRucher', label: '🐝 Mes ruchers', href: 'suiviRucher.html' }
+      { id: 'suiviRucher', label: '🐝 Mes ruchers', href: 'suiviRucher.html' },
+      { id: 'reglageRucher', label: '⚙️ Réglage des ruchers', href: 'reglageRucher.html' }
     ]
   };
 
@@ -97,7 +98,7 @@
 
     // Sections protégées (univers frelon) : uniquement visibles si connecté.
     // "Statistiques" reste accessible sans connexion (stats communauté publiques).
-    const sectionsProtegees = ['suiviRucher', 'nouvelleCapture', 'settings'];
+    const sectionsProtegees = ['suiviRucher', 'reglageRucher', 'nouvelleCapture', 'settings'];
     const sections = (SECTIONS[config.univers] || []).filter(s => {
       if ((config.univers === 'frelon' || config.univers === 'rucher') && !estConnecte && sectionsProtegees.includes(s.id)) {
         return false; // masquer les sections protégées si non connecté

@@ -6,7 +6,8 @@ export const APP_PATHS = {
   REDIGER: 'rediger.html',
   STATS: 'stat.html',
   NOUVELLE_CAPTURE: 'nouvelleCapture.html',
-  SETTINGS: 'settings.html'
+  SETTINGS: 'settings.html',
+  REGLAGE_RUCHER: 'reglageRucher.html'
 };
 
 export const ROLES = {

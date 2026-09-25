@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/ruche4.png">
+    <title>Réglage des ruchers — La ruche résiste</title>
+    <script src="js/config.js"></script>
+    <script src="js/cookies.js"></script>
+    <script src="js/navigation.js"></script>
+    <link rel="stylesheet" href="navigation.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="user-bar" id="userBar"></div>
+
+    <div class="container container-narrow">
+        <h2 class="mb-24">⚙️ Réglage des ruchers</h2>
+        <div class="message error" id="reglageRucherAuth" style="display:none">
+            <strong>Réglage des ruchers réservé aux utilisateurs connectés</strong>
+            <p>Connectez-vous pour créer vos ruchers et gérer les causes proposées lors de l’enregistrement d’une perte.</p>
+            <a class="auth-button auth-connexion" href="login.html">🔐 Se connecter</a>
+        </div>
+
+        <div class="settings-section" id="reglageRucherSection">
+            <h3>🐝 Mes ruchers</h3>
+            <p class="section-subtitle">Créez vos ruchers et indiquez leur nombre de ruches et de ruchettes.</p>
+            <div class="add-form">
+                <div class="form-row">
+                    <input type="text" id="inputNomRucher" placeholder="Nom du rucher (ex. Jardin, transhumance…)" maxlength="80">
+                </div>
+                <div class="form-row">
+                    <label for="inputNombreRuches">Ruches :</label>
+                    <input type="number" id="inputNombreRuches" min="0" max="9999" value="0" class="w-80 flex-none">
+                    <label for="inputNombreRuchettes">Ruchettes :</label>
+                    <input type="number" id="inputNombreRuchettes" min="0" max="9999" value="0" class="w-80 flex-none">
+                    <button type="button" class="btn-add ml-auto" id="btnAjouterRucher">＋ Ajouter</button>
+                </div>
+            </div>
+            <p class="hint">Les ruchers apparaîtront ensuite dans le suivi, sous forme d’onglets.</p>
+        </div>
+
+        <div class="settings-section">
+            <h3>⚠️ Causes de mortalité des colonies</h3>
+            <p class="section-subtitle">Ces causes sont proposées dans le suivi de vos ruchers. Vous pouvez adapter la liste à vos observations.</p>
+
+            <div class="cause-list" id="listCausesPerte"><p class="loading">Chargement…</p></div>
+
+            <div class="add-form">
+                <div class="form-row">
+                    <input type="text" id="inputCausePerte" placeholder="Nouvelle cause…" maxlength="160">
+                    <button type="button" class="btn-add" id="btnAjouterCausePerte">＋ Ajouter</button>
+                </div>
+            </div>
+            <p class="hint">Les causes par défaut peuvent être supprimées. Les pertes déjà enregistrées restent inchangées.</p>
+        </div>
+
+        <div class="settings-section">
+            <h3>🧪 Traitements possibles</h3>
+            <p class="section-subtitle">Cette liste alimente les traitements proposés dans le suivi de vos ruchers.</p>
+
+            <div class="cause-list" id="listTraitementsPossibles"><p class="loading">Chargement…</p></div>
+
+            <div class="add-form">
+                <div class="form-row">
+                    <input type="text" id="inputTraitementPossible" placeholder="Nouveau traitement…" maxlength="100">
+                    <button type="button" class="btn-add" id="btnAjouterTraitementPossible">＋ Ajouter</button>
+                </div>
+            </div>
+            <p class="hint">Les traitements proposés par défaut peuvent être supprimés ou complétés.</p>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <footer>
+        <div class="flaticon-credit">
+            <a href="https://www.flaticon.com/fr/icones-gratuites/apiculture" title="apiculture icônes">Apiculture icônes créées par iconixar - Flaticon</a>
+        </div>
+        <div>
+            <a href="https://www.flaticon.com/fr/icones-gratuites/abeille" title="abeille icônes">Abeille icônes créées par iconixar - Flaticon</a>
+        </div>
+        <div class="footer-legal"><a href="confidentialite.html">Confidentialité &amp; cookies</a><a href="mentions-legales.html">Mentions légales</a></div>
+    </footer>
+
+    <script>
+        initNavigation({ univers: 'rucher', sectionActive: 'reglageRucher' });
+    </script>
+    <script type="module">
+        import './js/pages/reglageRucher.js';
+    </script>
+</body>
+</html>

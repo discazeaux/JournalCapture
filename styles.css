@@ -916,6 +916,54 @@ td {
     overflow: hidden;
 }
 
+.rucher-tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 4px 2px 10px;
+    scrollbar-width: thin;
+}
+
+.rucher-tab {
+    flex: 0 0 auto;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--muted);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.rucher-tab:hover {
+    color: var(--yellow);
+    border-color: var(--yellow);
+}
+
+.rucher-tab.active {
+    background: var(--yellow);
+    border-color: var(--yellow);
+    color: #fff;
+}
+
+.rucher-panels {
+    min-width: 0;
+}
+
+.rucher-card {
+    display: none;
+}
+
+.rucher-card.active {
+    display: block;
+}
+
 .rucher-header {
     display: flex;
     align-items: center;
@@ -1106,6 +1154,15 @@ td {
     color: var(--muted);
 }
 
+.perte-content span {
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.perte-content b {
+    color: var(--text-primary);
+}
+
 .pertes-empty {
     color: var(--muted);
     font-size: 12px;
@@ -1113,9 +1170,9 @@ td {
 
 .perte-form {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(135px, 0.8fr) minmax(180px, 1.2fr) minmax(240px, 2fr);
     gap: 8px;
-    align-items: center;
+    align-items: stretch;
 }
 
 .perte-form input {
@@ -1126,11 +1183,79 @@ td {
     font-size: 12px;
 }
 
+.perte-form select {
+    min-width: 0;
+    width: 100%;
+    padding: 8px 10px;
+    margin: 0;
+    font-size: 12px;
+}
+
+.perte-form select[multiple] {
+    height: 76px;
+}
+
+.perte-form textarea {
+    min-width: 0;
+    width: 100%;
+    min-height: 76px;
+    padding: 8px 10px;
+    margin: 0;
+    font-size: 12px;
+    resize: vertical;
+    grid-column: 1 / -1;
+}
+
 .perte-form .btn-add {
     width: auto;
+    min-width: 132px;
+    padding: 10px 18px;
+    font-size: 14px;
+    border-radius: 12px;
+    background: var(--button-bg);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+    transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
     white-space: nowrap;
     grid-column: 1 / -1;
-    justify-self: start;
+    justify-self: end;
+}
+
+.perte-form .btn-add:hover {
+    background: var(--button-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+}
+
+.perte-form .btn-add:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.cause-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.cause-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.cause-item .btn-rm {
+    padding: 0 3px;
 }
 
 @media (max-width: 720px) {
@@ -1138,8 +1263,14 @@ td {
         grid-template-columns: 1fr;
     }
 
+    .perte-form textarea {
+        grid-column: auto;
+    }
+
     .perte-form .btn-add {
-        grid-column: 1 / -1;
+        width: 100%;
+        grid-column: auto;
+        justify-self: stretch;
     }
 }
 
@@ -1279,6 +1410,14 @@ td {
     flex: 1;
 }
 
+.traitement-form select.input-intitule-traitement {
+    flex: 1;
+    min-width: 180px;
+    padding: 8px 10px;
+    margin: 0;
+    font-size: 13px;
+}
+
 .traitement-form input[type="date"] {
     width: 142px;
 }
@@ -1375,8 +1514,11 @@ td {
 }
 
 .add-form button.btn-add,
-.traitement-form button.btn-add {
-    width: auto;
+.traitement-form button.btn-add,
+.perte-form button.btn-add {
+    width: 148px;
+    height: 42px;
+    box-sizing: border-box;
     padding: 10px 18px;
     font-size: 14px;
     white-space: nowrap;
@@ -1392,14 +1534,16 @@ td {
 }
 
 .add-form button.btn-add:hover,
-.traitement-form button.btn-add:hover {
+.traitement-form button.btn-add:hover,
+.perte-form button.btn-add:hover {
     background: var(--button-hover);
     transform: translateY(-1px);
     box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
 }
 
 .add-form button.btn-add:active,
-.traitement-form button.btn-add:active {
+.traitement-form button.btn-add:active,
+.perte-form button.btn-add:active {
     transform: translateY(0);
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
 }
