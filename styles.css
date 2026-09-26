@@ -1258,6 +1258,182 @@ td {
     padding: 0 3px;
 }
 
+.registre-page {
+    max-width: 1040px;
+}
+
+.registre-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.registre-toolbar h2 {
+    margin-bottom: 6px;
+}
+
+.registre-print {
+    width: auto;
+    min-width: 220px;
+    white-space: nowrap;
+}
+
+.registre-year-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.registre-year-row label {
+    margin: 0;
+}
+
+.registre-year-row select {
+    width: 120px;
+}
+
+.registre-document {
+    background: #fff;
+    color: #25231f;
+    padding: 34px 40px;
+    border: 1px solid #d9d2c5;
+    box-shadow: 0 10px 30px rgba(47, 39, 26, 0.08);
+}
+
+.registre-document-header {
+    padding-bottom: 22px;
+    border-bottom: 2px solid #b8860b;
+    text-align: center;
+}
+
+.registre-kicker {
+    margin: 0 0 6px;
+    color: #8a6a16;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.registre-document-header h1 {
+    margin: 0;
+    color: #302b22;
+    font-size: 30px;
+}
+
+.registre-document-header p:last-child {
+    margin: 6px 0 0;
+    color: #665f52;
+}
+
+.registre-section {
+    margin-top: 26px;
+}
+
+.registre-section h2 {
+    margin: 0 0 12px;
+    color: #5f4b18;
+    font-size: 18px;
+    border-bottom: 1px solid #ded6c8;
+    padding-bottom: 7px;
+}
+
+.registre-note,
+.registre-empty {
+    color: #756e62;
+    font-size: 13px;
+}
+
+.registre-owner-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.registre-owner-grid label {
+    color: #5d574e;
+    font-size: 12px;
+}
+
+.registre-owner-grid label:nth-child(3) {
+    grid-column: 1 / -1;
+}
+
+.registre-owner-grid input,
+.registre-owner-grid textarea {
+    display: block;
+    margin-top: 5px;
+    padding: 9px 10px;
+    border: 1px solid #cfc6b8;
+    border-radius: 4px;
+    background: #fff;
+    color: #25231f;
+    font-size: 13px;
+}
+
+.registre-owner-grid textarea {
+    width: 100%;
+    resize: vertical;
+}
+
+.registre-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.registre-table th,
+.registre-table td {
+    padding: 8px 9px;
+    border: 1px solid #d8d0c3;
+    text-align: left;
+    vertical-align: top;
+}
+
+.registre-table th {
+    background: #f1eadc;
+    color: #4c401f;
+    font-weight: 700;
+}
+
+.registre-rucher-detail {
+    margin-top: 22px;
+    padding-top: 16px;
+}
+
+.registre-rucher-detail h3 {
+    margin: 0 0 12px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid #ded6c8;
+    color: #5f4b18;
+    font-size: 18px;
+}
+
+.registre-rucher-detail h4 {
+    margin: 14px 0 6px;
+    color: #5f4b18;
+    font-size: 13px;
+}
+
+.registre-rucher-detail p {
+    margin: 0;
+    color: #665f52;
+    font-size: 12px;
+}
+
+.registre-document-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 34px;
+    padding-top: 14px;
+    border-top: 1px solid #d8d0c3;
+    color: #756e62;
+    font-size: 12px;
+}
+
 @media (max-width: 720px) {
     .perte-form {
         grid-template-columns: 1fr;
@@ -1271,6 +1447,78 @@ td {
         width: 100%;
         grid-column: auto;
         justify-self: stretch;
+    }
+
+    .registre-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .registre-print {
+        width: 100%;
+    }
+
+    .registre-document {
+        padding: 24px 16px;
+    }
+
+    .registre-owner-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .registre-owner-grid label:nth-child(3) {
+        grid-column: auto;
+    }
+
+    .registre-table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .registre-document-footer {
+        flex-direction: column;
+    }
+}
+
+@media print {
+    @page {
+        size: A4;
+        margin: 14mm;
+    }
+
+    body {
+        background: #fff;
+    }
+
+    .no-print,
+    .site-nav,
+    .user-bar,
+    footer {
+        display: none !important;
+    }
+
+    .registre-page {
+        max-width: none;
+        padding: 0;
+    }
+
+    .registre-document {
+        padding: 0;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .registre-owner-grid input,
+    .registre-owner-grid textarea {
+        border-color: #777;
+    }
+
+    .registre-section {
+        break-inside: avoid;
+    }
+
+    .registre-table tr {
+        break-inside: avoid;
     }
 }
 

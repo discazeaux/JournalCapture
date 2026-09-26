@@ -178,7 +178,9 @@ async function initPage() {
 
   if (!session) {
     document.getElementById('reglageRucherAuth').style.display = '';
-    document.getElementById('reglageRucherSection').style.display = 'none';
+    document.querySelectorAll('.settings-section').forEach((section) => {
+      section.style.display = 'none';
+    });
     return;
   }
 

@@ -29,7 +29,6 @@
   // Sections par univers
   const SECTIONS = {
     frelon: [
-      { id: 'suiviRucher', label: '🐝 Suivi du rucher', href: 'suiviRucher.html' },
       { id: 'nouvelleCapture', label: '📋 Nouvelle capture', href: 'nouvelleCapture.html' },
       { id: 'stat', label: '📊 Statistiques', href: 'stat.html' },
       { id: 'settings', label: '⚙️ Paramètres', href: 'settings.html' }
@@ -39,7 +38,8 @@
     ],
     rucher: [
       { id: 'suiviRucher', label: '🐝 Mes ruchers', href: 'suiviRucher.html' },
-      { id: 'reglageRucher', label: '⚙️ Réglage des ruchers', href: 'reglageRucher.html' }
+      { id: 'reglageRucher', label: '⚙️ Réglage des ruchers', href: 'reglageRucher.html' },
+      { id: 'registreElevage', label: '📄 Registre d’élevage', href: 'registreElevage.html' }
     ]
   };
 
@@ -98,7 +98,7 @@
 
     // Sections protégées (univers frelon) : uniquement visibles si connecté.
     // "Statistiques" reste accessible sans connexion (stats communauté publiques).
-    const sectionsProtegees = ['suiviRucher', 'reglageRucher', 'nouvelleCapture', 'settings'];
+    const sectionsProtegees = ['suiviRucher', 'reglageRucher', 'registreElevage', 'nouvelleCapture', 'settings'];
     const sections = (SECTIONS[config.univers] || []).filter(s => {
       if ((config.univers === 'frelon' || config.univers === 'rucher') && !estConnecte && sectionsProtegees.includes(s.id)) {
         return false; // masquer les sections protégées si non connecté

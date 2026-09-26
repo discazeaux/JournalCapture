@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/ruche4.png">
+    <title>Registre d’élevage — La ruche résiste</title>
+    <script src="js/config.js"></script>
+    <script src="js/cookies.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="navigation.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="user-bar" id="userBar"></div>
+
+    <main class="container registre-page">
+        <div class="registre-toolbar">
+            <div>
+                <h2>📄 Registre d’élevage</h2>
+                <p class="section-subtitle">Préparez le registre annuel de vos ruchers, puis imprimez-le ou enregistrez-le en PDF.</p>
+            </div>
+            <button type="button" class="btn btn-primary registre-print" id="btnTelechargerRegistre">⬇ Télécharger le PDF</button>
+        </div>
+
+        <section class="settings-section registre-parameters no-print">
+            <h3>Année du registre</h3>
+            <div class="registre-year-row">
+                <label for="registreAnnee">Année :</label>
+                <select id="registreAnnee" aria-label="Année du registre"></select>
+            </div>
+        </section>
+
+        <div class="message error" id="registreAuth" style="display:none">
+            <strong>Registre d’élevage réservé aux utilisateurs connectés</strong>
+            <p>Connectez-vous pour consulter et exporter les informations de vos ruchers.</p>
+            <a class="auth-button auth-connexion" href="login.html">🔐 Se connecter</a>
+        </div>
+
+        <article class="registre-document" id="registreDocument">
+            <header class="registre-document-header">
+                <p class="registre-kicker">Document annuel</p>
+                <h1>Registre d’élevage</h1>
+                <p id="registreTitreAnnee">Année 2026</p>
+            </header>
+
+            <section class="registre-section">
+                <h2>1. Informations de l’apiculteur</h2>
+                <p class="registre-note">Informations à compléter à la main sur le document imprimé.</p>
+                <div class="registre-owner-lines">
+                    <p>Nom et prénom : ______________________________________________________________</p>
+                    <p>Numéro d’apiculteur (NAPI) : _________________________________________________</p>
+                    <p>Adresse : ____________________________________________________________________</p>
+                    <p>Commune et code postal : ______________________________________________________</p>
+                    <p>Téléphone : ____________________________ E-mail : ______________________________</p>
+                </div>
+            </section>
+
+            <section class="registre-section">
+                <h2>2. Liste des ruchers</h2>
+                <div id="registreRuchers"><p class="loading">Chargement…</p></div>
+            </section>
+
+            <section class="registre-section">
+                <div id="registreRuchersDetails"><p class="loading">Chargement…</p></div>
+            </section>
+
+            <footer class="registre-document-footer">
+                <span>Document préparé le <span id="registreDateEdition"></span></span>
+                <span>Signature : ____________________</span>
+            </footer>
+        </article>
+    </main>
+
+    <div class="toast" id="toast"></div>
+    <footer class="no-print">
+        <div class="footer-legal"><a href="confidentialite.html">Confidentialité &amp; cookies</a><a href="mentions-legales.html">Mentions légales</a></div>
+    </footer>
+
+    <script>
+        initNavigation({ univers: 'rucher', sectionActive: 'registreElevage' });
+    </script>
+    <script type="module">
+        import './js/pages/registreElevage.js';
+    </script>
+</body>
+</html>
