@@ -191,6 +191,100 @@ h2 {
     font-size: 12px;
 }
 
+.admin-comment-moderation {
+    border-left-color: var(--danger);
+}
+
+.admin-comment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.admin-comment-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+}
+
+.admin-comment-info {
+    min-width: 0;
+}
+
+.admin-comment-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+    color: var(--text);
+    font-size: 13px;
+}
+
+.admin-comment-meta time {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.admin-comment-article {
+    display: inline-block;
+    margin-top: 4px;
+    color: var(--amber);
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.admin-comment-article:hover {
+    text-decoration: underline;
+}
+
+.admin-comment-content {
+    margin: 6px 0 0;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.admin-comment-approve {
+    flex: none;
+    padding: 7px 12px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--success);
+    color: #fff;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.admin-comment-approve:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+.admin-comment-message {
+    margin: 8px 0 0;
+    color: var(--danger);
+    font-size: 13px;
+}
+
+@media (max-width: 520px) {
+    .admin-comment-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
 .hero-img {
     width: 88px;
     height: 88px;
@@ -2654,6 +2748,15 @@ td {
     font-size: 16px;
 }
 
+.comment-pending {
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+}
+
 .comment-item .comment-date {
     font-size: 12px;
     color: var(--muted);
@@ -2679,6 +2782,23 @@ td {
     padding: 4px 12px;
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
+}
+
+.comment-item .approve-btn {
+    background: var(--success);
+    border: 1px solid var(--success);
+    border-radius: 99px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    cursor: pointer;
+}
+
+.comment-item .approve-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .comment-item .delete-btn:hover {

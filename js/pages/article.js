@@ -79,10 +79,16 @@ if (!slug) {
     const commentsCount = document.getElementById('commentsCount');
 
     async function chargerCommentaires() {
-      const { data: commentaires, error } = await supabase
+      let requeteCommentaires = supabase
         .from('commentaires')
-        .select('id, contenu, created_at, auteur_id, profils(pseudo)')
-        .eq('article_id', article.id)
+        .select('id, contenu, created_at, auteur_id, statut, profils(pseudo)')
+        .eq('article_id', article.id);
+
+      if (!estAdmin) {
+        requeteCommentaires = requeteCommentaires.eq('statut', 'publie');
+      }
+
+      const { data: commentaires, error } = await requeteCommentaires
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -96,9 +102,10 @@ if (!slug) {
         return;
       }
 
-      commentsCount.textContent = commentaires.length;
+      const listeCommentaires = commentaires || [];
+      commentsCount.textContent = listeCommentaires.length;
 
-      if (!commentaires || commentaires.length === 0) {
+      if (listeCommentaires.length === 0) {
         commentsListArea.innerHTML = `
           <div class="comments-empty">
             <span class="bee">🐝</span>
@@ -110,7 +117,7 @@ if (!slug) {
 
       commentsListArea.innerHTML = `
         <div class="comments-list">
-          ${commentaires.map((c) => {
+          ${listeCommentaires.map((c) => {
             const dateC = new Date(c.created_at).toLocaleDateString('fr-FR', {
               year: 'numeric',
               month: 'long',
@@ -118,16 +125,18 @@ if (!slug) {
               hour: '2-digit',
               minute: '2-digit'
             });
-            const pseudo = c.profils?.pseudo || 'Utilisateur';
+            const pseudo = c.auteur_id ? (c.profils?.pseudo || 'Utilisateur') : 'Anonyme';
             return `
               <div class="comment-item" data-id="${c.id}">
                 <div class="comment-header">
                   <span class="comment-author">
                     <span class="bee-small">🐝</span>
                     ${escapeHtml(pseudo)}
+                    ${estAdmin && c.statut === 'en_attente' ? '<span class="comment-pending">À modérer</span>' : ''}
                   </span>
                   <div class="comment-actions">
                     <span class="comment-date">${dateC}</span>
+                    ${estAdmin && c.statut === 'en_attente' ? `<button class="approve-btn" data-id="${c.id}">Valider</button>` : ''}
                     ${estAdmin ? `<button class="delete-btn" data-id="${c.id}">🗑️ Supprimer</button>` : ''}
                   </div>
                 </div>
@@ -139,6 +148,23 @@ if (!slug) {
       `;
 
       if (estAdmin) {
+        document.querySelectorAll('.approve-btn').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            btn.disabled = true;
+            const { error: errValidation } = await supabase
+              .from('commentaires')
+              .update({ statut: 'publie' })
+              .eq('id', btn.dataset.id);
+
+            if (errValidation) {
+              alert('Erreur lors de la validation : ' + errValidation.message);
+              btn.disabled = false;
+            } else {
+              chargerCommentaires();
+            }
+          });
+        });
+
         document.querySelectorAll('.delete-btn').forEach((btn) => {
           btn.addEventListener('click', async () => {
             const id = btn.dataset.id;
@@ -159,19 +185,18 @@ if (!slug) {
       }
     }
 
-    if (session) {
-      commentFormArea.innerHTML = `
-        <div class="comment-form">
-          <textarea id="commentTextarea" placeholder="Écrivez votre commentaire…" maxlength="1000"></textarea>
-          <div class="form-footer">
-            <span class="hint">Maximum 1000 caractères</span>
-            <button class="submit-btn" id="btnCommenter">Publier</button>
-          </div>
-          <div class="form-message" id="commentMessage"></div>
+    commentFormArea.innerHTML = `
+      <div class="comment-form">
+        <textarea id="commentTextarea" placeholder="Écrivez votre commentaire…" maxlength="1000"></textarea>
+        <div class="form-footer">
+          <span class="hint">${session ? 'Maximum 1000 caractères' : 'Votre pseudo sera affiché comme Anonyme. Publication après modération.'}</span>
+          <button class="submit-btn" id="btnCommenter">${session ? 'Publier' : 'Envoyer'}</button>
         </div>
-      `;
+        <div class="form-message" id="commentMessage" aria-live="polite"></div>
+      </div>
+    `;
 
-      document.getElementById('btnCommenter').addEventListener('click', async () => {
+    document.getElementById('btnCommenter').addEventListener('click', async () => {
         const textarea = document.getElementById('commentTextarea');
         const message = document.getElementById('commentMessage');
         const btn = document.getElementById('btnCommenter');
@@ -184,37 +209,33 @@ if (!slug) {
         }
 
         btn.disabled = true;
-        btn.textContent = 'Publication…';
+        btn.textContent = 'Envoi…';
 
         const { error: errInsert } = await supabase
           .from('commentaires')
           .insert({
             article_id: article.id,
-            auteur_id: session.user.id,
-            contenu
+            auteur_id: session?.user?.id || null,
+            contenu,
+            statut: session ? 'publie' : 'en_attente'
           });
 
         if (errInsert) {
           message.textContent = 'Erreur : ' + errInsert.message;
           message.className = 'form-message error';
           btn.disabled = false;
-          btn.textContent = 'Publier';
+          btn.textContent = session ? 'Publier' : 'Envoyer';
         } else {
-          message.textContent = 'Commentaire publié !';
+          message.textContent = session
+            ? 'Commentaire publié !'
+            : 'Merci, votre commentaire sera affiché après validation par un administrateur.';
           message.className = 'form-message success';
           textarea.value = '';
           btn.disabled = false;
-          btn.textContent = 'Publier';
+          btn.textContent = session ? 'Publier' : 'Envoyer';
           chargerCommentaires();
         }
-      });
-    } else {
-      commentFormArea.innerHTML = `
-        <div class="comment-login-prompt">
-          <a href="login.html">Connectez-vous</a> pour laisser un commentaire.
-        </div>
-      `;
-    }
+    });
 
     chargerCommentaires();
   }

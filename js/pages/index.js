@@ -2,7 +2,8 @@ import { supabase } from '../supabase.js';
 import { initUserBar } from '../auth.js';
 import { escapeHtml } from '../utils/escape.js';
 
-const { session } = await initUserBar({ elementId: 'userBar', montrerConnexion: false });
+const { session, profil } = await initUserBar({ elementId: 'userBar', montrerConnexion: false });
+const estAdmin = profil?.role === 'admin';
 
 if (!session) {
   document.querySelectorAll('.hub-protege').forEach((entry) => {
@@ -30,6 +31,80 @@ function afficherDateRappel(date) {
   return new Intl.DateTimeFormat('fr-FR', {
     day: 'numeric', month: 'long', year: 'numeric'
   }).format(new Date(`${date}T00:00:00`));
+}
+
+async function chargerCommentairesAValider() {
+  if (!estAdmin) return;
+
+  const section = document.getElementById('adminCommentModeration');
+  const list = document.getElementById('adminCommentsList');
+  const count = document.getElementById('adminCommentsCount');
+  const message = document.getElementById('adminCommentsMessage');
+  if (!section || !list || !count || !message) return;
+
+  section.style.display = '';
+  const { data: commentaires, error } = await supabase
+    .from('commentaires')
+    .select('id, contenu, created_at, auteur_id, profils(pseudo), articles(titre, slug)')
+    .eq('statut', 'en_attente')
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    count.textContent = 'Erreur';
+    list.textContent = 'Impossible de charger les commentaires à valider.';
+    console.error('Erreur chargement commentaires à modérer:', error);
+    return;
+  }
+
+  const enAttente = commentaires || [];
+  count.textContent = `${enAttente.length} à valider`;
+  if (!enAttente.length) {
+    list.textContent = 'Aucun commentaire en attente.';
+    return;
+  }
+
+  list.innerHTML = enAttente.map((commentaire) => {
+    const date = new Date(commentaire.created_at).toLocaleDateString('fr-FR', {
+      day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+    const pseudo = commentaire.auteur_id
+      ? (commentaire.profils?.pseudo || 'Utilisateur')
+      : 'Anonyme';
+    const article = commentaire.articles;
+    const lienArticle = article?.slug
+      ? `<a class="admin-comment-article" href="article.html?slug=${encodeURIComponent(article.slug)}">${escapeHtml(article.titre || 'Article sans titre')}</a>`
+      : '<span class="admin-comment-article">Article indisponible</span>';
+
+    return `
+      <article class="admin-comment-row">
+        <div class="admin-comment-info">
+          <div class="admin-comment-meta"><strong>${escapeHtml(pseudo)}</strong><time>${date}</time></div>
+          ${lienArticle}
+          <p class="admin-comment-content">${escapeHtml(commentaire.contenu)}</p>
+        </div>
+        <button type="button" class="admin-comment-approve" data-id="${commentaire.id}">Valider</button>
+      </article>
+    `;
+  }).join('');
+
+  list.querySelectorAll('.admin-comment-approve').forEach((button) => {
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      message.textContent = '';
+      const { error: erreurValidation } = await supabase
+        .from('commentaires')
+        .update({ statut: 'publie' })
+        .eq('id', button.dataset.id);
+
+      if (erreurValidation) {
+        message.textContent = `La validation a échoué : ${erreurValidation.message}`;
+        button.disabled = false;
+        return;
+      }
+
+      await chargerCommentairesAValider();
+    });
+  });
 }
 
 async function chargerRappels() {
@@ -102,6 +177,7 @@ async function validerRappel(checkbox) {
 }
 
 chargerRappels();
+chargerCommentairesAValider();
 
 function extraireExtrait(contenu, max = 180) {
   if (!contenu) return '';
