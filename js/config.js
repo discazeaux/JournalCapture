@@ -28,11 +28,6 @@
       { valeur: 'Harpe', label: 'Harpe' }
     ],
 
-    ROLE_ADMIN: 'admin',
-
-    // ---- Mesure d'audience (Google Analytics 4) & consentement ----
-    GA_ID: 'G-6E1WMD3WXD',
-    CONSENT_STORAGE_KEY: 'cookies_consent',
-    CONSENT_DUREE_MOIS: 6
+    ROLE_ADMIN: 'admin'
   };
 })(window);

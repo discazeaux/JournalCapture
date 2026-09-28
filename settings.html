@@ -76,14 +76,6 @@
 
     </div>
 
-            <!-- ── Cookies / consentement ── -->
-        <div class="settings-section">
-            <h3>🍪 Mes préférences de consentement</h3>
-            <p class="section-subtitle">Google Analytics (mesure d'audience) n'est activé qu'avec votre accord explicite.</p>
-            <p class="hint" id="hintConsentement"></p>
-            <button type="button" class="consent-btn consent-accept" id="btnModifierConsentement">🍪 Modifier mon consentement</button>
-        </div>
-
     <div class="toast" id="toast"></div>
     <footer>
          <div class="flaticon-credit">
@@ -98,18 +90,6 @@
 
     <script type="module">
         import './js/pages/settings.js';
-    </script>
-    <script>
-        (function () {
-            var btn = document.getElementById('btnModifierConsentement');
-            if (btn) btn.addEventListener('click', function () { window.CookiesConsent.modifierChoix(); });
-            var hint = document.getElementById('hintConsentement');
-            if (hint && window.CookiesConsent) {
-                var libs = { accepted: "vous acceptez la mesure d'audience.", refused: "vous refusez la mesure d'audience.", unknown: "aucun choix enregistré pour le moment." };
-                var etat = window.CookiesConsent.getEtat();
-                hint.textContent = "État actuel : " + (libs[etat] || libs.unknown);
-            }
-        })();
     </script>
 </body>
 </html>
