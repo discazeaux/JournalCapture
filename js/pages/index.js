@@ -225,7 +225,7 @@ const nomsAppats = {};
   if (a.id) nomsAppats[a.id] = a.nom || 'Appât';
 });
 
-if (captures && captures.length) {
+if (captures) {
   const annee = new Date().getFullYear();
   const prefixeSaison = annee + '-';
 
@@ -308,5 +308,7 @@ if (captures && captures.length) {
   if (meilleurAppat) {
     document.getElementById('statAppat').textContent = meilleurAppat;
     document.getElementById('statAppatDetail').textContent = `${meilleurAppatTotal} frelons cette semaine · pièges`;
+  } else {
+    document.getElementById('statAppatDetail').textContent = 'Les pièges n’ont pas encore été relevés cette semaine.';
   }
 }
