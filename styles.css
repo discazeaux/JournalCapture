@@ -3407,8 +3407,18 @@ td {
 }
 
 .hub-stat-emoji {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 26px;
     line-height: 1;
+}
+
+.hub-stat-emoji img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    display: block;
 }
 
 .hub-stat-valeur {
