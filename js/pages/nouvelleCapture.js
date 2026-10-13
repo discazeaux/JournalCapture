@@ -232,7 +232,7 @@ function parseDuree(v) {
 function afficherChrono() {
   chronoDisplay.textContent = formatDuree(secondes);
   dureeInput.value = formatDuree(secondes);
-  resetButton.disabled = secondes === 0;
+qefsffff  resetButton.disabled = secondes === 0;
 }
 
 startButton.addEventListener('click', () => {
