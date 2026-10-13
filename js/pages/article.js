@@ -50,8 +50,16 @@ if (!slug) {
       day: 'numeric'
     });
 
-    document.title = `${article.titre} — Suivi de la pression du frelon`;
     const htmlContenu = sanitiserMarkdown(marked.parse(article.contenu || ''));
+    const texteArticle = document.createElement('div');
+    texteArticle.innerHTML = htmlContenu;
+    const descriptionArticle = texteArticle.textContent.replace(/\s+/g, ' ').trim().slice(0, 160);
+
+    document.title = `${article.titre} | La Ruche Résiste`;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', descriptionArticle);
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', document.title);
+    document.querySelector('meta[property="og:description"]')?.setAttribute('content', descriptionArticle);
+    document.querySelector('meta[property="og:url"]')?.setAttribute('content', window.location.href);
 
     container.innerHTML = `
       <article class="article">
