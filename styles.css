@@ -1989,7 +1989,6 @@ td {
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 16px 18px;
-    margin-top: 8px;
     animation: slideDown 0.2s ease;
 }
 
@@ -1999,19 +1998,11 @@ td {
 }
 
 #detailsPiege h4 {
-    color: var(--yellow);
-    margin: 0 0 14px 0;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    margin: 0;
 }
 
-#detailsPiege p {
-    margin: 0 0 12px 0;
-}
-
-#detailsPiege p:last-child {
-    margin-bottom: 0;
+#detailsPiege > .capture-field {
+    margin-top: 14px;
 }
 
 #dureeBlock {
@@ -2088,7 +2079,7 @@ td {
 .capture-grid {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 4px;
+    margin-bottom: 0;
 }
 
 .capture-grid th {
@@ -2144,11 +2135,11 @@ td {
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
-    background: var(--yellow-dim);
+    background: transparent;
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 10px 14px;
-    margin-top: 4px;
+    margin-top: 0;
 }
 
 .meteo-icone {
@@ -2180,7 +2171,7 @@ td {
 .meteo-edit {
     display: flex;
     gap: 8px;
-    margin-top: 10px;
+    margin-top: 0;
     flex-wrap: wrap;
 }
 
@@ -2204,6 +2195,7 @@ td {
     color: var(--muted);
     margin: 0 0 4px 0;
     display: block;
+    text-align: center;
 }
 
 .meteo-edit-groupe {
@@ -2214,6 +2206,9 @@ td {
 #captureForm {
     max-width: 600px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     background: var(--card);
     padding: 25px;
     border-radius: 10px;
@@ -2221,15 +2216,88 @@ td {
     border: 1px solid var(--border-color);
 }
 
+.capture-section-group {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+}
+
+.capture-date-time {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+#captureForm > .capture-section-group:not(:first-child):not(.capture-section-group--no-divider) {
+    padding-top: 22px;
+    border-top: 1px solid var(--border-color);
+}
+
+.capture-section-title,
+#detailsPiege h4 {
+    margin: 0;
+    padding: 9px 12px;
+    border-left: 3px solid var(--yellow);
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 4px 4px 0 0;
+    background: var(--yellow-dim);
+    color: var(--text);
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.capture-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+#captureForm label {
+    margin-bottom: 0;
+}
+
+#captureForm .capture-field > label {
+    font-size: 14px;
+}
+
+#captureForm > button[type="submit"] {
+    margin-top: 0;
+}
+
+#dureeBlock > .capture-field + .capture-field {
+    padding-top: 22px;
+    border-top: 1px solid var(--border-color);
+}
+
+#dureeBlock {
+    padding-top: 22px;
+}
+
+.capture-field > .fiche-poste,
+.capture-field > .fiche-recette {
+    margin-top: 0;
+}
+
 #chrono {
     font-size: 28px;
     color: var(--yellow);
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 0;
 }
 
-#startChrono, #stopChrono {
-    width: 48%;
+.chrono-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 0;
+}
+
+#startChrono, #stopChrono, #resetChrono {
+    width: 100%;
+    min-width: 0;
     padding: 10px;
     border: none;
     border-radius: 6px;
@@ -2237,11 +2305,27 @@ td {
     background: var(--button-bg);
     color: #fff;
     font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
 }
 
-#stopChrono:disabled {
+#stopChrono:disabled, #resetChrono:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+    #startChrono, #stopChrono {
+        padding: 10px 6px;
+        font-size: 12px;
+    }
+
+    .reset-chrono-label {
+        display: none;
+    }
 }
 
 /* ── Blog ─────────────────────────────────────────────── */
@@ -3663,11 +3747,24 @@ body.login-page {
 
 .meteo-note {
     font-size: 12px;
-    color: var(--muted);
-    margin: 0 0 6px 0;
+    color: var(--text-secondary);
+    margin: 0;
     display: flex;
     align-items: center;
     gap: 6px;
+    padding: 9px 12px;
+    border-radius: 4px;
+    line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+    #captureForm {
+        padding: 18px;
+    }
+
+    .capture-date-time {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* ── Responsive ───────────────────────────────────────── */

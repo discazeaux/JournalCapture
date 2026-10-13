@@ -232,6 +232,7 @@ function parseDuree(v) {
 function afficherChrono() {
   chronoDisplay.textContent = formatDuree(secondes);
   dureeInput.value = formatDuree(secondes);
+  resetButton.disabled = secondes === 0;
 }
 
 startButton.addEventListener('click', () => {
@@ -320,9 +321,6 @@ document.getElementById('captureForm').addEventListener('submit', async (e) => {
       nombre: Number(document.getElementById('nombre').value) || 0,
       nombre_europeen: Number(document.getElementById('nombre_europeen').value) || 0,
       nombre_autres: Number(document.getElementById('nombre_autres').value) || 0,
-      nombre_obs_asiatique: Number(document.getElementById('nombre_obs_asiatique').value) || 0,
-      nombre_obs_europeen: Number(document.getElementById('nombre_obs_europeen').value) || 0,
-      nombre_obs_autres: Number(document.getElementById('nombre_obs_autres').value) || 0,
       user_id: session ? session.user.id : null,
       lieu: document.getElementById('lieu').value,
       notes,
@@ -346,9 +344,6 @@ document.getElementById('captureForm').addEventListener('submit', async (e) => {
   document.getElementById('nombre').value = 0;
   document.getElementById('nombre_europeen').value = 0;
   document.getElementById('nombre_autres').value = 0;
-  document.getElementById('nombre_obs_asiatique').value = 0;
-  document.getElementById('nombre_obs_europeen').value = 0;
-  document.getElementById('nombre_obs_autres').value = 0;
   document.getElementById('notes').value = '';
   document.getElementById('notesPiege').value = '';
   document.getElementById('selectPoste').value = '';

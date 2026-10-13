@@ -18,30 +18,35 @@
     <h2>Nouvelle capture</h2>
 
     <form id="captureForm">
-        <p>
-            <label class="required-field">Date</label>
-            <input type="date" id="date_capture" required>
-        </p>
-        <p>
-            <label class="required-field">Heure</label>
-            <input type="time" id="heure_capture" required>
-        </p>
-        <p>
-            <label class="required-field">Méthode</label>
-            <select id="methode" required>
-                <option value="" disabled>Sélectionnez une méthode</option>
-                <option value="DPR">DPR</option>
-                <option value="Piège">Piège</option>
-                <option value="Raquette électrique" selected>Raquette électrique</option>
-                <option value="Harpe">Harpe</option>
-            </select>
-        </p>
+        <section class="capture-section-group" aria-labelledby="captureInfosTitle">
+            <h3 class="capture-section-title" id="captureInfosTitle">Informations de la capture</h3>
+            <div class="capture-date-time">
+                <div class="capture-field">
+                    <label class="required-field">Date</label>
+                    <input type="date" id="date_capture" required>
+                </div>
+                <div class="capture-field">
+                    <label class="required-field">Heure</label>
+                    <input type="time" id="heure_capture" required>
+                </div>
+            </div>
+            <div class="capture-field">
+                <label class="required-field">Méthode</label>
+                <select id="methode" required>
+                    <option value="" disabled>Sélectionnez une méthode</option>
+                    <option value="DPR">DPR</option>
+                    <option value="Piège">Piège</option>
+                    <option value="Raquette électrique" selected>Raquette électrique</option>
+                    <option value="Harpe">Harpe</option>
+                </select>
+            </div>
+        </section>
 
         <!-- ── Détails piège ── -->
         <div id="detailsPiege" style="display:none;">
             <h4>🪤 Détails du piège</h4>
 
-            <p>
+            <div class="capture-field">
                 <label>Poste de piégeage</label>
                 <select id="selectPoste">
                     <option value="">Chargement…</option>
@@ -56,9 +61,9 @@
                 <div id="hintPasDePoste" class="no-postes-hint" style="display:none;">
                     Aucun poste actif. <a href="settings.html">Créez vos postes dans les paramètres →</a>
                 </div>
-            </p>
+            </div>
 
-            <p>
+            <div class="capture-field">
                 <label>
                     Appât utilisé
                     <span id="badgeTypeAppat"></span>
@@ -68,37 +73,39 @@
                     <div class="fiche-recette-titre">📖 Recette</div>
                     <div id="ficheRecetteTexte"></div>
                 </div>
-            </p>
+            </div>
 
-            <p>
+            <div class="capture-field">
                 <label>Nombre de pièges relevés</label>
                 <input type="number" id="nombrePieges" min="1" max="99" value="1">
-            </p>
+            </div>
 
-            <p>
+            <div class="capture-field">
                 <label>Notes sur le piège</label>
                 <textarea id="notesPiege" rows="2" placeholder="Position, conditions, observations…"></textarea>
-            </p>
+            </div>
         </div>
 
         <div id="dureeBlock">
-            <p>
-                <label>Durée de capture</label>
+            <div class="capture-field">
+                <h3 class="capture-section-title">Durée de capture</h3>
                 <div id="chrono">00:00</div>
                 <input id="duree_capture" type="text" value="00:00" placeholder="mm:ss" />
-                <button type="button" id="startChrono">Démarrer</button>
-                <button type="button" id="stopChrono" disabled>Arrêter</button>
-                <button type="button" id="resetChrono">
-                    🔄 Remettre à zéro
-                </button>
-            </p>
-            
-            <p>
+                <div class="chrono-actions">
+                    <button type="button" id="startChrono">Démarrer</button>
+                    <button type="button" id="stopChrono" disabled>Arrêter</button>
+                    <button type="button" id="resetChrono" aria-label="Remettre à zéro" title="Remettre à zéro" disabled>
+                        <span aria-hidden="true">🔄</span>
+                        <span class="reset-chrono-label">Remettre à zéro</span>
+                    </button>
+                </div>
+            </div>
 
-            <p class="meteo-note">
+            <div class="capture-field">
+                <h3 class="capture-section-title">Météo</h3>
+                <p class="meteo-note">
                     📍 La localisation est utilisée uniquement pour récupérer la météo locale — elle n'est pas enregistrée.
-            </p>
-                <label>🌤 Météo</label>
+                </p>
                 <div class="meteo-bloc" id="meteoBloc">
                     <div class="meteo-icone" id="meteoIcone">⏳</div>
                     <div class="meteo-info">
@@ -124,16 +131,15 @@
                         </select>
                     </div>
                 </div>
-            </p>
+            </div>
         </div>
-         <p>
-       <label>Captures & observations</label>
+        <section class="capture-section-group capture-section-group--no-divider" aria-labelledby="captureCountsTitle">
+            <h3 class="capture-section-title" id="captureCountsTitle">Captures & observations</h3>
             <table class="capture-grid">
                 <thead>
                     <tr>
                         <th>Espèce</th>
-                        <th>⚡ Tués</th>
-                        <th>👁 Observés</th>
+                        <th>⚡ Nombres</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -143,7 +149,6 @@
                             <span class="espece-sub">Vespa velutina</span>
                         </td>
                         <td><input type="number" id="nombre" value="0" min="0"></td>
-                        <td><input type="number" id="nombre_obs_asiatique" value="0" min="0"></td>
                     </tr>
                     <tr>
                         <td>
@@ -151,29 +156,29 @@
                             <span class="espece-sub">Vespa crabro</span>
                         </td>
                         <td><input type="number" id="nombre_europeen" value="0" min="0"></td>
-                        <td><input type="number" id="nombre_obs_europeen" value="0" min="0"></td>
                     </tr>
                     <tr>
                         <td>
                             <span class="espece-label">🐞 Abeille / guêpe</span>
-                            <span class="espece-sub">accessoires</span>
+                            <span class="espece-sub">Autre insecte</span>
                         </td>
                         <td><input type="number" id="nombre_autres" value="0" min="0"></td>
-                        <td><input type="number" id="nombre_obs_autres" value="0" min="0"></td>
                     </tr>
                 </tbody>
             </table>
-        </p>
+        </section>
 
-        <p>
-            <label>Lieu</label>
-            <input type="text" id="lieu" value="maison">
-        </p>
-
-        <p>
-            <label>Notes générales</label>
-            <textarea id="notes"></textarea>
-        </p>
+        <section class="capture-section-group capture-section-group--no-divider" aria-labelledby="captureNotesTitle">
+            <h3 class="capture-section-title" id="captureNotesTitle">Lieu et notes</h3>
+            <div class="capture-field">
+                <label>Lieu</label>
+                <input type="text" id="lieu" value="maison">
+            </div>
+            <div class="capture-field">
+                <label>Notes générales</label>
+                <textarea id="notes"></textarea>
+            </div>
+        </section>
 
         <button type="submit">Enregistrer</button>
     </form>
