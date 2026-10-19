@@ -33,7 +33,7 @@ export async function envoyerResetPassword(e) {
     return;
   }
 
-  const redirectTo = new URL('reset-password.html', window.location.href).href;
+  const redirectTo = 'https://www.larucheresiste.fr/reset-password.html';
   const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
 
   if (error) {
