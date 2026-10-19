@@ -70,23 +70,71 @@ const METEO_LABELS = {
   'inconnu': '— Inconnu'
 };
 
-function regrouperParFenetre(dataTotauxParJour, fenetre) {
+function regrouperParPeriode(dataTotauxParJour, periode) {
   const jours = Object.keys(dataTotauxParJour).sort();
   if (!jours.length) return { labels: [], values: [] };
 
-  const labels = [];
-  const values = [];
+  const groupes = new Map();
 
-  for (let i = 0; i < jours.length; i += fenetre) {
-    const tranche = jours.slice(i, i + fenetre);
-    const total = tranche.reduce((s, j) => s + (dataTotauxParJour[j] || 0), 0);
-    const d = new Date(tranche[0]);
-    const label = d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
-    labels.push(label);
-    values.push(total);
-  }
+  jours.forEach((jour) => {
+    const [annee, mois, jourDuMois] = jour.split('-').map(Number);
+    const date = new Date(Date.UTC(annee, mois - 1, jourDuMois));
+    let cle;
+    let libelle;
 
-  return { labels, values };
+    if (periode === 'jour') {
+      cle = jour;
+      libelle = date.toLocaleDateString('fr-FR', {
+        day: '2-digit', month: '2-digit', year: '2-digit', timeZone: 'UTC'
+      });
+    } else if (periode === 'semaine') {
+      const [anneeSemaine, numeroSemaine] = getNumeroSemaine(jour).split('-S');
+      cle = `${anneeSemaine}-S${numeroSemaine}`;
+      libelle = `S${numeroSemaine} ${anneeSemaine}`;
+    } else if (periode === 'mois') {
+      cle = `${annee}-${String(mois).padStart(2, '0')}`;
+      libelle = date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+    } else if (periode === 'trimestre') {
+      const numeroTrimestre = Math.ceil(mois / 3);
+      cle = `${annee}-T${numeroTrimestre}`;
+      libelle = `T${numeroTrimestre} ${annee}`;
+    } else {
+      let anneeDebut;
+      let moisDebut;
+
+      if (mois === 12) {
+        anneeDebut = annee;
+        moisDebut = 12;
+      } else if (mois <= 2) {
+        anneeDebut = annee - 1;
+        moisDebut = 12;
+      } else if (mois <= 5) {
+        anneeDebut = annee;
+        moisDebut = 3;
+      } else if (mois <= 8) {
+        anneeDebut = annee;
+        moisDebut = 6;
+      } else {
+        anneeDebut = annee;
+        moisDebut = 9;
+      }
+
+      cle = `${anneeDebut}-${String(moisDebut).padStart(2, '0')}`;
+      libelle = moisDebut === 12
+        ? `Hiver ${anneeDebut}-${anneeDebut + 1}`
+        : `${{ 3: 'Printemps', 6: 'Été', 9: 'Automne' }[moisDebut]} ${anneeDebut}`;
+    }
+
+    const groupe = groupes.get(cle) || { libelle, total: 0 };
+    groupe.total += dataTotauxParJour[jour] || 0;
+    groupes.set(cle, groupe);
+  });
+
+  const clesTriees = [...groupes.keys()].sort();
+  return {
+    labels: clesTriees.map((cle) => groupes.get(cle).libelle),
+    values: clesTriees.map((cle) => groupes.get(cle).total)
+  };
 }
 
 function tendanceLineaire(values) {
@@ -298,8 +346,8 @@ async function chargerCommunauteStats() {
 }
 
 function renderTendanceCommunaute() {
-  const fenetre = parseInt(document.getElementById('fenetreCommunaute').value);
-  const { labels, values } = regrouperParFenetre(dataCommunauteParJour, fenetre);
+  const periode = document.getElementById('fenetreCommunaute').value;
+  const { labels, values } = regrouperParPeriode(dataCommunauteParJour, periode);
   if (chartTendanceCommunaute) chartTendanceCommunaute.destroy();
   chartTendanceCommunaute = creerChartTendance('tendanceCommunaute', labels, values, '#b8860b', '#c05a5a');
 }
@@ -545,8 +593,8 @@ async function chargerMesStats() {
 }
 
 function renderTendancePerso() {
-  const fenetre = parseInt(document.getElementById('fenetrePerso').value);
-  const { labels, values } = regrouperParFenetre(dataPersoParJour, fenetre);
+  const periode = document.getElementById('fenetrePerso').value;
+  const { labels, values } = regrouperParPeriode(dataPersoParJour, periode);
   if (chartTendancePerso) chartTendancePerso.destroy();
   chartTendancePerso = creerChartTendance('tendancePerso', labels, values, '#4a9d8f', '#8a7fb8');
 }
