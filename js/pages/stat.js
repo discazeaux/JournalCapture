@@ -70,11 +70,12 @@ const METEO_LABELS = {
   'inconnu': '— Inconnu'
 };
 
-function regrouperParPeriode(dataTotauxParJour, periode) {
-  const jours = Object.keys(dataTotauxParJour).sort();
+function regrouperParPeriode(dataParJourEtMethode, periode) {
+  const jours = Object.keys(dataParJourEtMethode).sort();
   if (!jours.length) return { labels: [], values: [] };
 
   const groupes = new Map();
+  const methodes = [...new Set(jours.flatMap((jour) => Object.keys(dataParJourEtMethode[jour])))];
 
   jours.forEach((jour) => {
     const [annee, mois, jourDuMois] = jour.split('-').map(Number);
@@ -125,15 +126,32 @@ function regrouperParPeriode(dataTotauxParJour, periode) {
         : `${{ 3: 'Printemps', 6: 'Été', 9: 'Automne' }[moisDebut]} ${anneeDebut}`;
     }
 
-    const groupe = groupes.get(cle) || { libelle, total: 0 };
-    groupe.total += dataTotauxParJour[jour] || 0;
+    const groupe = groupes.get(cle) || { libelle, totaux: {} };
+    methodes.forEach((methode) => {
+      groupe.totaux[methode] = (groupe.totaux[methode] || 0) + (dataParJourEtMethode[jour][methode] || 0);
+    });
     groupes.set(cle, groupe);
   });
 
   const clesTriees = [...groupes.keys()].sort();
+  const series = methodes.map((methode, index) => ({
+    label: methode,
+    data: clesTriees.map((cle) => groupes.get(cle).totaux[methode] || 0),
+    backgroundColor: couleurs[index % couleurs.length],
+    borderColor: couleurs[index % couleurs.length],
+    borderWidth: 1,
+    borderRadius: 3,
+    stack: 'captures',
+    order: 2
+  }));
+  const totals = clesTriees.map((cle) => methodes.reduce(
+    (total, methode) => total + (groupes.get(cle).totaux[methode] || 0), 0
+  ));
+
   return {
     labels: clesTriees.map((cle) => groupes.get(cle).libelle),
-    values: clesTriees.map((cle) => groupes.get(cle).total)
+    series,
+    totals
   };
 }
 
@@ -162,23 +180,15 @@ function tendanceLineaire(values) {
   return values.map((_, i) => parseFloat((a * i + b).toFixed(2)));
 }
 
-function creerChartTendance(canvasId, labels, values, couleurBarre, couleurTendance) {
-  const tendance = tendanceLineaire(values);
+function creerChartTendance(canvasId, labels, series, totals, couleurTendance) {
+  const tendance = tendanceLineaire(totals);
 
   return new Chart(document.getElementById(canvasId), {
     type: 'bar',
     data: {
       labels,
       datasets: [
-        {
-          label: 'Captures',
-          data: values,
-          backgroundColor: couleurBarre + 'cc',
-          borderColor: couleurBarre,
-          borderWidth: 1,
-          borderRadius: 4,
-          order: 2
-        },
+        ...series,
         {
           label: 'Tendance',
           data: tendance,
@@ -188,6 +198,7 @@ function creerChartTendance(canvasId, labels, values, couleurBarre, couleurTenda
           pointRadius: 0,
           tension: 0.3,
           fill: false,
+          stack: 'tendance',
           order: 1
         }
       ]
@@ -196,11 +207,11 @@ function creerChartTendance(canvasId, labels, values, couleurBarre, couleurTenda
       responsive: true,
       interaction: { mode: 'index', intersect: false },
       scales: {
-        y: { beginAtZero: true, ticks: { color: '#8a8578' }, grid: { color: '#e8e2d4' } },
-        x: { ticks: { color: '#8a8578', maxRotation: 45 }, grid: { color: '#f0ece2' } }
+        x: { stacked: true, ticks: { color: '#8a8578', maxRotation: 45 }, grid: { color: '#f0ece2' } },
+        y: { stacked: true, beginAtZero: true, ticks: { color: '#8a8578' }, grid: { color: '#e8e2d4' } },
       },
       plugins: {
-        legend: { display: false },
+        legend: { display: true, position: 'bottom' },
         tooltip: {
           callbacks: {
             label: (ctx) => ctx.dataset.label + ' : ' + ctx.parsed.y
@@ -231,7 +242,9 @@ async function chargerCommunauteStats() {
   dataCommunauteParJour = {};
   data.forEach((c) => {
     const j = c.date_capture;
-    dataCommunauteParJour[j] = (dataCommunauteParJour[j] || 0) + (c.nombre || 0);
+    const methode = c.methode || 'Inconnue';
+    if (!dataCommunauteParJour[j]) dataCommunauteParJour[j] = {};
+    dataCommunauteParJour[j][methode] = (dataCommunauteParJour[j][methode] || 0) + (c.nombre || 0);
   });
 
   renderTendanceCommunaute();
@@ -347,9 +360,9 @@ async function chargerCommunauteStats() {
 
 function renderTendanceCommunaute() {
   const periode = document.getElementById('fenetreCommunaute').value;
-  const { labels, values } = regrouperParPeriode(dataCommunauteParJour, periode);
+  const { labels, series, totals } = regrouperParPeriode(dataCommunauteParJour, periode);
   if (chartTendanceCommunaute) chartTendanceCommunaute.destroy();
-  chartTendanceCommunaute = creerChartTendance('tendanceCommunaute', labels, values, '#b8860b', '#c05a5a');
+  chartTendanceCommunaute = creerChartTendance('tendanceCommunaute', labels, series, totals, '#c05a5a');
 }
 
 document.getElementById('fenetreCommunaute').addEventListener('change', renderTendanceCommunaute);
@@ -447,7 +460,9 @@ async function chargerMesStats() {
 
   dataPersoParJour = {};
   data.forEach((c) => {
-    dataPersoParJour[c.date_capture] = (dataPersoParJour[c.date_capture] || 0) + (c.nombre || 0);
+    const methode = c.methode || 'Inconnue';
+    if (!dataPersoParJour[c.date_capture]) dataPersoParJour[c.date_capture] = {};
+    dataPersoParJour[c.date_capture][methode] = (dataPersoParJour[c.date_capture][methode] || 0) + (c.nombre || 0);
   });
   renderTendancePerso();
 
@@ -594,9 +609,9 @@ async function chargerMesStats() {
 
 function renderTendancePerso() {
   const periode = document.getElementById('fenetrePerso').value;
-  const { labels, values } = regrouperParPeriode(dataPersoParJour, periode);
+  const { labels, series, totals } = regrouperParPeriode(dataPersoParJour, periode);
   if (chartTendancePerso) chartTendancePerso.destroy();
-  chartTendancePerso = creerChartTendance('tendancePerso', labels, values, '#4a9d8f', '#8a7fb8');
+  chartTendancePerso = creerChartTendance('tendancePerso', labels, series, totals, '#8a7fb8');
 }
 
 document.getElementById('fenetrePerso').addEventListener('change', renderTendancePerso);
