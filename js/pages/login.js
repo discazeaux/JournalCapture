@@ -33,7 +33,8 @@ export async function envoyerResetPassword(e) {
     return;
   }
 
-  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  const redirectTo = new URL('reset-password.html', window.location.href).href;
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
 
   if (error) {
     afficherMessage(`${UI_MESSAGES.auth.connectionErrorPrefix}${error.message}`, 'error');
