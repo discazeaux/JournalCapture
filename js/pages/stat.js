@@ -291,7 +291,6 @@ function renderTendanceCommunaute() {
 
 document.getElementById('fenetreCommunaute').addEventListener('change', renderTendanceCommunaute);
 
-let chartMesStats = null;
 let dataPersoParJour = {};
 let chartTendancePerso = null;
 let capturesData = [];
@@ -435,10 +434,6 @@ async function chargerMesStats() {
     } else {
       const tr = tbody.querySelector(`tr[data-id="${id}"]`);
       if (tr) tr.remove();
-      if (chartMesStats) {
-        chartMesStats.destroy();
-        chartMesStats = null;
-      }
       if (chartTendancePerso) {
         chartTendancePerso.destroy();
         chartTendancePerso = null;
@@ -447,88 +442,6 @@ async function chargerMesStats() {
     }
   });
 
-  const parJourMethode = {};
-  const toutesMethodes = new Set();
-
-  data.forEach((c) => {
-    const jour = formaterDateSimple(c.date_capture);
-    const methode = c.methode || 'Inconnue';
-    toutesMethodes.add(methode);
-
-    if (!parJourMethode[jour]) parJourMethode[jour] = {};
-    parJourMethode[jour][methode] = (parJourMethode[jour][methode] || 0) + (c.nombre || 0);
-  });
-
-  const jours = Object.keys(parJourMethode).sort((a, b) =>
-    new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-'))
-  );
-  const methodes = [...toutesMethodes];
-
-  if (chartMesStats) {
-    chartMesStats.destroy();
-    chartMesStats = null;
-  }
-
-  chartMesStats = new Chart(document.getElementById('capturesSemaineMethodeMes'), {
-    type: 'bar',
-    data: {
-      labels: jours,
-      datasets: methodes.map((m, i) => ({
-        label: m,
-        data: jours.map((j) => parJourMethode[j][m] || 0),
-        backgroundColor: couleurs[i % couleurs.length]
-      }))
-    },
-    options: {
-      responsive: true,
-      scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
-      plugins: { tooltip: { mode: 'index', intersect: false }, legend: { position: 'bottom' } }
-    }
-  });
-
-  const headerRow = document.getElementById('tableSemaineHeaderMes');
-  headerRow.innerHTML = '<th>Date</th>';
-  methodes.forEach((m) => {
-    const th = document.createElement('th');
-    th.textContent = m;
-    headerRow.appendChild(th);
-  });
-
-  const thTotalMes = document.createElement('th');
-  thTotalMes.textContent = 'Total 🐝';
-  thTotalMes.className = 'table-total';
-  headerRow.appendChild(thTotalMes);
-
-  const tbodySemaine = document.querySelector('#tableSemaineMes tbody');
-  tbodySemaine.innerHTML = '';
-
-  const totauxMethodeMes = {};
-  methodes.forEach((m) => {
-    totauxMethodeMes[m] = 0;
-  });
-
-  let grandTotalMes = 0;
-
-  jours.forEach((jour) => {
-    const ligneTotal = methodes.reduce((t, m) => t + (parJourMethode[jour][m] || 0), 0);
-    methodes.forEach((m) => {
-      totauxMethodeMes[m] += (parJourMethode[jour][m] || 0);
-    });
-    grandTotalMes += ligneTotal;
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td><strong>${escapeHtml(jour)}</strong></td>` +
-      methodes.map((m) => `<td>${parJourMethode[jour][m] || 0}</td>`).join('') +
-      `<td><strong class="table-total">${ligneTotal}</strong></td>`;
-    tbodySemaine.appendChild(tr);
-  });
-
-  const trFootMes = document.createElement('tr');
-  trFootMes.style.borderTop = '2px solid var(--border)';
-  trFootMes.innerHTML = `<td><strong class="table-cell-muted">Total</strong></td>` +
-    methodes.map((m) => `<td><strong>${totauxMethodeMes[m]}</strong></td>`).join('') +
-    `<td><strong class="table-total">${grandTotalMes}</strong></td>`;
-  tbodySemaine.appendChild(trFootMes);
 }
 
 function renderTendancePerso() {
