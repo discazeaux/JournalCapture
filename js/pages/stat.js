@@ -72,7 +72,7 @@ const METEO_LABELS = {
 
 function regrouperParPeriode(dataParJourEtMethode, periode) {
   const jours = Object.keys(dataParJourEtMethode).sort();
-  if (!jours.length) return { labels: [], values: [] };
+  if (!jours.length) return { labels: [], series: [], totals: [] };
 
   const groupes = new Map();
   const methodes = [...new Set(jours.flatMap((jour) => Object.keys(dataParJourEtMethode[jour])))];
@@ -237,10 +237,12 @@ async function chargerCommunauteStats() {
     return;
   }
 
-  document.getElementById('totalNombre').textContent = data.reduce((t, c) => t + (c.nombre || 0), 0);
+  const captures = data || [];
+  document.getElementById('totalNombre').textContent = captures.reduce((t, c) => t + (c.nombre || 0), 0);
+  document.getElementById('communauteSansCapture').style.display = captures.length ? 'none' : '';
 
   dataCommunauteParJour = {};
-  data.forEach((c) => {
+  captures.forEach((c) => {
     const j = c.date_capture;
     const methode = c.methode || 'Inconnue';
     if (!dataCommunauteParJour[j]) dataCommunauteParJour[j] = {};
@@ -251,7 +253,7 @@ async function chargerCommunauteStats() {
 
   // ── Frelons tués à la raquette électrique selon la météo ──
   const parMeteoRaquette = {};
-  data.forEach((c) => {
+  captures.forEach((c) => {
     if (c.methode === 'Raquette électrique') {
       const cond = c.meteo_conditions || 'inconnu';
       parMeteoRaquette[cond] = (parMeteoRaquette[cond] || 0) + (c.nombre || 0);
@@ -353,7 +355,7 @@ async function chargerMesStats() {
   myStatsNotConnected.style.display = 'none';
   mesStatsContent.style.display = '';
 
-  const { data, error } = await supabase
+  const { data: resultats, error } = await supabase
     .from('captures')
     .select('*')
     .eq('user_id', session.user.id)
@@ -365,14 +367,15 @@ async function chargerMesStats() {
     return;
   }
 
-  capturesData = data || [];
+  const captures = resultats || [];
+  capturesData = captures;
 
-  const totalNombre = data.reduce((t, c) => t + (c.nombre || 0), 0);
-  const totalDuree = data.reduce((t, c) => t + (c.duree || 0), 0);
+  const totalNombre = captures.reduce((t, c) => t + (c.nombre || 0), 0);
+  const totalDuree = captures.reduce((t, c) => t + (c.duree || 0), 0);
   document.getElementById('totalNombrePerso').textContent = totalNombre;
   document.getElementById('dureeTotale').textContent = formaterTemps(totalDuree);
 
-  const avecDuree = data.filter((c) => c.duree > 0);
+  const avecDuree = captures.filter((c) => c.duree > 0);
   if (avecDuree.length > 0) {
     const totalNombreAvecDuree = avecDuree.reduce((t, c) => t + (c.nombre || 0), 0);
     const totalDureeAvecDuree = avecDuree.reduce((t, c) => t + c.duree, 0);
@@ -382,7 +385,7 @@ async function chargerMesStats() {
   }
 
   dataPersoParJour = {};
-  data.forEach((c) => {
+  captures.forEach((c) => {
     const methode = c.methode || 'Inconnue';
     if (!dataPersoParJour[c.date_capture]) dataPersoParJour[c.date_capture] = {};
     dataPersoParJour[c.date_capture][methode] = (dataPersoParJour[c.date_capture][methode] || 0) + (c.nombre || 0);
@@ -392,7 +395,17 @@ async function chargerMesStats() {
   const tbody = document.querySelector('#tableMesCaptures tbody');
   tbody.innerHTML = '';
 
-  data.forEach((c) => {
+  if (!captures.length) {
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = 8;
+    td.className = 'table-cell-muted';
+    td.textContent = 'Aucune capture enregistrée pour le moment.';
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  }
+
+  captures.forEach((c) => {
     const eff = calcEfficacite(c.nombre || 0, c.duree || 0);
     const effHTML = eff !== null ? `<span class="efficacite">${eff} /min</span>` : '<span class="efficacite-na">—</span>';
 
