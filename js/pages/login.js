@@ -158,6 +158,10 @@ export async function initLoginPage() {
   }
 
   supabase.auth.onAuthStateChange((event, sessionState) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      window.location.href = 'reset-password.html';
+    }
+
     if (event === 'SIGNED_IN' && sessionState && !dejaRedirige) {
       dejaRedirige = true;
       window.location.href = APP_PATHS.HOME;

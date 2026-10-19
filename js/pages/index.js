@@ -2,6 +2,12 @@ import { supabase } from '../supabase.js';
 import { initUserBar } from '../auth.js';
 import { escapeHtml } from '../utils/escape.js';
 
+supabase.auth.onAuthStateChange((event) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    window.location.href = 'reset-password.html';
+  }
+});
+
 const { session, profil } = await initUserBar({ elementId: 'userBar', montrerConnexion: false });
 const estAdmin = profil?.role === 'admin';
 
