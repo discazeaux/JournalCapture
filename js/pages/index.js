@@ -14,7 +14,7 @@ if (!session) {
   if (lienMesStats) lienMesStats.style.display = '';
 
   // Connecté : masquer la section d'explication "Comment ça marche"
-  const sectionCcm = document.querySelector('.ccm');
+  const sectionCcm = document.getElementById('commentCaMarche');
   if (sectionCcm) sectionCcm.style.display = 'none';
 
   ['lienConnexion', 'lienInscription'].forEach((id) => {
