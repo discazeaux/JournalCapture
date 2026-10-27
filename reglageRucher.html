@@ -42,6 +42,33 @@
             <p class="hint">Les ruchers apparaîtront ensuite dans le suivi, sous forme d’onglets.</p>
         </div>
 
+        <div class="settings-section" id="miellerieSizesSection">
+            <h3>🍯 Formats de pots</h3>
+            <p class="section-subtitle">Ces formats sont proposés lors de l’ajout d’une récolte. Les formats standards restent toujours disponibles.</p>
+            <div class="add-form">
+                <div class="form-row">
+                    <label for="inputTaillePot">Nouveau format :</label>
+                    <input type="number" id="inputTaillePot" min="1" max="50000" step="1" placeholder="Ex. 750" class="w-120 flex-none">
+                    <span class="text-small">grammes</span>
+                    <button type="button" class="btn-add ml-auto" id="btnAjouterTaillePot">＋ Ajouter</button>
+                </div>
+            </div>
+            <div class="cause-list" id="listTaillesPots"><p class="loading">Chargement…</p></div>
+        </div>
+
+        <div class="settings-section" id="miellerieAppellationsSection">
+            <h3>🍯 Appellations de miel</h3>
+            <p class="section-subtitle">Choisissez les appellations proposées lors de l’ajout d’une récolte. Vous pouvez les retirer ou en ajouter.</p>
+            <div class="add-form">
+                <div class="form-row">
+                    <label for="inputAppellationMiel">Nouvelle appellation :</label>
+                    <input type="text" id="inputAppellationMiel" maxlength="80" placeholder="Ex. miel de sapin" class="flex-1">
+                    <button type="button" class="btn-add ml-auto" id="btnAjouterAppellationMiel">＋ Ajouter</button>
+                </div>
+            </div>
+            <div class="cause-list" id="listAppellationsMiel"><p class="loading">Chargement…</p></div>
+        </div>
+
         <div class="settings-section">
             <h3>⚠️ Causes de mortalité des colonies</h3>
             <p class="section-subtitle">Ces causes sont proposées dans le suivi de vos ruchers. Vous pouvez adapter la liste à vos observations.</p>

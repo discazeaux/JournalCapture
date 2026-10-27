@@ -38,6 +38,7 @@
     ],
     rucher: [
       { id: 'suiviRucher', label: '🐝 Mes ruchers', href: 'suiviRucher.html' },
+      { id: 'suiviMiellerie', label: '🍯 Suivi miellerie', href: 'suiviMiellerie.html' },
       { id: 'reglageRucher', label: '⚙️ Réglage des ruchers', href: 'reglageRucher.html' },
       { id: 'registreElevage', label: '📄 Registre d’élevage', href: 'registreElevage.html' }
     ]
@@ -98,7 +99,7 @@
 
     // Sections protégées (univers frelon) : uniquement visibles si connecté.
     // "Statistiques" reste accessible sans connexion (stats communauté publiques).
-    const sectionsProtegees = ['suiviRucher', 'reglageRucher', 'registreElevage', 'nouvelleCapture', 'settings'];
+    const sectionsProtegees = ['suiviRucher', 'suiviMiellerie', 'reglageRucher', 'registreElevage', 'nouvelleCapture', 'settings'];
     const sections = (SECTIONS[config.univers] || []).filter(s => {
       if ((config.univers === 'frelon' || config.univers === 'rucher') && !estConnecte && sectionsProtegees.includes(s.id)) {
         return false; // masquer les sections protégées si non connecté

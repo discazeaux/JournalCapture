@@ -1399,6 +1399,362 @@ td {
     padding: 0 3px;
 }
 
+.miellerie-container {
+    max-width: 1180px;
+}
+
+.miellerie-entry-section {
+    margin-bottom: 28px;
+}
+
+.miellerie-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.miellerie-form-group {
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+.miellerie-form-group > legend {
+    padding: 0 7px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.miellerie-harvest-fields {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 14px;
+    align-items: end;
+}
+
+.miellerie-packaging-fields {
+    display: grid;
+    grid-template-columns: minmax(150px, 220px) minmax(120px, 170px) auto;
+    gap: 14px;
+    align-items: end;
+}
+
+.miellerie-form-group label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.miellerie-field-date,
+.miellerie-field-appellation {
+    grid-column: span 2;
+}
+
+.miellerie-field-taste {
+    grid-column: span 6;
+}
+
+.miellerie-form-group label span,
+.miellerie-apiary-field legend span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.miellerie-form input[type="text"],
+.miellerie-form input[type="number"],
+.miellerie-form input[type="date"],
+.miellerie-form select,
+.miellerie-form textarea {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 9px 11px;
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--text);
+    font: inherit;
+}
+
+.miellerie-form input[type="date"] {
+    max-width: 190px;
+}
+
+.miellerie-form input:focus {
+    outline: 2px solid rgba(74, 157, 143, 0.3);
+    border-color: var(--teal);
+}
+
+.miellerie-form textarea {
+    resize: vertical;
+}
+
+.miellerie-place-field {
+    min-width: 0;
+}
+
+.miellerie-place-field > legend {
+    padding: 0 6px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.miellerie-place-fields {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(190px, 0.8fr);
+    gap: 18px;
+    align-items: start;
+}
+
+.miellerie-apiary-field {
+    min-width: 0;
+}
+
+.miellerie-place-label {
+    display: block;
+    margin-bottom: 9px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.miellerie-place-label span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.miellerie-apiary-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+}
+
+.miellerie-apiary-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+}
+
+.miellerie-apiary-option input {
+    accent-color: var(--teal);
+}
+
+.miellerie-no-apiaries {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.miellerie-submit {
+    min-height: 40px;
+    padding: 8px 14px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--teal);
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.miellerie-submit:hover {
+    background: #397f74;
+}
+
+.miellerie-submit:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.miellerie-list-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.miellerie-list-heading h3 {
+    margin: 0;
+}
+
+.miellerie-list-heading .section-subtitle {
+    margin: 0;
+}
+
+.miellerie-year {
+    margin-bottom: 24px;
+}
+
+.miellerie-year h4 {
+    margin: 0;
+    padding: 9px 12px;
+    border-left: 3px solid var(--teal);
+    background: #e7f2ef;
+    color: #28665e;
+    font-size: 17px;
+}
+
+.miellerie-table-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-top: 0;
+    background: var(--card);
+}
+
+.miellerie-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 12px;
+}
+
+.miellerie-table th,
+.miellerie-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+.miellerie-table thead th {
+    background: #f0f5f3;
+    color: #355b54;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.miellerie-table tbody tr:last-child td,
+.miellerie-table tbody tr:last-child th {
+    border-bottom: 0;
+}
+
+.miellerie-table .miellerie-total-cell {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+}
+
+.miellerie-table .miellerie-remaining {
+    width: 86px;
+    min-height: 34px;
+    padding: 5px 7px;
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    text-align: right;
+    font: inherit;
+}
+
+.miellerie-table .miellerie-remaining:focus {
+    outline: 2px solid rgba(74, 157, 143, 0.3);
+    border-color: var(--teal);
+}
+
+.miellerie-year-total th,
+.miellerie-year-total td {
+    background: #f5f7f6;
+    font-weight: 700;
+}
+
+.miellerie-year-total td:nth-child(2) {
+    color: var(--muted);
+}
+
+.miellerie-muted,
+.miellerie-empty {
+    color: var(--muted);
+}
+
+.miellerie-legacy-period {
+    display: block;
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.miellerie-empty {
+    padding: 18px 0;
+}
+
+.miellerie-delete {
+    min-width: 32px;
+    min-height: 32px;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (max-width: 720px) {
+    .miellerie-harvest-fields {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .miellerie-field-date,
+    .miellerie-field-appellation {
+        grid-column: span 3;
+    }
+
+    .miellerie-form input[type="date"] {
+        max-width: 100%;
+    }
+
+    .miellerie-field-taste {
+        grid-column: span 6;
+    }
+
+    .miellerie-packaging-fields {
+        grid-template-columns: minmax(130px, 1fr) minmax(110px, 0.8fr) auto;
+    }
+
+    .miellerie-list-heading {
+        display: block;
+    }
+
+    .miellerie-list-heading .section-subtitle {
+        margin-top: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .miellerie-harvest-fields,
+    .miellerie-packaging-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .miellerie-place-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .miellerie-field-date,
+    .miellerie-field-appellation,
+    .miellerie-field-taste {
+        grid-column: auto;
+    }
+
+    .miellerie-comment-field {
+        grid-column: auto;
+    }
+
+    .miellerie-submit {
+        width: 100%;
+    }
+}
+
 .registre-page {
     max-width: 1040px;
 }
