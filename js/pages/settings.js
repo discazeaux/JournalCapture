@@ -157,7 +157,9 @@ function renderRuchers() {
   list.innerHTML = '';
 
   if (!state.ruchers.length) {
-    list.innerHTML = '<p class="empty">Aucun rucher. Ajoutez-en un ci-dessous.</p>';
+    list.innerHTML = document.getElementById('suiviRucherAuth')
+      ? '<p class="empty">Aucun rucher. <a href="reglageRucher.html">Accéder aux réglages pour en ajouter un.</a></p>'
+      : '<p class="empty">Aucun rucher. Ajoutez-en un ci-dessous.</p>';
     return;
   }
 

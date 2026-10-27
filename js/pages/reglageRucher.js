@@ -5,8 +5,129 @@ import { chargerCausesPertes } from '../utils/causesPertes.js';
 import { chargerTraitementsPossibles } from '../utils/traitementsPossibles.js';
 
 let session = null;
+let ruchers = [];
 let causesPertes = [];
 let traitementsPossibles = [];
+
+async function chargerRuchers() {
+  const { data, error } = await supabase
+    .from('ruchers')
+    .select('id, nom')
+    .eq('user_id', session.user.id)
+    .order('nom');
+
+  if (error) {
+    toast('Impossible de charger les ruchers.', true);
+    console.error('Erreur chargement des ruchers:', error);
+    return;
+  }
+
+  ruchers = data || [];
+  afficherRuchers();
+}
+
+function afficherRuchers() {
+  const list = document.getElementById('listRuchers');
+  if (!list) return;
+
+  list.replaceChildren();
+  if (!ruchers.length) {
+    const empty = document.createElement('p');
+    empty.className = 'empty';
+    empty.textContent = 'Aucun rucher enregistré.';
+    list.appendChild(empty);
+    return;
+  }
+
+  ruchers.forEach((rucher) => {
+    const row = document.createElement('div');
+    row.className = 'cause-item';
+
+    const name = document.createElement('span');
+    name.textContent = rucher.nom;
+    row.appendChild(name);
+
+    const actions = document.createElement('div');
+    actions.className = 'item-actions';
+    const editButton = document.createElement('button');
+    editButton.type = 'button';
+    editButton.className = 'btn-edit';
+    editButton.textContent = 'Modifier';
+    editButton.setAttribute('aria-label', `Modifier le nom de ${rucher.nom}`);
+    editButton.addEventListener('click', () => afficherEditionRucher(row, rucher));
+    actions.appendChild(editButton);
+    row.appendChild(actions);
+
+    list.appendChild(row);
+  });
+}
+
+function afficherEditionRucher(row, rucher) {
+  row.replaceChildren();
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = rucher.nom;
+  input.maxLength = 80;
+  input.style.flex = '1';
+  input.setAttribute('aria-label', `Nom du rucher ${rucher.nom}`);
+  row.appendChild(input);
+
+  const actions = document.createElement('div');
+  actions.className = 'item-actions';
+  const saveButton = document.createElement('button');
+  saveButton.type = 'button';
+  saveButton.className = 'btn-edit';
+  saveButton.textContent = 'Enregistrer';
+  saveButton.addEventListener('click', () => modifierNomRucher(rucher, input, saveButton));
+  actions.appendChild(saveButton);
+
+  const cancelButton = document.createElement('button');
+  cancelButton.type = 'button';
+  cancelButton.className = 'btn-rm';
+  cancelButton.textContent = 'Annuler';
+  cancelButton.addEventListener('click', afficherRuchers);
+  actions.appendChild(cancelButton);
+  row.appendChild(actions);
+
+  input.focus();
+  input.select();
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') modifierNomRucher(rucher, input, saveButton);
+    if (event.key === 'Escape') afficherRuchers();
+  });
+}
+
+async function modifierNomRucher(rucher, input, button) {
+  const nom = input.value.trim();
+  if (!nom) {
+    toast('Donnez un nom au rucher.', true);
+    input.focus();
+    return;
+  }
+  if (nom === rucher.nom) {
+    afficherRuchers();
+    return;
+  }
+
+  button.disabled = true;
+  const { error } = await supabase
+    .from('ruchers')
+    .update({ nom })
+    .eq('id', rucher.id)
+    .eq('user_id', session.user.id);
+
+  if (error) {
+    button.disabled = false;
+    toast('Impossible de modifier le nom du rucher.', true);
+    console.error('Erreur modification du nom du rucher:', error);
+    return;
+  }
+
+  rucher.nom = nom;
+  afficherRuchers();
+  toast('Nom du rucher modifié.');
+}
 
 async function ajouterRucher() {
   const nomInput = document.getElementById('inputNomRucher');
@@ -19,12 +140,12 @@ async function ajouterRucher() {
     return;
   }
 
-  const { error } = await supabase.from('ruchers').insert({
+  const { data, error } = await supabase.from('ruchers').insert({
     user_id: session.user.id,
     nom,
     nombre_ruches: Number.isNaN(nombreRuches) ? 0 : nombreRuches,
     nombre_ruchettes: Number.isNaN(nombreRuchettes) ? 0 : nombreRuchettes
-  });
+  }).select('id, nom').single();
 
   if (error) {
     toast('Erreur : ' + error.message, true);
@@ -34,6 +155,9 @@ async function ajouterRucher() {
   nomInput.value = '';
   document.getElementById('inputNombreRuches').value = 0;
   document.getElementById('inputNombreRuchettes').value = 0;
+  ruchers.push(data);
+  ruchers.sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+  afficherRuchers();
   toast('Rucher ajouté');
 }
 
@@ -185,6 +309,7 @@ async function initPage() {
   }
 
   causesPertes = await chargerCausesPertes(supabase, session.user.id);
+  await chargerRuchers();
   afficherCauses();
   traitementsPossibles = await chargerTraitementsPossibles(supabase, session.user.id);
   afficherTraitementsPossibles();
