@@ -408,6 +408,11 @@ footer {
     color: var(--yellow);
 }
 
+.user-bar a.pseudo {
+    border: 0;
+    padding: 0;
+}
+
 .user-bar .bee-small {
     font-size: 18px;
 }
@@ -559,7 +564,8 @@ textarea {
     margin-bottom: 8px;
 }
 
-.form-group input[type="text"] {
+.form-group input[type="text"],
+.form-group input[type="email"] {
     width: 100%;
     background: var(--bg);
     border: 1px solid var(--border);
@@ -571,9 +577,35 @@ textarea {
     transition: border-color 0.2s;
 }
 
-.form-group input[type="text"]:focus {
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus {
     outline: none;
     border-color: var(--yellow);
+}
+
+.form-group input[readonly] {
+    color: var(--muted);
+}
+
+.profile-form .btn-add {
+    min-height: 42px;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--button-bg);
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.profile-form .btn-add:hover {
+    background: var(--button-hover);
+}
+
+.profile-form .btn-add:disabled {
+    cursor: wait;
+    opacity: 0.7;
 }
 
 .form-group .hint {

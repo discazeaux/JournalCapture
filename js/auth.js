@@ -22,18 +22,47 @@ export async function chargerProfil() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return { session: null, profil: null };
 
-  const { data: profil } = await supabase
+  const { data: profil, error } = await supabase
     .from('profils')
     .select('pseudo, role, codePostal')
     .eq('id', session.user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Erreur chargement du profil:', error);
+    return { session, profil: null };
+  }
+
+  if (profil) return { session, profil };
+
+  const metadata = session.user.user_metadata || {};
+  if (!metadata.pseudo) return { session, profil: null };
+
+  const { data: profilCree, error: erreurCreation } = await supabase
+    .from('profils')
+    .insert({
+      id: session.user.id,
+      pseudo: metadata.pseudo,
+      codePostal: metadata.codePostal || '',
+      role: 'user'
+    })
+    .select('pseudo, role, codePostal')
     .single();
 
-  return { session, profil };
+  if (erreurCreation) {
+    console.error('Erreur création du profil à la connexion:', erreurCreation);
+    return {
+      session,
+      profil: { pseudo: metadata.pseudo, codePostal: metadata.codePostal || '' }
+    };
+  }
+
+  return { session, profil: profilCree };
 }
 
 // Pseudo préféré (celui du profil, sinon l'email du compte).
 export function getPseudo(session, profil) {
-  return profil?.pseudo || session?.user?.email || '—';
+  return profil?.pseudo || session?.user?.user_metadata?.pseudo || session?.user?.email || '—';
 }
 
 // Déconnexion puis redirection, centralisée.
@@ -46,7 +75,7 @@ async function deconnecter() {
 function afficherDeconnexion(bar, pseudo) {
   bar.innerHTML = `
     <span class="bee-small">🐝</span>
-    <span class="pseudo">${escapeHtml(pseudo)}</span>
+    <a class="pseudo" href="profil.html" aria-label="Voir mon profil">${escapeHtml(pseudo)}</a>
     <button id="btnUserDeco">Se déconnecter</button>
   `;
   bar.style.display = '';

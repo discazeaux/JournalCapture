@@ -96,7 +96,11 @@ export async function sInscrire() {
     btn.textContent = 'Création…';
   }
 
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { data: { pseudo, codePostal } }
+  });
 
   if (error) {
     afficherMessage(error.message, 'error');
@@ -107,12 +111,22 @@ export async function sInscrire() {
     return;
   }
 
+  if (!data.user) {
+    afficherMessage('Compte créé, mais les informations du profil n’ont pas pu être enregistrées.', 'error');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Créer mon compte';
+    }
+    return;
+  }
+
   const { error: errorProfil } = await supabase
     .from('profils')
-    .insert({ id: data.user.id, pseudo, codePostal, role: ROLES.USER });
+    .upsert({ id: data.user.id, pseudo, codePostal, role: ROLES.USER }, { onConflict: 'id' });
 
   if (errorProfil) {
-    afficherMessage(`${UI_MESSAGES.auth.accountPseudoError} ${errorProfil.message}`, 'error');
+    afficherMessage('Compte créé. Le profil sera finalisé lors de votre première connexion.', 'success');
+    console.error('Erreur enregistrement du profil après inscription:', errorProfil);
   } else {
     afficherMessage(UI_MESSAGES.auth.accountCreated, 'success');
     setTimeout(() => afficherOnglet('connexion'), 2000);
