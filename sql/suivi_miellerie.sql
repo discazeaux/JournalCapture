@@ -1,5 +1,6 @@
 create table if not exists public.miellerie_recoltes (
   id uuid primary key default gen_random_uuid(),
+  groupe_id uuid not null default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   annee integer not null check (annee between 1900 and 2100),
   periode text check (periode is null or length(trim(periode)) > 0),
@@ -17,6 +18,12 @@ create table if not exists public.miellerie_recoltes (
 );
 
 alter table public.miellerie_recoltes
+  add column if not exists groupe_id uuid;
+
+alter table public.miellerie_recoltes
+  alter column groupe_id set default gen_random_uuid();
+
+alter table public.miellerie_recoltes
   add column if not exists commentaire text not null default '',
   add column if not exists gout text not null default '',
   add column if not exists appellation text not null default '';
@@ -29,6 +36,47 @@ alter table public.miellerie_recoltes
   add column if not exists date_recolte date,
   add column if not exists date_mise_en_pot date,
   alter column periode drop not null;
+
+with groupes_anciens as (
+  select
+    user_id,
+    annee,
+    periode,
+    date_recolte,
+    date_mise_en_pot,
+    commentaire,
+    gout,
+    appellation,
+    nom_ruche,
+    gen_random_uuid() as groupe_id
+  from public.miellerie_recoltes
+  where groupe_id is null
+  group by user_id, annee, periode, date_recolte, date_mise_en_pot,
+    commentaire, gout, appellation, nom_ruche
+)
+update public.miellerie_recoltes as recolte
+set groupe_id = groupes_anciens.groupe_id
+from groupes_anciens
+where recolte.groupe_id is null
+  and recolte.user_id = groupes_anciens.user_id
+  and recolte.annee = groupes_anciens.annee
+  and recolte.periode is not distinct from groupes_anciens.periode
+  and recolte.date_recolte is not distinct from groupes_anciens.date_recolte
+  and recolte.date_mise_en_pot is not distinct from groupes_anciens.date_mise_en_pot
+  and recolte.commentaire is not distinct from groupes_anciens.commentaire
+  and recolte.gout is not distinct from groupes_anciens.gout
+  and recolte.appellation is not distinct from groupes_anciens.appellation
+  and recolte.nom_ruche is not distinct from groupes_anciens.nom_ruche;
+
+update public.miellerie_recoltes
+set groupe_id = gen_random_uuid()
+where groupe_id is null;
+
+alter table public.miellerie_recoltes
+  alter column groupe_id set not null;
+
+create index if not exists miellerie_recoltes_user_groupe_idx
+  on public.miellerie_recoltes (user_id, groupe_id);
 
 do $$
 begin

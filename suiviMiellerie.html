@@ -10,6 +10,7 @@
     <script src="js/navigation.js"></script>
     <link rel="stylesheet" href="navigation.css">
     <link rel="stylesheet" href="styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script defer src="https://cloud.umami.is/script.js" data-website-id="09e3a93a-9f91-437e-846b-b3f5f8444ecb"></script>
 </head>
 <body>
@@ -24,8 +25,13 @@
         </div>
 
         <section class="settings-section miellerie-entry-section" id="miellerieEntrySection">
-            <h3>Ajouter une récolte</h3>
-            <form id="miellerieForm" class="miellerie-form">
+            <div class="miellerie-entry-heading">
+                <h3 id="harvestFormTitle">Ajouter une récolte</h3>
+                <button type="button" class="miellerie-toggle-form" id="toggleHarvestForm" aria-expanded="false" aria-controls="miellerieForm">
+                    <span aria-hidden="true">＋</span> Nouvelle récolte
+                </button>
+            </div>
+            <form id="miellerieForm" class="miellerie-form" hidden>
                 <fieldset class="miellerie-form-group miellerie-harvest-group">
                     <legend>Récolte</legend>
                     <div class="miellerie-harvest-fields">
@@ -59,19 +65,24 @@
                 </fieldset>
                 <fieldset class="miellerie-form-group miellerie-packaging-group">
                     <legend>Conditionnement</legend>
-                    <div class="miellerie-packaging-fields">
-                        <label>Taille du pot
-                            <select id="jarSize" required>
-                                <option value="">Chargement…</option>
-                            </select>
-                        </label>
-                        <label>Quantité de pots
-                            <input type="number" id="jarQuantity" min="1" max="100000" step="1" value="1" required>
-                        </label>
+                    <div class="miellerie-packaging-rows" id="packagingRows"></div>
+                    <div class="miellerie-packaging-actions">
+                        <button type="button" class="miellerie-add-size" id="addPackagingRow">＋ Ajouter une contenance</button>
                         <button type="submit" class="btn-add miellerie-submit" id="addHarvest">＋ Ajouter la ligne</button>
+                        <button type="button" class="miellerie-cancel-edit" id="cancelHarvestEdit" hidden>Annuler</button>
                     </div>
                 </fieldset>
             </form>
+        </section>
+
+        <section class="miellerie-chart-section" aria-labelledby="harvestChartTitle">
+            <div class="miellerie-list-heading">
+                <h3 id="harvestChartTitle">Poids récolté par année</h3>
+                <p class="section-subtitle">Somme des pots conditionnés, en kilogrammes.</p>
+            </div>
+            <div class="miellerie-chart-frame">
+                <canvas id="harvestYearChart" role="img" aria-label="Diagramme du poids total de miel récolté chaque année en kilogrammes"></canvas>
+            </div>
         </section>
 
         <section class="miellerie-table-section" aria-labelledby="harvestListTitle">
