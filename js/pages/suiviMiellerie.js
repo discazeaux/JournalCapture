@@ -98,6 +98,66 @@ function afficherGraphiqueRecoltes() {
   });
 }
 
+function exporterRecoltesCsv() {
+  if (!state.recoltes.length) {
+    toast('Aucune récolte à exporter.', true);
+    return;
+  }
+
+  const headers = [
+    'Année',
+    'Date de récolte',
+    'Date de mise en pot',
+    'Période',
+    'Goût',
+    'Appellation',
+    'Rucher(s)',
+    'Nom de la ruche',
+    'Taille du pot (g)',
+    'Matière du pot',
+    'Quantité de pots',
+    'Total (kg)',
+    'Reste (pots)'
+  ];
+  const rows = [...state.recoltes]
+    .sort(trierRecoltesRecentes)
+    .map((ligne) => {
+      const ruchers = state.ruchers
+        .filter((rucher) => (ligne.rucherIds || []).includes(rucher.id))
+        .map((rucher) => rucher.nom)
+        .join(', ');
+      return [
+        ligne.annee,
+        ligne.date_recolte || '',
+        ligne.date_mise_en_pot || '',
+        ligne.periode || '',
+        ligne.gout || ligne.commentaire || '',
+        ligne.appellation || '',
+        ruchers,
+        ligne.nom_ruche || '',
+        ligne.taille_pot_g,
+        libelleMatierePot(ligne.matiere_pot),
+        ligne.quantite,
+        (Number(ligne.taille_pot_g) * Number(ligne.quantite) / 1000).toLocaleString('fr-FR', { maximumFractionDigits: 3 }),
+        ligne.reste
+      ];
+    });
+
+  const contenuCsv = [headers, ...rows]
+    .map((row) => row.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(';'))
+    .join('\r\n');
+  const blob = new Blob(['\ufeff', contenuCsv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const download = document.createElement('a');
+  download.href = url;
+  download.download = `mes-recoltes-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(download);
+  download.click();
+  download.remove();
+  URL.revokeObjectURL(url);
+  toast(`${rows.length} ligne${rows.length > 1 ? 's' : ''} exportée${rows.length > 1 ? 's' : ''}.`);
+}
+
 function definirFormulaireOuvert(ouvert) {
   form.hidden = !ouvert;
   toggleFormButton.setAttribute('aria-expanded', String(ouvert));
@@ -114,14 +174,20 @@ function libelleTaillePot(taille) {
   return taille === 1000 ? '1 kg (1000 g)' : `${formaterNombre(taille)} g`;
 }
 
-function ajouterLigneConditionnement(taille = 500, quantite = 1, recolteId = '') {
+function libelleMatierePot(matiere) {
+  if (matiere === 'verre') return 'Verre';
+  if (matiere === 'plastique') return 'Plastique';
+  return 'Non renseignée';
+}
+
+function ajouterLigneConditionnement(taille = 500, quantite = 1, recolteId = '', matiere = 'verre') {
   const rows = document.getElementById('packagingRows');
   const row = document.createElement('div');
   row.className = 'miellerie-packaging-row';
   if (recolteId) row.dataset.recolteId = recolteId;
 
   const sizeLabel = document.createElement('label');
-  sizeLabel.textContent = 'Taille du pot';
+  sizeLabel.textContent = 'Taille du pot *';
   const sizeSelect = document.createElement('select');
   sizeSelect.className = 'miellerie-jar-size';
   sizeSelect.required = true;
@@ -133,8 +199,19 @@ function ajouterLigneConditionnement(taille = 500, quantite = 1, recolteId = '')
   }
   sizeLabel.appendChild(sizeSelect);
 
+  const materialLabel = document.createElement('label');
+  materialLabel.textContent = 'Matière du pot *';
+  const materialSelect = document.createElement('select');
+  materialSelect.className = 'miellerie-jar-material';
+  materialSelect.required = true;
+  const matiereSelectionnee = matiere === 'plastique' ? 'plastique' : 'verre';
+  materialSelect.add(new Option('Choisir…', ''));
+  materialSelect.add(new Option('Verre', 'verre', false, matiereSelectionnee === 'verre'));
+  materialSelect.add(new Option('Plastique', 'plastique', false, matiereSelectionnee === 'plastique'));
+  materialLabel.appendChild(materialSelect);
+
   const quantityLabel = document.createElement('label');
-  quantityLabel.textContent = 'Quantité de pots';
+  quantityLabel.textContent = 'Quantité de pots *';
   const quantityInput = document.createElement('input');
   quantityInput.className = 'miellerie-jar-quantity';
   quantityInput.type = 'number';
@@ -156,7 +233,7 @@ function ajouterLigneConditionnement(taille = 500, quantite = 1, recolteId = '')
     actualiserLignesConditionnement();
   });
 
-  row.append(sizeLabel, quantityLabel, removeButton);
+  row.append(sizeLabel, materialLabel, quantityLabel, removeButton);
   rows.appendChild(row);
   actualiserLignesConditionnement();
 }
@@ -178,6 +255,7 @@ function reinitialiserConditionnements() {
 function lireConditionnements() {
   return [...document.querySelectorAll('.miellerie-packaging-row')].map((row) => ({
     taillePot: Number(row.querySelector('.miellerie-jar-size').value),
+    matierePot: row.querySelector('.miellerie-jar-material').value,
     quantite: Number(row.querySelector('.miellerie-jar-quantity').value)
   }));
 }
@@ -322,17 +400,14 @@ function afficherRecoltes() {
     table.className = 'miellerie-table';
     table.innerHTML = `
       <thead><tr>
-        <th scope="col">Date de récolte</th>
-        <th scope="col">Date de mise en pot</th>
+        <th scope="col">Période</th>
         <th scope="col">Goût</th>
         <th scope="col">Appellation</th>
-        <th scope="col">Rucher(s)</th>
-        <th scope="col">Nom ruche</th>
-        <th scope="col">Taille pot</th>
+        <th scope="col">Conditionnement</th>
         <th scope="col">Quantité</th>
         <th scope="col">Total (kg)</th>
         <th scope="col">Reste (pots)</th>
-        <th scope="col">Actions</th>
+        <th scope="col">Récolte</th>
       </tr></thead>
       <tbody></tbody>
     `;
@@ -345,6 +420,7 @@ function afficherRecoltes() {
       const nomsRuchers = state.ruchers
         .filter((rucher) => rucherIds.includes(rucher.id))
         .map((rucher) => rucher.nom);
+      const detailsId = `harvest-details-${groupeId}`;
 
       lignes.forEach((ligne, index) => {
         const total = ligne.taille_pot_g * ligne.quantite;
@@ -352,29 +428,39 @@ function afficherRecoltes() {
         const row = document.createElement('tr');
         const rowspan = lignes.length > 1 ? ` rowspan="${lignes.length}"` : '';
         row.innerHTML = `${index === 0 ? `
-          <td${rowspan}>${formaterDate(recolte.date_recolte)}${!recolte.date_recolte && recolte.periode ? `<small class="miellerie-legacy-period">Ancienne période : ${escapeHtml(recolte.periode)}</small>` : ''}</td>
-          <td${rowspan}>${formaterDate(recolte.date_mise_en_pot)}</td>
-          <td${rowspan}>${(recolte.gout || recolte.commentaire) ? escapeHtml(recolte.gout || recolte.commentaire) : '<span class="miellerie-muted">—</span>'}</td>
-          <td${rowspan}>${recolte.appellation ? escapeHtml(recolte.appellation) : '<span class="miellerie-muted">—</span>'}</td>
-          <td${rowspan}>${nomsRuchers.length ? nomsRuchers.map(escapeHtml).join(', ') : '<span class="miellerie-muted">—</span>'}</td>
-          <td${rowspan}>${recolte.nom_ruche ? escapeHtml(recolte.nom_ruche) : '<span class="miellerie-muted">—</span>'}</td>
+          <td class="miellerie-period-cell"${rowspan}>${recolte.periode ? escapeHtml(recolte.periode) : '<span class="miellerie-muted">—</span>'}</td>
+          <td class="miellerie-main-detail-cell"${rowspan}>${(recolte.gout || recolte.commentaire) ? escapeHtml(recolte.gout || recolte.commentaire) : '<span class="miellerie-muted">—</span>'}</td>
+          <td class="miellerie-main-detail-cell"${rowspan}>${recolte.appellation ? escapeHtml(recolte.appellation) : '<span class="miellerie-muted">—</span>'}</td>
         ` : ''}
-          <td>${formaterNombre(ligne.taille_pot_g)} g</td>
+          <td>${formaterNombre(ligne.taille_pot_g)} g · ${libelleMatierePot(ligne.matiere_pot)}</td>
           <td>${formaterNombre(ligne.quantite)}</td>
           <td class="miellerie-total-cell">${(total / 1000).toLocaleString('fr-FR', { maximumFractionDigits: 3 })} kg</td>
-          <td><input class="miellerie-remaining" type="number" min="0" max="${ligne.quantite}" step="1" value="${ligne.reste}" data-id="${ligne.id}" aria-label="Pots restants pour la récolte du ${formaterDate(recolte.date_recolte)} en pots de ${ligne.taille_pot_g} g"></td>
+          <td><input class="miellerie-remaining" type="number" min="0" max="${ligne.quantite}" step="1" value="${ligne.reste}" data-id="${ligne.id}" aria-label="Pots restants pour la récolte du ${formaterDate(recolte.date_recolte)} en pots de ${ligne.taille_pot_g} g en ${libelleMatierePot(ligne.matiere_pot).toLowerCase()}"></td>
           ${index === 0 ? `<td rowspan="${lignes.length}"><div class="miellerie-row-actions">
+            <button type="button" class="miellerie-details-toggle" aria-expanded="false" aria-controls="${detailsId}" data-details-id="${detailsId}" aria-label="Afficher les détails de la récolte du ${formaterDate(recolte.date_recolte)}" title="Afficher les détails">Détails</button>
             <button type="button" class="miellerie-edit" data-id="${groupeId}" aria-label="Modifier la récolte du ${formaterDate(recolte.date_recolte)}" title="Modifier">Modifier</button>
             <button type="button" class="btn-rm miellerie-delete" data-id="${groupeId}" aria-label="Supprimer la récolte du ${formaterDate(recolte.date_recolte)}" title="Supprimer">✕</button>
           </div></td>` : ''}
         `;
         tbody.appendChild(row);
       });
+
+      const detailsRow = document.createElement('tr');
+      detailsRow.className = 'miellerie-details-row';
+      detailsRow.id = detailsId;
+      detailsRow.hidden = true;
+      detailsRow.innerHTML = `<td colspan="8"><dl class="miellerie-details-grid">
+        <div><dt>Récoltée le</dt><dd>${formaterDate(recolte.date_recolte)}</dd></div>
+        <div><dt>Mise en pot le</dt><dd>${formaterDate(recolte.date_mise_en_pot)}</dd></div>
+        <div><dt>Rucher(s)</dt><dd>${nomsRuchers.length ? nomsRuchers.map(escapeHtml).join(', ') : '<span class="miellerie-muted">—</span>'}</dd></div>
+        <div><dt>Nom de la ruche</dt><dd>${recolte.nom_ruche ? escapeHtml(recolte.nom_ruche) : '<span class="miellerie-muted">—</span>'}</dd></div>
+      </dl></td>`;
+      tbody.appendChild(detailsRow);
     });
 
     const totalRow = document.createElement('tr');
     totalRow.className = 'miellerie-year-total';
-    totalRow.innerHTML = `<th scope="row" colspan="8">Total ${annee}</th><td>${(totalAnnee / 1000).toLocaleString('fr-FR', { maximumFractionDigits: 3 })} kg</td><td colspan="2"></td>`;
+    totalRow.innerHTML = `<th scope="row" colspan="5">Total ${annee}</th><td>${(totalAnnee / 1000).toLocaleString('fr-FR', { maximumFractionDigits: 3 })} kg</td><td colspan="2"></td>`;
     tbody.appendChild(totalRow);
     scroller.appendChild(table);
     section.appendChild(scroller);
@@ -390,6 +476,17 @@ function afficherRecoltes() {
   list.querySelectorAll('.miellerie-edit').forEach((button) => {
     button.addEventListener('click', () => commencerEdition(button.dataset.id));
   });
+  list.querySelectorAll('.miellerie-details-toggle').forEach((button) => {
+    button.addEventListener('click', () => {
+      const detailsRow = document.getElementById(button.dataset.detailsId);
+      const ouvert = button.getAttribute('aria-expanded') !== 'true';
+      detailsRow.hidden = !ouvert;
+      button.setAttribute('aria-expanded', String(ouvert));
+      button.textContent = ouvert ? 'Masquer' : 'Détails';
+      button.title = ouvert ? 'Masquer les détails' : 'Afficher les détails';
+      button.setAttribute('aria-label', `${ouvert ? 'Masquer' : 'Afficher'} les détails de la récolte`);
+    });
+  });
 }
 
 function commencerEdition(id) {
@@ -402,6 +499,8 @@ function commencerEdition(id) {
   document.getElementById('harvestFormTitle').textContent = 'Modifier la récolte';
   document.getElementById('harvestDate').value = recolte.date_recolte || '';
   document.getElementById('pottingDate').value = recolte.date_mise_en_pot || '';
+  const periodSelect = document.getElementById('harvestPeriod');
+  periodSelect.value = ['printemps', 'été'].includes(recolte.periode) ? recolte.periode : '';
   document.getElementById('harvestHive').value = recolte.nom_ruche || '';
   document.getElementById('harvestTaste').value = recolte.gout || recolte.commentaire || '';
 
@@ -413,7 +512,7 @@ function commencerEdition(id) {
 
   document.getElementById('packagingRows').replaceChildren();
   lignesRecolte.forEach((ligne) => {
-    ajouterLigneConditionnement(ligne.taille_pot_g, ligne.quantite, ligne.id);
+    ajouterLigneConditionnement(ligne.taille_pot_g, ligne.quantite, ligne.id, ligne.matiere_pot || '');
   });
 
   document.querySelectorAll('input[name="harvestApiary"]').forEach((checkbox) => {
@@ -444,6 +543,7 @@ async function modifierRecolte(event) {
 
   const dateRecolte = document.getElementById('harvestDate').value;
   const dateMiseEnPot = document.getElementById('pottingDate').value;
+  const periode = document.getElementById('harvestPeriod').value;
   const annee = dateRecolte ? Number(dateRecolte.slice(0, 4)) : NaN;
   const nomRuche = document.getElementById('harvestHive').value.trim();
   const gout = document.getElementById('harvestTaste').value.trim();
@@ -451,6 +551,7 @@ async function modifierRecolte(event) {
   const lignesConditionnement = [...document.querySelectorAll('.miellerie-packaging-row')].map((row) => ({
     id: row.dataset.recolteId || null,
     taillePot: Number(row.querySelector('.miellerie-jar-size').value),
+    matierePot: row.querySelector('.miellerie-jar-material').value,
     quantite: Number(row.querySelector('.miellerie-jar-quantity').value)
   }));
   const rucherIds = [...document.querySelectorAll('input[name="harvestApiary"]:checked')].map((input) => input.value);
@@ -460,8 +561,9 @@ async function modifierRecolte(event) {
 
   if (!dateRecolte || !Number.isInteger(annee) || annee < 1900 || annee > 2100
       || !dateMiseEnPot || dateMiseEnPot < dateRecolte
-      || lignesConditionnement.some(({ taillePot, quantite }) =>
+      || lignesConditionnement.some(({ taillePot, matierePot, quantite }) =>
         !Number.isInteger(taillePot) || taillePot < 1
+        || !['verre', 'plastique'].includes(matierePot)
         || !Number.isInteger(quantite) || quantite < 1)
       || lignesAConserver.some((ligne) => lignesExistantesMap.get(ligne.id).reste > ligne.quantite)
       || !lignesAConserver.length) {
@@ -476,16 +578,18 @@ async function modifierRecolte(event) {
   if (nouvellesLignes.length) {
     const { data, error: erreurAjoutLignes } = await supabase
       .from('miellerie_recoltes')
-      .insert(nouvellesLignes.map(({ taillePot, quantite }) => ({
+      .insert(nouvellesLignes.map(({ taillePot, matierePot, quantite }) => ({
         groupe_id: groupeId,
         user_id: state.session.user.id,
         annee,
         date_recolte: dateRecolte,
         date_mise_en_pot: dateMiseEnPot,
+        periode,
         nom_ruche: nomRuche,
         gout,
         appellation,
         taille_pot_g: taillePot,
+        matiere_pot: matierePot,
         quantite,
         reste: quantite
       })))
@@ -508,10 +612,12 @@ async function modifierRecolte(event) {
         annee,
         date_recolte: dateRecolte,
         date_mise_en_pot: dateMiseEnPot,
+        periode,
         nom_ruche: nomRuche,
         gout,
         appellation,
         taille_pot_g: ligne.taillePot,
+        matiere_pot: ligne.matierePot,
         quantite: ligne.quantite
       })
       .eq('id', ligne.id)
@@ -591,6 +697,7 @@ async function modifierRecolte(event) {
       annee,
       date_recolte: dateRecolte,
       date_mise_en_pot: dateMiseEnPot,
+      periode,
       nom_ruche: nomRuche,
       gout,
       appellation,
@@ -598,10 +705,14 @@ async function modifierRecolte(event) {
       quantite: ligne.quantite,
       rucherIds
     });
+    ancienneLigne.matiere_pot = ligne.matierePot;
   });
   nouvellesRecoltes.forEach((ligne) => {
     ligne.groupe_id = groupeId;
     ligne.rucherIds = rucherIds;
+  });
+  nouvellesRecoltes.forEach((ligne, index) => {
+    ligne.matiere_pot = nouvellesLignes[index].matierePot;
   });
   state.recoltes = state.recoltes.filter((ligne) => !lignesRetirees.some((retiree) => retiree.id === ligne.id));
   state.recoltes.push(...nouvellesRecoltes);
@@ -618,6 +729,7 @@ async function ajouterRecolte(event) {
   event.preventDefault();
   const dateRecolte = document.getElementById('harvestDate').value;
   const dateMiseEnPot = document.getElementById('pottingDate').value;
+  const periode = document.getElementById('harvestPeriod').value;
   const annee = dateRecolte ? Number(dateRecolte.slice(0, 4)) : NaN;
   const nomRuche = document.getElementById('harvestHive').value.trim();
   const gout = document.getElementById('harvestTaste').value.trim();
@@ -629,8 +741,9 @@ async function ajouterRecolte(event) {
   if (!dateRecolte || !Number.isInteger(annee) || annee < 1900 || annee > 2100
       || !dateMiseEnPot || dateMiseEnPot < dateRecolte
       || !conditionnements.length
-      || conditionnements.some(({ taillePot, quantite }) =>
+      || conditionnements.some(({ taillePot, matierePot, quantite }) =>
         !Number.isInteger(taillePot) || taillePot < 1
+        || !['verre', 'plastique'].includes(matierePot)
         || !Number.isInteger(quantite) || quantite < 1)) {
     toast('Vérifiez les dates et chaque contenance: format et quantité doivent être renseignés.', true);
     return;
@@ -640,16 +753,18 @@ async function ajouterRecolte(event) {
   submitButton.disabled = true;
   const { data: recolte, error } = await supabase
     .from('miellerie_recoltes')
-    .insert(conditionnements.map(({ taillePot, quantite }) => ({
+    .insert(conditionnements.map(({ taillePot, matierePot, quantite }) => ({
       groupe_id: groupeId,
       user_id: state.session.user.id,
       annee,
       date_recolte: dateRecolte,
       date_mise_en_pot: dateMiseEnPot,
+      periode,
       nom_ruche: nomRuche,
       gout,
       appellation,
       taille_pot_g: taillePot,
+      matiere_pot: matierePot,
       quantite,
       reste: quantite
     })))
@@ -678,6 +793,9 @@ async function ajouterRecolte(event) {
 
   recolte.forEach((ligne) => {
     ligne.rucherIds = rucherIds;
+  });
+  recolte.forEach((ligne, index) => {
+    ligne.matiere_pot = conditionnements[index].matierePot;
   });
   state.recoltes.push(...recolte);
   state.recoltes.sort(trierRecoltesRecentes);
@@ -764,6 +882,7 @@ async function initPage() {
     ajouterLigneConditionnement();
     document.querySelector('#packagingRows .miellerie-packaging-row:last-child .miellerie-jar-size')?.focus();
   });
+  document.getElementById('exportHarvests').addEventListener('click', exporterRecoltesCsv);
   reinitialiserConditionnements();
   await Promise.all([chargerRuchers(), chargerRecoltes(), chargerTaillesPots(), chargerAppellations()]);
 }

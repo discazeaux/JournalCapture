@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/img/ruche4.png">
-    <title>Suivi miellerie — La ruche résiste</title>
+    <title>Mes récoltes — La ruche résiste</title>
     <script src="js/config.js"></script>
     <script src="js/cookies.js"></script>
     <script src="js/navigation.js"></script>
@@ -17,12 +17,12 @@
     <div class="user-bar" id="userBar"></div>
 
     <main class="container miellerie-container">
-        <h2 class="mb-24">🍯 Suivi miellerie</h2>
+        <h2 class="mb-24">🍯 Mes récoltes</h2>
         <div class="message error" id="miellerieAuth" style="display:none">
-            <strong>Connectez-vous pour accéder au suivi de la miellerie.</strong>
-            <p>Vos récoltes et stocks de pots sont privés et associés à votre compte.</p>
-            <a class="auth-button auth-connexion" href="login.html">🔐 Se connecter</a>
-        </div>
+                <strong>Connectez-vous pour accéder à vos récoltes.</strong>
+                <p>Vos récoltes et stocks de pots sont privés et associés à votre compte.</p>
+                <a class="auth-button auth-connexion" href="login.html">🔐 Se connecter</a>
+            </div>
 
         <section class="settings-section miellerie-entry-section" id="miellerieEntrySection">
             <div class="miellerie-entry-heading">
@@ -35,18 +35,25 @@
                 <fieldset class="miellerie-form-group miellerie-harvest-group">
                     <legend>Récolte</legend>
                     <div class="miellerie-harvest-fields">
-                        <label class="miellerie-field-date">Date de récolte
+                        <label class="miellerie-field-date">Récoltée le *
                             <input type="date" id="harvestDate" required>
                         </label>
-                        <label class="miellerie-field-date">Date de mise en pot
+                        <label class="miellerie-field-date">Mise en pot le *
                             <input type="date" id="pottingDate" required>
                         </label>
-                        <label class="miellerie-field-appellation">Appellation <span>(facultatif)</span>
+                        <label class="miellerie-field-period">Période
+                            <select id="harvestPeriod">
+                                <option value="">Sans période</option>
+                                <option value="printemps">Printemps</option>
+                                <option value="été">Été</option>
+                            </select>
+                        </label>
+                        <label class="miellerie-field-appellation">Appellation
                             <select id="harvestAppellation">
                                 <option value="">Sans appellation</option>
                             </select>
                         </label>
-                        <label class="miellerie-field-taste">Goût <span>(facultatif)</span>
+                        <label class="miellerie-field-taste">Goût
                             <textarea id="harvestTaste" maxlength="500" rows="2" placeholder="Ex. doux, fruité, floral…"></textarea>
                         </label>
                     </div>
@@ -55,10 +62,10 @@
                     <legend>Lieu</legend>
                     <div class="miellerie-place-fields">
                         <div class="miellerie-apiary-field">
-                            <span class="miellerie-place-label">Rucher(s) <span>(facultatif, plusieurs choix)</span></span>
+                            <span class="miellerie-place-label">Rucher(s) · plusieurs choix</span>
                             <div class="miellerie-apiary-options" id="miellerieApiaries"><span class="loading">Chargement…</span></div>
                         </div>
-                        <label class="miellerie-field-hive">Nom de la ruche <span>(facultatif)</span>
+                        <label class="miellerie-field-hive">Nom de la ruche
                             <input type="text" id="harvestHive" maxlength="100" placeholder="Saisie libre">
                         </label>
                     </div>
@@ -89,6 +96,9 @@
             <div class="miellerie-list-heading">
                 <h3 id="harvestListTitle">Récoltes</h3>
                 <p class="section-subtitle">Le total est calculé en Kg. Le stock restant est modifiable dans le tableau.</p>
+            </div>
+            <div class="miellerie-export-actions">
+                <button type="button" class="miellerie-export-button" id="exportHarvests">⇩ Exporter toutes les récoltes (CSV)</button>
             </div>
             <div id="harvestList"><p class="loading">Chargement des récoltes…</p></div>
         </section>

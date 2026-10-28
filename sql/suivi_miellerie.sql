@@ -11,6 +11,7 @@ create table if not exists public.miellerie_recoltes (
   appellation text not null default '',
   nom_ruche text not null default '',
   taille_pot_g integer not null check (taille_pot_g > 0),
+  matiere_pot text not null default 'verre' check (matiere_pot in ('verre', 'plastique')),
   quantite integer not null check (quantite > 0),
   reste integer not null check (reste between 0 and quantite),
   created_at timestamptz not null default now(),
@@ -35,7 +36,16 @@ where gout = '' and commentaire <> '';
 alter table public.miellerie_recoltes
   add column if not exists date_recolte date,
   add column if not exists date_mise_en_pot date,
+  add column if not exists matiere_pot text check (matiere_pot in ('verre', 'plastique')),
   alter column periode drop not null;
+
+update public.miellerie_recoltes
+set matiere_pot = 'verre'
+where matiere_pot is null;
+
+alter table public.miellerie_recoltes
+  alter column matiere_pot set default 'verre',
+  alter column matiere_pot set not null;
 
 with groupes_anciens as (
   select

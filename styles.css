@@ -1483,7 +1483,7 @@ td {
 
 .miellerie-packaging-row {
     display: grid;
-    grid-template-columns: minmax(150px, 220px) minmax(120px, 170px) 34px;
+    grid-template-columns: minmax(130px, 1.2fr) minmax(120px, 1fr) minmax(100px, 0.8fr) 34px;
     gap: 12px;
     align-items: end;
     max-width: 500px;
@@ -1569,8 +1569,15 @@ td {
 }
 
 .miellerie-field-date,
+.miellerie-field-period,
 .miellerie-field-appellation {
     grid-column: span 2;
+}
+
+.miellerie-field-date input[type="date"] {
+    max-width: 160px;
+    min-height: 38px;
+    padding: 7px 8px;
 }
 
 .miellerie-field-taste {
@@ -1725,6 +1732,29 @@ td {
     margin: 0;
 }
 
+.miellerie-export-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+}
+
+.miellerie-export-button {
+    min-height: 36px;
+    padding: 7px 11px;
+    border: 1px solid var(--teal);
+    border-radius: 6px;
+    background: var(--card);
+    color: var(--teal);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.miellerie-export-button:hover {
+    background: #f0f7f5;
+}
+
 .miellerie-chart-section {
     margin-bottom: 30px;
 }
@@ -1780,9 +1810,45 @@ td {
     font-weight: 700;
 }
 
+.miellerie-table .miellerie-main-detail-cell {
+    max-width: 220px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
 .miellerie-table tbody tr:last-child td,
 .miellerie-table tbody tr:last-child th {
     border-bottom: 0;
+}
+
+.miellerie-table .miellerie-details-row[hidden] {
+    display: none;
+}
+
+.miellerie-table .miellerie-details-row td {
+    padding: 12px 16px;
+    background: #f7faf9;
+    white-space: normal;
+}
+
+.miellerie-details-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px 20px;
+    margin: 0;
+}
+
+.miellerie-details-grid dt {
+    margin-bottom: 4px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.miellerie-details-grid dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
 }
 
 .miellerie-table .miellerie-total-cell {
@@ -1820,11 +1886,12 @@ td {
     color: var(--muted);
 }
 
-.miellerie-legacy-period {
-    display: block;
-    margin-top: 3px;
+.miellerie-table .miellerie-period-cell {
+    max-width: 180px;
     color: var(--muted);
     font-size: 11px;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 .miellerie-empty {
@@ -1839,7 +1906,24 @@ td {
 .miellerie-row-actions {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 6px;
+}
+
+.miellerie-details-toggle {
+    min-height: 30px;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--card);
+    color: var(--text-secondary);
+    font: inherit;
+    cursor: pointer;
+}
+
+.miellerie-details-toggle:hover {
+    border-color: var(--teal);
+    color: var(--teal);
 }
 
 .miellerie-edit {
@@ -1873,11 +1957,16 @@ td {
 }
 
 @media (max-width: 720px) {
+    .miellerie-details-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .miellerie-harvest-fields {
         grid-template-columns: repeat(6, minmax(0, 1fr));
     }
 
     .miellerie-field-date,
+    .miellerie-field-period,
     .miellerie-field-appellation {
         grid-column: span 3;
     }
@@ -1886,12 +1975,16 @@ td {
         max-width: 100%;
     }
 
+    .miellerie-field-date input[type="date"] {
+        max-width: 100%;
+    }
+
     .miellerie-field-taste {
         grid-column: span 6;
     }
 
     .miellerie-packaging-row {
-        grid-template-columns: minmax(130px, 1fr) minmax(100px, 0.8fr) 34px;
+        grid-template-columns: minmax(120px, 1.2fr) minmax(110px, 1fr) minmax(90px, 0.8fr) 34px;
     }
 
     .miellerie-list-heading {
@@ -1909,6 +2002,10 @@ td {
 }
 
 @media (max-width: 480px) {
+    .miellerie-details-grid {
+        grid-template-columns: 1fr;
+    }
+
     .miellerie-entry-heading {
         align-items: flex-start;
         flex-direction: column;
