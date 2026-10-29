@@ -986,6 +986,42 @@ function bindStaticEvents() {
   const inputNomRucher = document.getElementById(DOM_IDS.SETTINGS.INPUT_NOM_RUCHER);
   const inputNouvelAppat = document.getElementById(DOM_IDS.SETTINGS.INPUT_NOUVEL_APPAT);
   const inputNomPoste = document.getElementById(DOM_IDS.SETTINGS.INPUT_NOM_POSTE);
+  const selectAnneeRegistre = document.getElementById('registreGlobalAnnee');
+  const boutonTelechargerRegistre = document.getElementById('btnTelechargerRegistreGlobal');
+
+  if (selectAnneeRegistre) {
+    const anneeActuelle = new Date().getFullYear();
+    for (let annee = anneeActuelle + 1; annee >= anneeActuelle - 5; annee -= 1) {
+      selectAnneeRegistre.add(new Option(String(annee), String(annee), false, annee === anneeActuelle));
+    }
+  }
+
+  boutonTelechargerRegistre?.addEventListener('click', async () => {
+    if (!state.ruchers.length) {
+      toast('Ajoutez un rucher avant de télécharger le registre.', true);
+      return;
+    }
+
+    boutonTelechargerRegistre.disabled = true;
+    boutonTelechargerRegistre.setAttribute('aria-busy', 'true');
+    boutonTelechargerRegistre.querySelector('.registre-download-label').textContent = 'Préparation du PDF…';
+    try {
+      const { telechargerRegistreComplet } = await import('./registreElevage.js');
+      await telechargerRegistreComplet(
+        state.ruchers,
+        state.traitements,
+        state.pertes,
+        Number(selectAnneeRegistre.value)
+      );
+    } catch (error) {
+      console.error('Erreur téléchargement du registre:', error);
+      toast('Impossible de télécharger le registre.', true);
+    } finally {
+      boutonTelechargerRegistre.disabled = false;
+      boutonTelechargerRegistre.removeAttribute('aria-busy');
+      boutonTelechargerRegistre.querySelector('.registre-download-label').textContent = 'Télécharger le PDF';
+    }
+  });
 
   document.getElementById(DOM_IDS.SETTINGS.BTN_TYPE_SUCRE)?.addEventListener('click', () => selectType('sucre'));
   document.getElementById(DOM_IDS.SETTINGS.BTN_TYPE_PROTEINE)?.addEventListener('click', () => selectType('proteine'));
@@ -1014,8 +1050,10 @@ async function initSettingsPage() {
   if (!session) {
     const suiviRucherAuth = document.getElementById('suiviRucherAuth');
     const suiviRucherSection = document.getElementById(DOM_IDS.SETTINGS.LIST_RUCHERS)?.closest('.settings-section');
+    const registreGlobalSection = document.querySelector('.registre-global-section');
     if (suiviRucherAuth) suiviRucherAuth.style.display = '';
     if (suiviRucherSection) suiviRucherSection.style.display = 'none';
+    if (registreGlobalSection) registreGlobalSection.style.display = 'none';
     return;
   }
 

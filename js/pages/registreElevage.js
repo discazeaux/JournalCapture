@@ -215,6 +215,14 @@ async function telechargerPdf() {
   doc.save(`registre-elevage-${annee}.pdf`);
 }
 
+export async function telechargerRegistreComplet(ruchersDonnees, traitementsDonnees, pertesDonnees, anneeSelectionnee) {
+  annee = Number(anneeSelectionnee);
+  ruchers = ruchersDonnees;
+  traitements = traitementsDonnees;
+  pertes = pertesDonnees;
+  await telechargerPdf();
+}
+
 async function chargerDonnees(session) {
   const [ruchersResult, traitementsResult, pertesResult] = await Promise.all([
     supabase.from('ruchers').select('*').eq('user_id', session.user.id).order('created_at'),
@@ -255,4 +263,4 @@ async function initPage() {
   }
 }
 
-initPage();
+if (document.getElementById('btnTelechargerRegistre')) initPage();

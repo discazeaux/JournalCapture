@@ -39,8 +39,7 @@
     rucher: [
       { id: 'suiviRucher', label: '🐝 Mes ruchers', href: 'suiviRucher.html' },
       { id: 'suiviMiellerie', label: '🍯 Mes récoltes', href: 'suiviMiellerie.html' },
-      { id: 'reglageRucher', label: '⚙️ Réglage des ruchers', href: 'reglageRucher.html' },
-      { id: 'registreElevage', label: '📄 Registre d’élevage', href: 'registreElevage.html' }
+      { id: 'reglageRucher', label: '⚙️ Réglage des ruchers', href: 'reglageRucher.html' }
     ]
   };
 

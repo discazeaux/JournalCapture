@@ -37,6 +37,23 @@ function formaterDate(date) {
   return new Intl.DateTimeFormat('fr-FR').format(new Date(annee, mois - 1, jour));
 }
 
+function definirDatesParDefaut() {
+  const aujourdHui = new Date();
+  const moisJour = (aujourdHui.getMonth() + 1) * 100 + aujourdHui.getDate();
+  const dateLocale = [
+    aujourdHui.getFullYear(),
+    String(aujourdHui.getMonth() + 1).padStart(2, '0'),
+    String(aujourdHui.getDate()).padStart(2, '0')
+  ].join('-');
+  document.getElementById('harvestDate').value = dateLocale;
+  document.getElementById('pottingDate').value = dateLocale;
+  document.getElementById('harvestPeriod').value = moisJour >= 701
+    ? 'été'
+    : moisJour >= 301
+      ? 'printemps'
+      : '';
+}
+
 function trierRecoltesRecentes(a, b) {
   if (a.annee !== b.annee) return b.annee - a.annee;
   if (!a.date_recolte) return b.date_recolte ? 1 : 0;
@@ -117,7 +134,7 @@ function exporterRecoltesCsv() {
     'Matière du pot',
     'Quantité de pots',
     'Total (kg)',
-    'Reste (pots)'
+    'Stock'
   ];
   const rows = [...state.recoltes]
     .sort(trierRecoltesRecentes)
@@ -187,7 +204,7 @@ function ajouterLigneConditionnement(taille = 500, quantite = 1, recolteId = '',
   if (recolteId) row.dataset.recolteId = recolteId;
 
   const sizeLabel = document.createElement('label');
-  sizeLabel.textContent = 'Taille du pot *';
+  sizeLabel.textContent = 'Taille du pot';
   const sizeSelect = document.createElement('select');
   sizeSelect.className = 'miellerie-jar-size';
   sizeSelect.required = true;
@@ -200,7 +217,7 @@ function ajouterLigneConditionnement(taille = 500, quantite = 1, recolteId = '',
   sizeLabel.appendChild(sizeSelect);
 
   const materialLabel = document.createElement('label');
-  materialLabel.textContent = 'Matière du pot *';
+  materialLabel.textContent = 'Matière du pot';
   const materialSelect = document.createElement('select');
   materialSelect.className = 'miellerie-jar-material';
   materialSelect.required = true;
@@ -208,10 +225,11 @@ function ajouterLigneConditionnement(taille = 500, quantite = 1, recolteId = '',
   materialSelect.add(new Option('Choisir…', ''));
   materialSelect.add(new Option('Verre', 'verre', false, matiereSelectionnee === 'verre'));
   materialSelect.add(new Option('Plastique', 'plastique', false, matiereSelectionnee === 'plastique'));
+  materialSelect.value = matiereSelectionnee;
   materialLabel.appendChild(materialSelect);
 
   const quantityLabel = document.createElement('label');
-  quantityLabel.textContent = 'Quantité de pots *';
+  quantityLabel.textContent = 'Quantité de pots';
   const quantityInput = document.createElement('input');
   quantityInput.className = 'miellerie-jar-quantity';
   quantityInput.type = 'number';
@@ -406,7 +424,7 @@ function afficherRecoltes() {
         <th scope="col">Conditionnement</th>
         <th scope="col">Quantité</th>
         <th scope="col">Total (kg)</th>
-        <th scope="col">Reste (pots)</th>
+        <th scope="col" class="miellerie-stock-heading">Stock</th>
         <th scope="col">Récolte</th>
       </tr></thead>
       <tbody></tbody>
@@ -435,7 +453,7 @@ function afficherRecoltes() {
           <td>${formaterNombre(ligne.taille_pot_g)} g · ${libelleMatierePot(ligne.matiere_pot)}</td>
           <td>${formaterNombre(ligne.quantite)}</td>
           <td class="miellerie-total-cell">${(total / 1000).toLocaleString('fr-FR', { maximumFractionDigits: 3 })} kg</td>
-          <td><input class="miellerie-remaining" type="number" min="0" max="${ligne.quantite}" step="1" value="${ligne.reste}" data-id="${ligne.id}" aria-label="Pots restants pour la récolte du ${formaterDate(recolte.date_recolte)} en pots de ${ligne.taille_pot_g} g en ${libelleMatierePot(ligne.matiere_pot).toLowerCase()}"></td>
+          <td class="miellerie-stock-cell"><input class="miellerie-remaining" type="number" min="0" max="${ligne.quantite}" step="1" value="${ligne.reste}" data-id="${ligne.id}" aria-label="Stock de pots pour la récolte du ${formaterDate(recolte.date_recolte)} en pots de ${ligne.taille_pot_g} g en ${libelleMatierePot(ligne.matiere_pot).toLowerCase()}"></td>
           ${index === 0 ? `<td rowspan="${lignes.length}"><div class="miellerie-row-actions">
             <button type="button" class="miellerie-details-toggle" aria-expanded="false" aria-controls="${detailsId}" data-details-id="${detailsId}" aria-label="Afficher les détails de la récolte du ${formaterDate(recolte.date_recolte)}" title="Afficher les détails">Détails</button>
             <button type="button" class="miellerie-edit" data-id="${groupeId}" aria-label="Modifier la récolte du ${formaterDate(recolte.date_recolte)}" title="Modifier">Modifier</button>
@@ -528,6 +546,7 @@ function annulerEdition() {
   state.recoltesEnEditionIds = [];
   document.getElementById('harvestFormTitle').textContent = 'Ajouter une récolte';
   form.reset();
+  definirDatesParDefaut();
   reinitialiserConditionnements();
   document.getElementById('addHarvest').textContent = '＋ Ajouter la ligne';
   document.getElementById('cancelHarvestEdit').hidden = true;
@@ -541,10 +560,14 @@ async function modifierRecolte(event) {
   const recolte = lignesExistantes[0];
   if (!recolte) return;
 
-  const dateRecolte = document.getElementById('harvestDate').value;
-  const dateMiseEnPot = document.getElementById('pottingDate').value;
+  const dateRecolte = document.getElementById('harvestDate').value || null;
+  const dateMiseEnPot = document.getElementById('pottingDate').value || null;
   const periode = document.getElementById('harvestPeriod').value;
-  const annee = dateRecolte ? Number(dateRecolte.slice(0, 4)) : NaN;
+  const annee = dateRecolte
+    ? Number(dateRecolte.slice(0, 4))
+    : dateMiseEnPot
+      ? Number(dateMiseEnPot.slice(0, 4))
+      : recolte.annee;
   const nomRuche = document.getElementById('harvestHive').value.trim();
   const gout = document.getElementById('harvestTaste').value.trim();
   const appellation = document.getElementById('harvestAppellation').value;
@@ -559,15 +582,27 @@ async function modifierRecolte(event) {
   const lignesAConserver = lignesConditionnement.filter((ligne) => ligne.id && lignesExistantesMap.has(ligne.id));
   const nouvellesLignes = lignesConditionnement.filter((ligne) => !ligne.id);
 
-  if (!dateRecolte || !Number.isInteger(annee) || annee < 1900 || annee > 2100
-      || !dateMiseEnPot || dateMiseEnPot < dateRecolte
-      || lignesConditionnement.some(({ taillePot, matierePot, quantite }) =>
-        !Number.isInteger(taillePot) || taillePot < 1
-        || !['verre', 'plastique'].includes(matierePot)
-        || !Number.isInteger(quantite) || quantite < 1)
-      || lignesAConserver.some((ligne) => lignesExistantesMap.get(ligne.id).reste > ligne.quantite)
-      || !lignesAConserver.length) {
-    toast('Vérifiez les dates et chaque contenance. Gardez au moins une ligne et ne réduisez pas la quantité sous le stock restant.', true);
+  let erreurValidation = '';
+  if (!Number.isInteger(annee) || annee < 1900 || annee > 2100) {
+    erreurValidation = 'L’année de la récolte doit être comprise entre 1900 et 2100.';
+  } else if (dateRecolte && dateMiseEnPot && dateMiseEnPot < dateRecolte) {
+    erreurValidation = 'La mise en pot ne peut pas précéder la date de récolte.';
+  } else if (!lignesConditionnement.length) {
+    erreurValidation = 'Ajoutez au moins une ligne de conditionnement.';
+  } else if (lignesConditionnement.some(({ taillePot }) => !Number.isInteger(taillePot) || taillePot < 1 || taillePot > 50000)) {
+    erreurValidation = 'Choisissez un format de pot valide pour chaque ligne.';
+  } else if (lignesConditionnement.some(({ matierePot }) => !['verre', 'plastique'].includes(matierePot))) {
+    erreurValidation = 'Choisissez Verre ou Plastique pour chaque ligne.';
+  } else if (lignesConditionnement.some(({ quantite }) => !Number.isInteger(quantite) || quantite < 1 || quantite > 100000)) {
+    erreurValidation = 'Indiquez une quantité entière entre 1 et 100 000 pour chaque ligne.';
+  } else if (lignesAConserver.some((ligne) => lignesExistantesMap.get(ligne.id).reste > ligne.quantite)) {
+    erreurValidation = 'La quantité ne peut pas être inférieure au stock actuel.';
+  } else if (!lignesAConserver.length) {
+    erreurValidation = 'Conservez au moins une ligne de conditionnement existante.';
+  }
+
+  if (erreurValidation) {
+    toast(erreurValidation, true);
     return;
   }
 
@@ -727,10 +762,14 @@ async function modifierRecolte(event) {
 
 async function ajouterRecolte(event) {
   event.preventDefault();
-  const dateRecolte = document.getElementById('harvestDate').value;
-  const dateMiseEnPot = document.getElementById('pottingDate').value;
+  const dateRecolte = document.getElementById('harvestDate').value || null;
+  const dateMiseEnPot = document.getElementById('pottingDate').value || null;
   const periode = document.getElementById('harvestPeriod').value;
-  const annee = dateRecolte ? Number(dateRecolte.slice(0, 4)) : NaN;
+  const annee = dateRecolte
+    ? Number(dateRecolte.slice(0, 4))
+    : dateMiseEnPot
+      ? Number(dateMiseEnPot.slice(0, 4))
+      : new Date().getFullYear();
   const nomRuche = document.getElementById('harvestHive').value.trim();
   const gout = document.getElementById('harvestTaste').value.trim();
   const appellation = document.getElementById('harvestAppellation').value;
@@ -738,14 +777,23 @@ async function ajouterRecolte(event) {
   const groupeId = crypto.randomUUID();
   const rucherIds = [...document.querySelectorAll('input[name="harvestApiary"]:checked')].map((input) => input.value);
 
-  if (!dateRecolte || !Number.isInteger(annee) || annee < 1900 || annee > 2100
-      || !dateMiseEnPot || dateMiseEnPot < dateRecolte
-      || !conditionnements.length
-      || conditionnements.some(({ taillePot, matierePot, quantite }) =>
-        !Number.isInteger(taillePot) || taillePot < 1
-        || !['verre', 'plastique'].includes(matierePot)
-        || !Number.isInteger(quantite) || quantite < 1)) {
-    toast('Vérifiez les dates et chaque contenance: format et quantité doivent être renseignés.', true);
+  let erreurValidation = '';
+  if (!Number.isInteger(annee) || annee < 1900 || annee > 2100) {
+    erreurValidation = 'L’année de la récolte doit être comprise entre 1900 et 2100.';
+  } else if (dateRecolte && dateMiseEnPot && dateMiseEnPot < dateRecolte) {
+    erreurValidation = 'La mise en pot ne peut pas précéder la date de récolte.';
+  } else if (!conditionnements.length) {
+    erreurValidation = 'Ajoutez au moins une ligne de conditionnement.';
+  } else if (conditionnements.some(({ taillePot }) => !Number.isInteger(taillePot) || taillePot < 1 || taillePot > 50000)) {
+    erreurValidation = 'Choisissez un format de pot valide pour chaque ligne.';
+  } else if (conditionnements.some(({ matierePot }) => !['verre', 'plastique'].includes(matierePot))) {
+    erreurValidation = 'Choisissez Verre ou Plastique pour chaque ligne.';
+  } else if (conditionnements.some(({ quantite }) => !Number.isInteger(quantite) || quantite < 1 || quantite > 100000)) {
+    erreurValidation = 'Indiquez une quantité entière entre 1 et 100 000 pour chaque ligne.';
+  }
+
+  if (erreurValidation) {
+    toast(erreurValidation, true);
     return;
   }
 
@@ -800,6 +848,7 @@ async function ajouterRecolte(event) {
   state.recoltes.push(...recolte);
   state.recoltes.sort(trierRecoltesRecentes);
   form.reset();
+  definirDatesParDefaut();
   reinitialiserConditionnements();
   afficherRecoltes();
   definirFormulaireOuvert(false);
@@ -827,12 +876,12 @@ async function modifierReste(input) {
   if (error) {
     console.error('Erreur mise à jour du stock restant:', error);
     input.value = recolte.reste;
-    toast('Impossible de mettre à jour le stock restant.', true);
+    toast('Impossible de mettre à jour le stock.', true);
     return;
   }
 
   recolte.reste = reste;
-  toast('Stock restant mis à jour.');
+  toast('Stock mis à jour.');
 }
 
 async function supprimerRecolte(id) {
@@ -883,6 +932,7 @@ async function initPage() {
     document.querySelector('#packagingRows .miellerie-packaging-row:last-child .miellerie-jar-size')?.focus();
   });
   document.getElementById('exportHarvests').addEventListener('click', exporterRecoltesCsv);
+  definirDatesParDefaut();
   reinitialiserConditionnements();
   await Promise.all([chargerRuchers(), chargerRecoltes(), chargerTaillesPots(), chargerAppellations()]);
 }
