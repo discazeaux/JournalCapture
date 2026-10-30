@@ -1,5 +1,5 @@
 import { supabase } from '../supabase.js';
-import { APP_PATHS, DOM_IDS, ROLES, UI_MESSAGES } from '../constants.js';
+import { APP_PATHS, DOM_IDS, UI_MESSAGES } from '../constants.js';
 
 function afficherMessage(texte, type) {
   const el = document.getElementById(DOM_IDS.LOGIN.MESSAGE);
@@ -122,7 +122,7 @@ export async function sInscrire() {
 
   const { error: errorProfil } = await supabase
     .from('profils')
-    .upsert({ id: data.user.id, pseudo, codePostal, role: ROLES.USER }, { onConflict: 'id' });
+    .upsert({ id: data.user.id, pseudo, codePostal }, { onConflict: 'id' });
 
   if (errorProfil) {
     afficherMessage('Compte créé. Le profil sera finalisé lors de votre première connexion.', 'success');
