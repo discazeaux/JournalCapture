@@ -71,8 +71,15 @@
 
   const PAGES_SANS_RUBRIQUE_ACTIVE = new Set([
     'index.html',
+    'login.html',
+    'reset-password.html',
     'confidentialite.html',
     'mentions-legales.html'
+  ]);
+
+  const PAGES_SANS_SOUS_MENU = new Set([
+    'login.html',
+    'reset-password.html'
   ]);
 
   // Vérifie si l'utilisateur est connecté via Supabase et son rôle
@@ -133,6 +140,7 @@
     // Construction de la navigation
     const nav = document.createElement('nav');
     nav.className = 'site-nav';
+    if (estConnecte) nav.classList.add('site-nav--connected');
     nav.setAttribute('aria-label', 'Navigation principale');
     const liens = LIENS_PRINCIPAUX.map((lien) => {
       const active = sectionCourante === lien.id;
@@ -140,7 +148,7 @@
       const ariaCourante = active ? ` aria-current="${pageExacte ? 'page' : 'location'}"` : '';
       return `<a class="site-nav-link${active ? ' active' : ''}" href="${lien.href}"${ariaCourante}>${lien.label}</a>`;
     }).join('');
-    const liensSousMenu = (SOUS_MENUS[sectionCourante] || [])
+    const liensSousMenu = (PAGES_SANS_SOUS_MENU.has(page) ? [] : SOUS_MENUS[sectionCourante] || [])
       .filter((lien) => estConnecte || !lien.authRequired);
     const sousMenu = liensSousMenu.length
       ? `<nav class="site-nav-subnav site-nav-subnav--${sectionCourante}" aria-label="Navigation ${sectionCourante === 'pressure' ? 'pression du frelon' : 'du rucher'}">${liensSousMenu.map((lien) => {

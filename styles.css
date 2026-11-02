@@ -4911,12 +4911,16 @@ body.login-page {
 }
 
 .login-page {
-    padding: 60px 20px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
-    justify-content: center;
+    justify-content: flex-start;
+}
+
+.login-page .site-nav {
+    margin-bottom: 12px;
 }
 
 .login-page h1 {
@@ -4924,16 +4928,44 @@ body.login-page {
 }
 
 .login-page .subtitle {
+    max-width: 440px;
+    margin: 0 0 22px;
     text-align: center;
+    line-height: 1.55;
 }
 
 .login-content {
-    min-height: 100vh;
+    min-height: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 40px 20px 60px;
+    justify-content: flex-start;
+    padding: 4px 20px 40px;
+}
+
+.login-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    color: var(--accent-yellow-dark);
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.login-brand img {
+    width: 58px;
+    height: 58px;
+    padding: 11px;
+    border-radius: 16px;
+    background: var(--yellow-soft);
+    object-fit: contain;
+}
+
+.login-content h1 {
+    margin-bottom: 10px;
+    color: var(--text);
 }
 
 /* ── Classes utilitaires ──────────────────────────────── */
