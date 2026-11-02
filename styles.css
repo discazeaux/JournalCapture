@@ -96,6 +96,28 @@ h2 {
     font-size: 14px;
 }
 
+.hero .hero-mission {
+    max-width: 650px;
+    margin: 14px auto;
+    line-height: 1.7;
+    text-wrap: pretty;
+}
+
+.hero-description-list {
+    width: min(100% - 32px, 720px);
+    margin: 18px auto 0;
+    padding: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+    list-style: none;
+    text-align: left;
+}
+
+.hero-description-list li + li {
+    margin-top: 5px;
+}
+
 /* ── Layout ───────────────────────────────────────────── */
 .container {
     max-width: 900px;
@@ -1434,7 +1456,29 @@ td {
     height: 76px;
 }
 
-.perte-form textarea {
+.perte-observation-field {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 8px;
+    min-width: 0;
+    grid-column: 1 / -1;
+}
+
+.miellerie-taste-dictation {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+}
+
+.miellerie-taste-dictation textarea {
+    flex: 1 1 220px;
+}
+
+.perte-observation-field textarea {
+    flex: 1 1 240px;
     min-width: 0;
     width: 100%;
     min-height: 76px;
@@ -1442,7 +1486,64 @@ td {
     margin: 0;
     font-size: 12px;
     resize: vertical;
-    grid-column: 1 / -1;
+}
+
+.perte-dictation-button,
+.miellerie-dictation-button {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    align-self: flex-start;
+    min-height: 36px;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--card);
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.perte-dictation-button:hover:not(:disabled),
+.perte-dictation-button.is-listening,
+.miellerie-dictation-button:hover:not(:disabled),
+.miellerie-dictation-button.is-listening {
+    border-color: var(--teal);
+    color: var(--teal);
+}
+
+.perte-dictation-button.is-listening,
+.miellerie-dictation-button.is-listening {
+    background: #e7f2ef;
+}
+
+.perte-dictation-button:focus-visible,
+.miellerie-dictation-button:focus-visible {
+    outline: 2px solid rgba(74, 157, 143, 0.4);
+    outline-offset: 2px;
+}
+
+.perte-dictation-button:disabled,
+.miellerie-dictation-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.perte-dictation-status {
+    flex: 0 0 100%;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.miellerie-dictation-status {
+    flex: 0 0 100%;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 400;
 }
 
 .perte-form .btn-add {
@@ -3057,6 +3158,63 @@ td {
     flex-direction: column;
     gap: 8px;
     min-width: 0;
+}
+
+.capture-notes-dictation {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+}
+
+.capture-notes-dictation textarea {
+    flex: 1 1 240px;
+    min-width: 0;
+}
+
+.capture-dictation-button {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 8px 11px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.capture-dictation-button:hover:not(:disabled),
+.capture-dictation-button.is-listening {
+    border-color: var(--teal);
+    color: var(--teal);
+}
+
+.capture-dictation-button.is-listening {
+    background: #e7f2ef;
+}
+
+.capture-dictation-button:focus-visible {
+    outline: 2px solid rgba(74, 157, 143, 0.4);
+    outline-offset: 2px;
+}
+
+.capture-dictation-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.capture-dictation-status {
+    flex: 0 0 100%;
+    color: var(--muted);
+    font-size: 12px;
 }
 
 #captureForm label {

@@ -120,17 +120,8 @@ export async function sInscrire() {
     return;
   }
 
-  const { error: errorProfil } = await supabase
-    .from('profils')
-    .upsert({ id: data.user.id, pseudo, codePostal }, { onConflict: 'id' });
-
-  if (errorProfil) {
-    afficherMessage('Compte créé. Le profil sera finalisé lors de votre première connexion.', 'success');
-    console.error('Erreur enregistrement du profil après inscription:', errorProfil);
-  } else {
-    afficherMessage(UI_MESSAGES.auth.accountCreated, 'success');
-    setTimeout(() => afficherOnglet('connexion'), 2000);
-  }
+  afficherMessage(UI_MESSAGES.auth.accountCreated, 'success');
+  setTimeout(() => afficherOnglet('connexion'), 2000);
 
   if (btn) {
     btn.disabled = false;

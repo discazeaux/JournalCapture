@@ -43,8 +43,7 @@ export async function chargerProfil() {
     .insert({
       id: session.user.id,
       pseudo: metadata.pseudo,
-      codePostal: metadata.codePostal || '',
-      role: 'user'
+      codePostal: metadata.codePostal || ''
     })
     .select('pseudo, role, codePostal')
     .single();
