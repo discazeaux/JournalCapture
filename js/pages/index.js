@@ -16,6 +16,12 @@ if (!session) {
     entry.style.display = 'none';
   });
 } else {
+  const homeHeroConnectedActions = document.getElementById('homeHeroConnectedActions');
+  if (homeHeroConnectedActions) homeHeroConnectedActions.style.display = '';
+
+  const homeHeroNote = document.getElementById('homeHeroNote');
+  if (homeHeroNote) homeHeroNote.style.display = 'none';
+
   const lienMesStats = document.getElementById('lienMesStats');
   if (lienMesStats) lienMesStats.style.display = '';
 
@@ -232,64 +238,58 @@ const nomsAppats = {};
 });
 
 if (captures) {
-  const annee = new Date().getFullYear();
-  const prefixeSaison = annee + '-';
-
-  const aujourdhui = new Date();
-  const jourSemaine = aujourdhui.getDay();
-  const decalageLundi = jourSemaine === 0 ? 6 : jourSemaine - 1;
-  const lundi = new Date(aujourdhui);
-  lundi.setDate(aujourdhui.getDate() - decalageLundi);
-  const lundiStr = lundi.toISOString().split('T')[0];
-  const prevLundi = new Date(lundi.getTime() - 7 * 86400000);
-  const prevLundiStr = prevLundi.toISOString().split('T')[0];
-
-  let totalSemaine = 0;
-  let totalSemainePrecedente = 0;
-  let totalSaison = 0;
-  const parMethode = {};
-  const parAppat = {};
+  const debutAutomne = '2026-09-01';
+  const finAutomne = '2026-12-01';
+  let totalAutomne = 0;
+  let totalCapturesAvecAppat = 0;
+  let nomsAppatsNonAccessibles = false;
+  const capturesParMois = Array(3).fill(0);
+  const parMethodeSaison = {};
+  const parAppatSaison = {};
 
   captures.forEach((c) => {
     const n = c.nombre || 0;
     const d = c.date_capture || '';
 
-    if (d >= lundiStr) {
-      totalSemaine += n;
-      const m = c.methode || 'Inconnue';
-      parMethode[m] = (parMethode[m] || 0) + n;
+    if (d >= debutAutomne && d < finAutomne) {
+      totalAutomne += n;
+      const mois = Number(d.slice(5, 7));
+      capturesParMois[mois - 9] += n;
+
+      const methode = c.methode || 'Inconnue';
+      parMethodeSaison[methode] = (parMethodeSaison[methode] || 0) + n;
 
       if (c.methode === 'Piège' && c.appat_id) {
-        const nomAppat = nomsAppats[c.appat_id] || 'Appât';
-        parAppat[nomAppat] = (parAppat[nomAppat] || 0) + n;
+        totalCapturesAvecAppat += n;
+        const nomAppat = nomsAppats[c.appat_id];
+        if (nomAppat) {
+          parAppatSaison[nomAppat] = (parAppatSaison[nomAppat] || 0) + n;
+        } else {
+          nomsAppatsNonAccessibles = true;
+        }
       }
-    } else if (d >= prevLundiStr) {
-      totalSemainePrecedente += n;
     }
-
-    if (d.startsWith(prefixeSaison)) totalSaison += n;
   });
 
-  document.getElementById('statSemaine').textContent = totalSemaine;
-  document.getElementById('statSaison').textContent = totalSaison;
-  document.getElementById('statSaisonLibelle').textContent = `Saison ${annee}`;
+  document.getElementById('statAutomne').textContent = totalAutomne;
+  document.getElementById('statAutomneLibelle').textContent = 'Automne 2026';
 
-  const compareEl = document.getElementById('statSemaineCompare');
-  if (compareEl) {
-    const diff = totalSemaine - totalSemainePrecedente;
-    if (diff > 0) {
-      compareEl.innerHTML = `<span class="cmp-up">▲ ${diff} de plus</span> que la semaine dernière`;
-    } else if (diff < 0) {
-      compareEl.innerHTML = `<span class="cmp-down">▼ ${Math.abs(diff)} de moins</span> que la semaine dernière`;
-    } else {
-      compareEl.textContent = '≈ autant que la semaine dernière';
-    }
-  }
+  const maximumMois = Math.max(...capturesParMois, 1);
+  const nomsMois = ['Septembre', 'Octobre', 'Novembre'];
+  document.querySelectorAll('[data-chart-month]').forEach((bar) => {
+    const indexMois = Number(bar.dataset.chartMonth);
+    const nombreCaptures = capturesParMois[indexMois];
+    const hauteur = Math.max(6, Math.round((nombreCaptures / maximumMois) * 100));
+    bar.style.setProperty('--bar-height', `${hauteur}%`);
+    bar.parentElement.classList.toggle('is-peak', nombreCaptures > 0 && nombreCaptures === maximumMois);
+    bar.parentElement.setAttribute('aria-label', `${nomsMois[indexMois]} 2026 : ${nombreCaptures} capture${nombreCaptures === 1 ? '' : 's'}`);
+    document.querySelector(`[data-chart-value="${indexMois}"]`).textContent = nombreCaptures;
+  });
 
   let meilleureMethode = null;
   let meilleurTotal = 0;
 
-  for (const [m, t] of Object.entries(parMethode)) {
+  for (const [m, t] of Object.entries(parMethodeSaison)) {
     if (t > meilleurTotal) {
       meilleureMethode = m;
       meilleurTotal = t;
@@ -298,23 +298,28 @@ if (captures) {
 
   if (meilleureMethode) {
     document.getElementById('statMethode').textContent = meilleureMethode;
-    document.getElementById('statMethodeDetail').textContent = `${meilleurTotal} frelons cette semaine`;
+    document.getElementById('statMethodeDetail').textContent = `${meilleurTotal} capture${meilleurTotal === 1 ? '' : 's'} · Automne 2026`;
+  } else {
+    document.getElementById('statMethodeDetail').textContent = 'Aucune capture cet automne.';
   }
 
   let meilleurAppat = null;
   let meilleurAppatTotal = 0;
 
-  for (const [a, t] of Object.entries(parAppat)) {
+  for (const [a, t] of Object.entries(parAppatSaison)) {
     if (t > meilleurAppatTotal) {
       meilleurAppat = a;
       meilleurAppatTotal = t;
     }
   }
 
-  if (meilleurAppat) {
+  if (nomsAppatsNonAccessibles) {
+    document.getElementById('statAppat').textContent = '';
+    document.getElementById('statAppatDetail').textContent = `${totalCapturesAvecAppat} captures avec appât · Automne 2026`;
+  } else if (meilleurAppat) {
     document.getElementById('statAppat').textContent = meilleurAppat;
-    document.getElementById('statAppatDetail').textContent = `${meilleurAppatTotal} frelons cette semaine · pièges`;
+    document.getElementById('statAppatDetail').textContent = `${meilleurAppatTotal} capture${meilleurAppatTotal === 1 ? '' : 's'} · Automne 2026`;
   } else {
-    document.getElementById('statAppatDetail').textContent = 'Les pièges n’ont pas encore été relevés cette semaine.';
+    document.getElementById('statAppatDetail').textContent = 'Aucun appât enregistré cet automne.';
   }
 }

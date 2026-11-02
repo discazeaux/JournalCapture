@@ -11,9 +11,11 @@
     <meta property="og:description" content="Suivez les captures de frelons asiatiques à l’échelle de votre rucher et de la communauté. Consultez les tendances, gérez votre journal de rucher et vos récoltes, puis exportez vos données.">
     <meta property="og:url" content="https://www.larucheresiste.fr/">
     <meta property="og:image" content="https://www.larucheresiste.fr/img/ruche.png">
+    <link rel="stylesheet" href="navigation.css">
     <link rel="stylesheet" href="styles.css">
     <script src="js/config.js"></script>
     <script src="js/cookies.js"></script>
+    <script src="js/navigation.js"></script>
     <script defer src="https://cloud.umami.is/script.js" data-website-id="09e3a93a-9f91-437e-846b-b3f5f8444ecb"></script>
 </head>
 <body class="hub-page">
@@ -23,57 +25,105 @@
         <!-- rempli par JS -->
     </div>
 
-    <div class="hero">
-        <img class="hero-img" src="img/ruche.png" alt="Ruche" aria-label="Ruche">
-        <h1>La ruche résiste</h1>
-        <p class="subtitle">Le frelon asiatique menace nos ruches. Ici, on traque, on partage, on résiste.</p>
-        <p class="subtitle hero-mission">Ce site a été créé pour une mission : suivre les captures de frelons asiatiques, à l’échelle de chaque rucher et de toute la communauté. D’autres fonctionnalités s’y ajoutent peu à peu.</p>
-        <ul class="hero-description-list">
-            <li>✔ Captures de frelons : saisissez-les, consultez celles des autres apiculteurs</li>
-            <li>✔ Tendances de la saison : une vue collective alimentée par chacun</li>
-            <li>✔ Journal de rucher : gardez une trace de vos observations et éditer votre registre d’élevage</li>
-            <li>✔ Récoltes : suivez vos productions simplement</li>
-            <li>✔ L’export de vos données, à tout moment</li>
-        </ul>
-    </div>
+    <main class="home-hero">
+        <section class="home-hero-copy">
+            <h1>Le frelon asiatique menace nos ruches. Ici, on traque, on partage, on résiste.</h1>
+            <p class="subtitle hero-mission">Notez vos captures en 30 secondes, voyez la pression du frelon sur votre rucher et comparez-la à celle de toute la communauté.</p>
+            <div class="auth-buttons home-hero-actions">
+                <a class="auth-button auth-connexion" id="lienInscription" href="login.html?onglet=inscription">Créer un compte gratuit</a>
+                <a class="auth-button auth-inscription" href="stat.html">Pression du frelon</a>
+            </div>
+            <div class="auth-buttons home-hero-actions" id="homeHeroConnectedActions" style="display:none">
+                <a class="auth-button auth-connexion" href="nouvelleCapture.html">Nouvelle capture</a>
+                <a class="auth-button auth-inscription" href="suiviRucher.html">Suivi du rucher</a>
+            </div>
+            <p class="home-hero-note" id="homeHeroNote">Email et pseudonyme suffisent. Vos données restent privées et exportables en CSV.</p>
+        </section>
+
+        <section class="home-chart-panel" aria-label="Statistiques de la communauté pour l’automne 2026">
+            <div class="home-chart-kicker">Pression du frelon</div>
+            <div class="home-chart-total">
+                <strong id="statAutomne">0</strong>
+                <div class="home-chart-total-copy">
+                    <span>frelons capturés<br>cet automne</span>
+                    <small id="statAutomneLibelle">Automne 2026</small>
+                </div>
+            </div>
+            <div class="home-chart" role="img" aria-label="Captures mensuelles de septembre à novembre 2026">
+                <div class="home-chart-columns">
+                    <div class="home-chart-column" aria-label="Septembre 2026 : 0 capture"><span class="home-chart-bar" data-chart-month="0"></span><span class="home-chart-day">Sept. <strong data-chart-value="0">0</strong></span></div>
+                    <div class="home-chart-column" aria-label="Octobre 2026 : 0 capture"><span class="home-chart-bar" data-chart-month="1"></span><span class="home-chart-day">Oct. <strong data-chart-value="1">0</strong></span></div>
+                    <div class="home-chart-column" aria-label="Novembre 2026 : 0 capture"><span class="home-chart-bar" data-chart-month="2"></span><span class="home-chart-day">Nov. <strong data-chart-value="2">0</strong></span></div>
+                </div>
+            </div>
+            <div class="home-chart-footer">
+                <div><span>Méthode de la saison</span><strong id="statMethode">—</strong><small id="statMethodeDetail">Automne 2026</small></div>
+                <div><span>Appât de la saison</span><strong id="statAppat"></strong><small id="statAppatDetail">Automne 2026</small></div>
+            </div>
+        </section>
+    </main>
 
     <nav class="hub hub-nouveau">
 
         <!-- ── Comment ça marche ── -->
         <section class="ccm" id="commentCaMarche" aria-label="Comment ça marche">
             <div class="ccm-head">
-                <h2 class="ccm-title">Comment ça marche ?</h2>
+                <h2 class="ccm-title">Comment ça marche</h2>
             </div>
+            <p class="home-section-intro">Quatre étapes, aucune configuration.</p>
             <ol class="ccm-steps">
                 <li class="ccm-step">
                     <span class="ccm-num" aria-hidden="true">1</span>
                     <div class="ccm-step-body">
-                        <h3 class="ccm-step-title">Crée ton compte gratuitement</h3>
-                        <p class="ccm-step-desc">Email + pseudonyme, c’est tout. Tes données restent privées.</p>
+                        <h3 class="ccm-step-title">Créez votre compte</h3>
+                        <p class="ccm-step-desc">Email et pseudonyme, c’est tout.</p>
                     </div>
                 </li>
                 <li class="ccm-step">
                     <span class="ccm-num" aria-hidden="true">2</span>
                     <div class="ccm-step-body">
-                        <h3 class="ccm-step-title">Enregistre tes captures</h3>
-                        <p class="ccm-step-desc">Méthode, quantités, météo</p>
+                        <h3 class="ccm-step-title">Enregistrez vos captures</h3>
+                        <p class="ccm-step-desc">Méthode, quantité, météo.</p>
                     </div>
                 </li>
                 <li class="ccm-step">
                     <span class="ccm-num" aria-hidden="true">3</span>
                     <div class="ccm-step-body">
-                        <h3 class="ccm-step-title">Suis la pression du frelon</h3>
-                        <p class="ccm-step-desc">Visualise l’évolution de la pression du frelon sur ton rucher, compare avec la communauté.</p>
+                        <h3 class="ccm-step-title">Suivez la pression</h3>
+                        <p class="ccm-step-desc">Comparez votre rucher à la communauté.</p>
                     </div>
                 </li>
                 <li class="ccm-step">
                     <span class="ccm-num" aria-hidden="true">4</span>
                     <div class="ccm-step-body">
-                        <h3 class="ccm-step-title">Récupère tes données</h3>
-                        <p class="ccm-step-desc">Exporte ton suivi au format CSV et exploite tes données comme tu le souhaites.</p>
+                        <h3 class="ccm-step-title">Récupérez vos données</h3>
+                        <p class="ccm-step-desc">Export CSV à tout moment.</p>
                     </div>
                 </li>
             </ol>
+        </section>
+
+        <section class="home-features" aria-labelledby="homeFeaturesTitle">
+            <h2 id="homeFeaturesTitle">Ce que vous pouvez faire ici</h2>
+            <p class="home-section-intro">Le site a commencé par les captures. D’autres outils s’ajoutent au fil des saisons.</p>
+            <div class="home-feature-list">
+                <article class="home-feature">
+                    <h3>Saisir et consulter les captures</h3>
+                    <p>Les vôtres et celles des autres apiculteurs.</p>
+                </article>
+                <article class="home-feature">
+                    <h3>Suivre les tendances de la saison</h3>
+                    <p>Une vue collective alimentée par chacun.</p>
+                </article>
+                <article class="home-feature">
+                    <h3>Tenir le journal de rucher</h3>
+                    <p>Observations et registre d’élevage au même endroit.</p>
+                </article>
+                <article class="home-feature">
+                    <h3>Suivre vos récoltes</h3>
+                    <p>Vos productions, simplement.</p>
+                </article>
+            </div>
         </section>
 
         <!-- ── Rappels personnels ── -->
@@ -94,72 +144,29 @@
             <p class="admin-comment-message" id="adminCommentsMessage" aria-live="polite"></p>
         </section>
 
-        <section class="ccm" aria-label="La communauté en chiffres">
-            <!-- ── Mini-stats (communauté) ── -->
-            <div class="hub-stats-head">
-                <h2 class="hub-stats-title">La communauté en chiffres</h2>
-            </div>
-            <div class="hub-stats">
-                <div class="hub-stat">
-                    <div class="hub-stat-emoji"><img src="img/frelon.png" alt="Frelons de la semaine" aria-label="Frelons de la semaine"></div>
-                    <div class="hub-stat-valeur" id="statSemaine">0</div>
-                    <div class="hub-stat-libelle">Frelon tués cette semaine</div>
-                    <div class="hub-stat-detail" id="statSemaineDetail">lundi → dimanche</div>
-                    <div class="hub-stat-detail hub-stat-compare" id="statSemaineCompare"></div>
-                </div>
-                <div class="hub-stat">
-                    <div class="hub-stat-emoji"><img src="img/mort.png" alt="Frelons tués cette saison" aria-label="Frelons tués cette saison"></div>
-                    <div class="hub-stat-valeur" id="statSaison">0</div>
-                    <div class="hub-stat-libelle" id="statSaisonLibelle">Saison 2026</div>
-                    <div class="hub-stat-detail">frelons tués</div>
-                </div>
-                <div class="hub-stat">
-                    <div class="hub-stat-emoji"><img src="img/meilleur.png" alt="Méthode du moment" aria-label="Méthode du moment"></div>
-                    <div class="hub-stat-valeur hub-stat-methode" id="statMethode">—</div>
-                    <div class="hub-stat-libelle">Méthode du moment</div>
-                    <div class="hub-stat-detail" id="statMethodeDetail">cette semaine</div>
-                </div>
-                <div class="hub-stat">
-                    <div class="hub-stat-emoji"><img src="img/appats-pour-la-peche.png" alt="Appât du moment" aria-label="Appât du moment"></div>
-                    <div class="hub-stat-valeur hub-stat-methode" id="statAppat">—</div>
-                    <div class="hub-stat-libelle">Appât du moment</div>
-                    <div class="hub-stat-detail" id="statAppatDetail">cette semaine · pièges</div>
-                </div>
-            </div>
-        </section>
-
          <section class="ccm" aria-label="Pour approfondir">
             <div class="ccm-head">
                 <h2 class="ccm-title">Pour approfondir</h2>
             </div>
-            <!-- ── Accès rapide : tous les liens ── -->
-            <div class="rapide">
-                <a class="hub-btn" href="blog.html"><span>📖</span> Le blog</a>
-                <a class="hub-btn" href="stat.html"><span>📊</span> Statistiques</a>
-                <!-- Visible uniquement si connecté -->
-                <a class="hub-btn" id="lienMesStats" href="stat.html?onglet=mesStats" style="display:none"><span>📊</span> Mes stats</a>
-                <a class="hub-btn hub-protege" href="suiviRucher.html"><span>🐝</span> Suivi du rucher</a>
-                <a class="hub-btn hub-protege" href="nouvelleCapture.html"><span>📋</span> Nouvelle capture</a>
-                <a class="hub-btn hub-protege" href="settings.html"><span>⚙️</span> Paramètres</a>
+            <div class="home-deep-dive">
+                <section class="featured" id="featuredArticle" style="display:none" aria-label="Dernier article publié">
+                    <a class="featured-link" id="featuredLien" href="#">
+                        <span class="featured-tag">Dernier article du blog</span>
+                        <h3 class="featured-title" id="featuredTitre"></h3>
+                        <div class="featured-date" id="featuredDate"></div>
+                        <p class="featured-extrait" id="featuredExtrait"></p>
+                        <span class="featured-cta">Lire l’article</span>
+                    </a>
+                </section>
+
+                <article class="featured site-news" aria-label="Nouveautés du site">
+                    <span class="featured-tag">Nouveautés du site</span>
+                    <h3 class="featured-title">La page d’accueil évolue</h3>
+                    <time class="featured-date" datetime="2026-11-02">2 novembre 2026</time>
+                    <p class="featured-extrait">Aujourd’hui, le graphique présente les captures mois par mois pour l’automne 2026. Les méthodes et appâts sont résumés sur la même saison, et les actions principales s’adaptent maintenant à votre connexion.</p>
+                </article>
             </div>
         </section>
-
-        <!-- ── Dernier article publié (à la une) ── -->
-        <section class="featured" id="featuredArticle" style="display:none">
-            <a class="featured-link" id="featuredLien" href="#">
-                <span class="featured-tag">📖 Dernier article</span>
-                <h2 class="featured-title" id="featuredTitre"></h2>
-                <div class="featured-date" id="featuredDate"></div>
-                <p class="featured-extrait" id="featuredExtrait"></p>
-                <span class="featured-cta">Lire l'article →</span>
-            </a>
-        </section>
-
-        <!-- ── Connexion / inscription ── -->
-        <div class="auth-buttons">
-            <a class="auth-button auth-connexion" id="lienConnexion" href="login.html">🔐 Se connecter</a>
-            <a class="auth-button auth-inscription" id="lienInscription" href="login.html?onglet=inscription">✨ Créer un compte</a>
-        </div>
 
     </nav>
 
@@ -171,6 +178,7 @@
         <div class="footer-legal"><a href="confidentialite.html">Confidentialité &amp; cookies</a><a href="mentions-legales.html">Mentions légales</a></div>
     </footer>
 
+    <script>initNavigation({ univers: 'frelon', sectionActive: 'accueil' });</script>
     <script type="module" src="./js/pages/index.js"></script>
 </body>
 </html>

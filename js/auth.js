@@ -83,6 +83,11 @@ function afficherDeconnexion(bar, pseudo) {
 
 // Rendu de la barre quand l'utilisateur n'est pas connecté.
 function afficherConnexion(bar) {
+  if (document.documentElement.dataset.sharedNavigation === 'true') {
+    bar.style.display = 'none';
+    return;
+  }
+
   bar.innerHTML = `<button id="btnUserConnexion">Se connecter</button>`;
   bar.style.display = '';
   document.getElementById('btnUserConnexion').addEventListener('click', () => {

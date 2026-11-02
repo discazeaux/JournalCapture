@@ -2,8 +2,6 @@ import { supabase } from '../supabase.js';
 import { initUserBar } from '../auth.js';
 import { escapeHtml } from '../utils/escape.js';
 
-const tabCommunaute = document.getElementById('tabCommunaute');
-const tabMesStats = document.getElementById('tabMesStats');
 const sectionCommunaute = document.getElementById('sectionCommunaute');
 const sectionMesStats = document.getElementById('sectionMesStats');
 const mesStatsContent = document.getElementById('mesStatsContent');
@@ -12,14 +10,9 @@ const myStatsNotConnected = document.getElementById('myStatsNotConnected');
 const { session } = await initUserBar({ elementId: 'userBar' });
 
 function showTab(tab) {
-  tabCommunaute.classList.toggle('active', tab === 'communaute');
-  tabMesStats.classList.toggle('active', tab === 'mesStats');
   sectionCommunaute.style.display = tab === 'communaute' ? '' : 'none';
   sectionMesStats.style.display = tab === 'mesStats' ? '' : 'none';
 }
-
-tabCommunaute.addEventListener('click', () => showTab('communaute'));
-tabMesStats.addEventListener('click', () => showTab('mesStats'));
 
 function formaterDateSimple(dateStr) {
   const date = new Date(dateStr);

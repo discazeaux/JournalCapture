@@ -1,54 +1,79 @@
 /*
  * ============================================================
  *  Navigation commune — JournalCapture
- *  Génère la barre de navigation (univers frelon + blog + rucher)
- *  Utilisée par toutes les pages du site.
+ *  Génère le bandeau commun de navigation du site.
  *
  *  Usage :
  *    <script src="navigation.js"></script>
  *    <script>
  *      initNavigation({
  *        univers: 'frelon' | 'blog' | 'rucher',
- *        : 'accueil' | 'nouvelleCapture' | 'stat' | 'settings' | 'blog' | 'article'
+ *        sectionActive: section courante
  *      });
  *    </script>
  *
- *  Remarque : la user-bar (connexion / pseudo) reste en position
- *  fixe en haut à droite, comme avant — elle n'est pas déplacée
- *  dans la navigation.
- *
- *  Sécurité : les sections "Nouvelle capture" et "Paramètres"
- *  (univers frelon) ne sont affichées que si l'utilisateur est
- *  connecté. "Statistiques" reste accessible sans connexion.
+ *  Le bandeau indique l'univers courant avec une pastille miel pleine.
  * ============================================================
  */
 
 (function (global) {
   'use strict';
 
-  // Sections par univers
-  const SECTIONS = {
-    frelon: [
-      { id: 'nouvelleCapture', label: '📋 Nouvelle capture', href: 'nouvelleCapture.html' },
-      { id: 'stat', label: '📊 Statistiques', href: 'stat.html' },
-      { id: 'settings', label: '⚙️ Paramètres', href: 'settings.html' }
-    ],
-    blog: [
-      { id: 'blog', label: '📖 Le blog', href: 'blog.html' }
+  const LIENS_PRINCIPAUX = [
+    { id: 'pressure', label: 'Pression du frelon', href: 'stat.html' },
+    { id: 'rucher', label: 'Suivi du rucher', href: 'suiviRucher.html' },
+    { id: 'blog', label: 'Blog', href: 'blog.html' }
+  ];
+
+  const SOUS_MENUS = {
+    pressure: [
+      { label: 'Stat communauté', href: 'stat.html', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 6-7"/></svg>' },
+      { label: 'Mes stats', href: 'stat.html?onglet=mesStats', authRequired: true, icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 6-7"/></svg>' },
+      { label: 'Nouvelle capture', href: 'nouvelleCapture.html', authRequired: true, icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>' },
+      { label: 'Réglages', href: 'settings.html', authRequired: true, icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1a1.7 1.7 0 0 1-2.4 2.4l-.1-.1a1.7 1.7 0 0 0-2.9 1.2v.2a1.7 1.7 0 0 1-3.4 0v-.2a1.7 1.7 0 0 0-2.9-1.2l-.1.1a1.7 1.7 0 0 1-2.4-2.4l.1-.1a1.7 1.7 0 0 0-1.2-2.9H4a1.7 1.7 0 0 1 0-3.4h.2a1.7 1.7 0 0 0 1.2-2.9l-.1-.1a1.7 1.7 0 0 1 2.4-2.4l.1.1a1.7 1.7 0 0 0 2.9-1.2V2a1.7 1.7 0 0 1 3.4 0v.2a1.7 1.7 0 0 0 2.9 1.2l.1-.1a1.7 1.7 0 0 1 2.4 2.4l-.1.1a1.7 1.7 0 0 0 1.2 2.9h.2a1.7 1.7 0 0 1 0 3.4h-.2a1.7 1.7 0 0 0-1.2 2.9Z"/></svg>' }
     ],
     rucher: [
-      { id: 'suiviRucher', label: '🐝 Mes ruchers', href: 'suiviRucher.html' },
-      { id: 'suiviMiellerie', label: '🍯 Mes récoltes', href: 'suiviMiellerie.html' },
-      { id: 'reglageRucher', label: '⚙️ Réglage des ruchers', href: 'reglageRucher.html' }
+      { label: 'Ruchers', href: 'suiviRucher.html', authRequired: true, icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>' },
+      { label: 'Miellerie', href: 'suiviMiellerie.html', authRequired: true, icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5S6.5 10 6.5 14.5a5.5 5.5 0 0 0 11 0C17.5 10 12 3.5 12 3.5Z"/><path d="M9.5 15a2.5 2.5 0 0 0 2.5 2.5"/></svg>' },
+      { label: 'Réglages', href: 'reglageRucher.html', authRequired: true, icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1a1.7 1.7 0 0 1-2.4 2.4l-.1-.1a1.7 1.7 0 0 0-2.9 1.2v.2a1.7 1.7 0 0 1-3.4 0v-.2a1.7 1.7 0 0 0-2.9-1.2l-.1.1a1.7 1.7 0 0 1-2.4-2.4l.1-.1a1.7 1.7 0 0 0-1.2-2.9H4a1.7 1.7 0 0 1 0-3.4h.2a1.7 1.7 0 0 0 1.2-2.9l-.1-.1a1.7 1.7 0 0 1 2.4-2.4l.1.1a1.7 1.7 0 0 0 2.9-1.2V2a1.7 1.7 0 0 1 3.4 0v.2a1.7 1.7 0 0 0 2.9 1.2l.1-.1a1.7 1.7 0 0 1 2.4 2.4l-.1.1a1.7 1.7 0 0 0 1.2 2.9h.2a1.7 1.7 0 0 1 0 3.4h-.2a1.7 1.7 0 0 0-1.2 2.9Z"/></svg>' }
     ]
   };
 
-  // Libellés des univers
-  const UNIVERS_LABELS = {
-    frelon: { label: 'Suivi de la pression du frelon', emoji: '<img class="universe-img" src="img/ruche3.png" alt="Frelon" aria-label="Frelon">', href: 'index.html' },
-    blog: { label: 'La ruche résiste', emoji: '<img class="universe-img" src="img/ruche3.png" alt="Frelon" aria-label="Frelon">', href: 'index.html' },
-    rucher: { label: 'Mes ruchers', emoji: '<img class="universe-img" src="img/ruche3.png" alt="Rucher" aria-label="Rucher">', href: 'suiviRucher.html' }
+  const SECTIONS_ACTIVES = {
+    stat: 'pressure',
+    nouvelleCapture: 'pressure',
+    settings: 'pressure',
+    profil: 'pressure',
+    blog: 'blog',
+    article: 'blog',
+    rediger: 'blog',
+    suiviRucher: 'rucher',
+    suiviMiellerie: 'rucher',
+    reglageRucher: 'rucher',
+    registreElevage: 'rucher'
   };
+
+  const ROUTES_ACTIVES = {
+    'stat.html': 'pressure',
+    'nouvelleCapture.html': 'pressure',
+    'settings.html': 'pressure',
+    'profil.html': 'pressure',
+    'login.html': 'pressure',
+    'reset-password.html': 'pressure',
+    'suiviRucher.html': 'rucher',
+    'suiviMiellerie.html': 'rucher',
+    'reglageRucher.html': 'rucher',
+    'registreElevage.html': 'rucher',
+    'blog.html': 'blog',
+    'article.html': 'blog',
+    'rediger.html': 'blog'
+  };
+
+  const PAGES_SANS_RUBRIQUE_ACTIVE = new Set([
+    'index.html',
+    'confidentialite.html',
+    'mentions-legales.html'
+  ]);
 
   // Vérifie si l'utilisateur est connecté via Supabase et son rôle
   async function verifierSession() {
@@ -86,61 +111,70 @@
   }
 
   global.initNavigation = async function (options) {
+    document.documentElement.dataset.sharedNavigation = 'true';
+
     const config = Object.assign({
       univers: 'frelon',
       sectionActive: ''
     }, options || {});
 
-    const meta = UNIVERS_LABELS[config.univers] || UNIVERS_LABELS.frelon;
-
     // Vérifier l'état de connexion et le rôle admin
-    const { estConnecte, estAdmin } = await verifierSession();
-
-    // Sections protégées (univers frelon) : uniquement visibles si connecté.
-    // "Statistiques" reste accessible sans connexion (stats communauté publiques).
-    const sectionsProtegees = ['suiviRucher', 'suiviMiellerie', 'reglageRucher', 'registreElevage', 'nouvelleCapture', 'settings'];
-    const sections = (SECTIONS[config.univers] || []).filter(s => {
-      if ((config.univers === 'frelon' || config.univers === 'rucher') && !estConnecte && sectionsProtegees.includes(s.id)) {
-        return false; // masquer les sections protégées si non connecté
-      }
-      return true;
-    });
-
-    // Lien "Rédiger un article" visible uniquement pour les administrateurs,
-    // et uniquement dans l'univers blog (pas dans l'univers frelon).
-    const lienRediger = (estAdmin && config.univers === 'blog')
-      ? `<a href="rediger.html" class="${config.sectionActive === 'rediger' ? 'active' : ''}">✏️ Rédiger un article</a>`
-      : '';
+    const { estConnecte } = await verifierSession();
+    const page = window.location.pathname.split('/').pop() || 'index.html';
+    const currentUrl = new URL(window.location.href);
+    const sectionParUnivers = { frelon: 'pressure', blog: 'blog', rucher: 'rucher' };
+    const sectionCourante = PAGES_SANS_RUBRIQUE_ACTIVE.has(page)
+      ? ''
+      : SECTIONS_ACTIVES[config.sectionActive]
+        || ROUTES_ACTIVES[page]
+        || sectionParUnivers[config.univers]
+        || '';
 
     // Construction de la navigation
     const nav = document.createElement('nav');
     nav.className = 'site-nav';
+    nav.setAttribute('aria-label', 'Navigation principale');
+    const liens = LIENS_PRINCIPAUX.map((lien) => {
+      const active = sectionCourante === lien.id;
+      const pageExacte = page === lien.href;
+      const ariaCourante = active ? ` aria-current="${pageExacte ? 'page' : 'location'}"` : '';
+      return `<a class="site-nav-link${active ? ' active' : ''}" href="${lien.href}"${ariaCourante}>${lien.label}</a>`;
+    }).join('');
+    const liensSousMenu = (SOUS_MENUS[sectionCourante] || [])
+      .filter((lien) => estConnecte || !lien.authRequired);
+    const sousMenu = liensSousMenu.length
+      ? `<nav class="site-nav-subnav site-nav-subnav--${sectionCourante}" aria-label="Navigation ${sectionCourante === 'pressure' ? 'pression du frelon' : 'du rucher'}">${liensSousMenu.map((lien) => {
+        const [href, query] = lien.href.split('?');
+        const queryParams = new URLSearchParams(query || '');
+        const tabDemande = queryParams.get('onglet');
+        const active = page === href
+          && (tabDemande ? currentUrl.searchParams.get('onglet') === tabDemande : !currentUrl.searchParams.has('onglet'));
+        const ariaCourante = active ? ' aria-current="page"' : '';
+        return `<a class="site-nav-sublink${active ? ' active' : ''}" href="${lien.href}"${ariaCourante}>${lien.icon}${lien.label}</a>`;
+      }).join('')}</nav>`
+      : '';
+
     nav.innerHTML = `
       <div class="site-nav-inner">
-        <div class="site-nav-top">
-          <a class="site-nav-brand" href="index.html">
-            <span class="site-nav-brand-emoji">${meta.emoji}</span>
-            ${meta.label}
-          </a>
-
-          <div class="site-nav-univers">
-            <a class="site-nav-tab ${config.univers === 'frelon' ? 'active' : ''}" href="stat.html"><img class="universe-img" src="img/mordre3.png" alt="Frelon" aria-label="Frelon"> Frelons</a>
-            <a class="site-nav-tab ${config.univers === 'blog' ? 'active' : ''}" href="blog.html">📖 Blog</a>
-            <a class="site-nav-tab ${config.univers === 'rucher' ? 'active' : ''}" href="suiviRucher.html">🐝 Mes ruchers</a>
-          </div>
-        </div>
-
-        <div class="site-nav-sections">
-          
-          ${sections.map(s =>
-            `<a href="${s.href}" class="${config.sectionActive === s.id ? 'active' : ''}">${s.label}</a>`
-          ).join('')}
-          ${lienRediger}
+        <a class="site-nav-brand" href="index.html">
+          <img src="img/ruche4.png" alt="">
+          <span>La ruche résiste</span>
+        </a>
+        <div class="site-nav-links">${liens}</div>
+        <div class="site-nav-actions">
+          ${estConnecte ? '' : '<a class="site-nav-login" id="lienConnexion" href="login.html">Se connecter</a>'}
         </div>
       </div>
+      ${sousMenu ? `<div class="site-nav-divider site-nav-divider--${sectionCourante}" aria-hidden="true"></div>` : ''}
+      ${sousMenu}
     `;
 
     document.body.insertBefore(nav, document.body.firstChild);
+    const userBar = document.getElementById('userBar');
+    if (userBar) {
+      nav.querySelector('.site-nav-actions').appendChild(userBar);
+      if (!estConnecte) userBar.style.display = 'none';
+    }
 
     // Retourner la ref de la nav (utile pour d'éventuels ajustements)
     return nav;
