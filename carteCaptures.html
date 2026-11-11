@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/ruche4.png">
+    <title>Lieux des postes — La ruche résiste</title>
+    <script src="js/config.js"></script>
+    <script src="js/cookies.js"></script>
+    <script src="js/navigation.js"></script>
+    <link rel="stylesheet" href="navigation.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="carteCaptures.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="09e3a93a-9f91-437e-846b-b3f5f8444ecb"></script>
+</head>
+<body class="page-carte-captures">
+    <div class="user-bar" id="userBar"></div>
+
+    <main class="carte-page">
+        <header class="carte-header">
+            <div>
+                <p class="carte-kicker">PRESSION DU FRELON</p>
+                <h1>Lieux de mes postes</h1>
+                <p class="carte-intro">Visualisez vos postes de piégeage et les zones couvertes autour de chacun.</p>
+            </div>
+            <div class="carte-controls">
+                <label class="code-postal-control" for="zoomCodePostal">
+                    <span>Zoom rapide par code postal</span>
+                    <select id="zoomCodePostal" disabled>
+                        <option value="">Chargement…</option>
+                    </select>
+                </label>
+                <label class="rayon-control" for="rayonMetres">
+                    <span>Rayon autour de chaque poste</span>
+                    <span class="rayon-valeur"><output id="rayonValeur" for="rayonMetres">500</output> m</span>
+                    <input id="rayonMetres" type="range" min="100" max="3000" step="50" value="500">
+                </label>
+            </div>
+        </header>
+
+        <p id="carteStatut" class="carte-statut" role="status" aria-live="polite">Chargement des postes…</p>
+        <div class="carte-legende" aria-label="Légende de la carte">
+            <span><i class="legende-point" aria-hidden="true"></i> Poste de piégeage</span>
+            <span><i class="legende-rayon" aria-hidden="true"></i> Rayon sélectionné</span>
+            <span id="nombreLieux" class="carte-compteur"></span>
+        </div>
+
+        <div id="carteLieux" class="carte-map" role="region" aria-label="Carte des postes de piégeage"></div>
+
+        <section class="lieux-section" aria-labelledby="lieuxTitre">
+            <h2 id="lieuxTitre">Tous mes postes</h2>
+            <div id="listeLieux" class="lieux-liste"></div>
+        </section>
+
+        <p id="lieuxSansCoordonnees" class="lieux-avertissement" hidden></p>
+        <p class="carte-attribution">Fond de carte © OpenStreetMap · Emplacements issus des adresses des postes</p>
+    </main>
+
+    <footer>
+        <div class="footer-legal"><a href="confidentialite.html">Confidentialité &amp; cookies</a><a href="mentions-legales.html">Mentions légales</a></div>
+    </footer>
+    <script>
+        initNavigation({ univers: 'frelon', sectionActive: 'carteCaptures' });
+    </script>
+    <script type="module" src="./js/pages/carteCaptures.js"></script>
+</body>
+</html>

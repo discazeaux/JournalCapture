@@ -18,6 +18,8 @@ const state = {
   typeSelectionneGlobal: 'sucre'
 };
 
+const cartesAdressesPostes = new Map();
+
 let session = null;
 
 const ETATS_SANTE_RUCHER = [
@@ -737,16 +739,22 @@ function renderPostes() {
   const list = document.getElementById(DOM_IDS.SETTINGS.LIST_POSTES);
   if (!list) return;
 
+  cartesAdressesPostes.forEach(({ map }) => map.remove());
+  cartesAdressesPostes.clear();
+
   list.innerHTML = '';
 
   if (!state.postes.length) {
-    list.innerHTML = '<p class="empty">Aucun poste. Ajoutez-en un ci-dessous. Si vous n’avez pas encore d’appât, commencez par créer un appât.</p>';
+    list.innerHTML = '<p class="empty">Aucun poste. Ajoutez-en un ci-dessous.</p>';
     return;
   }
 
   state.postes.forEach((p) => {
     const card = document.createElement('div');
     card.className = 'poste-card' + (p.actif ? '' : ' inactif');
+    card.dataset.posteId = p.id;
+
+    const methodes = normaliserMethodesPoste(p.methodes_piegeage);
 
     const defautBadge = p.defaut ? '<span class="badge-default">★ défaut</span>' : '';
     const actifBadge = p.actif
@@ -764,9 +772,64 @@ function renderPostes() {
           <button class="btn-rm" data-id="${p.id}" title="Supprimer">✕</button>
         </div>
       </div>
-      <div class="poste-details">
-        <span>🪤 ${escapeHtml(p.type_piege || '—')}</span>
-        <span>× ${p.nombre} piège(s)</span>
+      <div class="poste-adresse">
+        <label for="adressePoste-${p.id}">Adresse complète <span>(facultative)</span></label>
+        <div class="adresse-lookup">
+          <input
+            id="adressePoste-${p.id}"
+            class="adresse-poste-input"
+            type="search"
+            value="${escapeHtml(p.adresse || '')}"
+            placeholder="Commencez à saisir une adresse…"
+            autocomplete="off"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded="false"
+            aria-controls="suggestionsAdressePoste-${p.id}"
+            data-poste-id="${p.id}"
+            data-adresse-initiale="${escapeHtml(p.adresse || '')}"
+            data-latitude-initiale="${p.latitude ?? ''}"
+            data-longitude-initiale="${p.longitude ?? ''}"
+            data-code-postal-initial="${escapeHtml(p.code_postal || '')}"
+          >
+          <div class="adresse-suggestions" id="suggestionsAdressePoste-${p.id}" role="listbox" aria-live="polite" hidden></div>
+        </div>
+        <div class="poste-adresse-actions">
+          <small>Votre saisie est transmise à la Base Adresse Nationale. Si la suggestion est approximative, corrigez le point sur la carte.</small>
+          <button type="button" class="btn-add btn-save-adresse-poste" data-poste-id="${p.id}">Enregistrer l’adresse</button>
+        </div>
+        <button type="button" class="btn-positionner-adresse" data-poste-id="${p.id}" aria-expanded="false" aria-controls="carteAdressePoste-${p.id}">Positionner le point sur la carte</button>
+        <div class="adresse-map-panel" id="carteAdressePoste-${p.id}" hidden>
+          <label for="rechercheCartePoste-${p.id}">Centrer la carte sur une adresse ou une commune</label>
+          <div class="adresse-lookup">
+            <input id="rechercheCartePoste-${p.id}" class="recherche-carte-poste" type="search" placeholder="Ex. 33400 Talence" autocomplete="off" data-poste-id="${p.id}" aria-label="Rechercher une adresse pour centrer la carte">
+            <div class="adresse-suggestions recherche-carte-suggestions" role="listbox" aria-live="polite" hidden></div>
+          </div>
+          <p class="adresse-map-aide">Cliquez sur la carte pour placer le point. Vous pouvez aussi déplacer le marqueur.</p>
+          <div class="adresse-map" id="mapAdressePoste-${p.id}" role="application" aria-label="Position du poste ${escapeHtml(p.nom)}"></div>
+          <output class="adresse-coordonnees" aria-live="polite">Point non modifié</output>
+        </div>
+      </div>
+      <div class="poste-methodes">
+        <strong>Méthodes de piégeage</strong>
+        ${methodes.length ? methodes.map((methode, index) => `
+          <div class="poste-methode-ligne">
+            <span>${escapeHtml(methode.nom)}${methode.defaut ? ' <span class="badge-default">★ par défaut</span>' : ''}</span>
+            <div class="item-actions">
+              <button type="button" class="btn-methode-defaut ${methode.defaut ? 'active' : ''}" data-index="${index}" title="Définir comme méthode par défaut" aria-label="Définir ${escapeHtml(methode.nom)} comme méthode par défaut">★</button>
+              <button type="button" class="btn-methode-rm" data-index="${index}" title="Supprimer cette méthode" aria-label="Supprimer ${escapeHtml(methode.nom)}">✕</button>
+            </div>
+          </div>
+        `).join('') : '<p class="poste-methodes-vide">Aucune méthode configurée.</p>'}
+        <div class="poste-methode-ajout">
+          <select class="select-methode-poste" aria-label="Choisir une méthode pour ${escapeHtml(p.nom)}">
+            <option value="">Ajouter une méthode standard…</option>
+            ${(window.CONFIG?.METHODES || []).map((methode) => `
+              <option value="${escapeHtml(methode.valeur)}" ${methodes.some((existante) => existante.nom === methode.valeur) ? 'disabled' : ''}>${escapeHtml(methode.label)}</option>
+            `).join('')}
+          </select>
+          <button type="button" class="btn-add btn-ajouter-methode">＋ Ajouter</button>
+        </div>
       </div>
     `;
 
@@ -784,6 +847,334 @@ function renderPostes() {
   list.querySelectorAll('.btn-rm').forEach((btn) => {
     btn.addEventListener('click', () => supprimerPoste(btn.dataset.id));
   });
+
+  list.querySelectorAll('.poste-card').forEach((card) => {
+    const posteId = card.dataset.posteId;
+    card.querySelector('.btn-ajouter-methode')?.addEventListener('click', () => {
+      ajouterMethodePoste(posteId, card.querySelector('.select-methode-poste'));
+    });
+    card.querySelectorAll('.btn-methode-defaut').forEach((button) => {
+      button.addEventListener('click', () => definirMethodeDefaut(posteId, Number(button.dataset.index)));
+    });
+    card.querySelectorAll('.btn-methode-rm').forEach((button) => {
+      button.addEventListener('click', () => supprimerMethodePoste(posteId, Number(button.dataset.index)));
+    });
+  });
+
+  list.querySelectorAll('.adresse-poste-input').forEach(initialiserAutocompletionAdressePoste);
+  list.querySelectorAll('.btn-save-adresse-poste').forEach((button) => {
+    button.addEventListener('click', () => enregistrerAdressePoste(button.dataset.posteId, button));
+  });
+  list.querySelectorAll('.btn-positionner-adresse').forEach((button) => {
+    button.addEventListener('click', () => basculerCarteAdressePoste(button.dataset.posteId, button));
+  });
+  list.querySelectorAll('.recherche-carte-poste').forEach(initialiserRechercheCentrageCarte);
+}
+
+function initialiserAutocompletionAdressePoste(input) {
+  const resultats = document.getElementById(input.getAttribute('aria-controls'));
+  let minuteur = null;
+  let requete = null;
+
+  input.addEventListener('input', () => {
+    clearTimeout(minuteur);
+    requete?.abort();
+    input.dataset.selectionValide = 'false';
+    input.dataset.positionManuelle = 'false';
+    resultats.replaceChildren();
+
+    const recherche = input.value.trim();
+    if (recherche.length < 3) {
+      resultats.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+      return;
+    }
+
+    resultats.hidden = false;
+    resultats.textContent = 'Recherche d’adresses…';
+    input.setAttribute('aria-expanded', 'true');
+
+    minuteur = setTimeout(async () => {
+      requete = new AbortController();
+      try {
+        const url = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(recherche)}&limit=5`;
+        const response = await fetch(url, { signal: requete.signal });
+        if (!response.ok) throw new Error('Recherche d’adresse indisponible.');
+        const { features = [] } = await response.json();
+        resultats.replaceChildren();
+
+        if (!features.length) {
+          resultats.textContent = 'Aucune adresse trouvée.';
+          return;
+        }
+
+        features.forEach((feature) => {
+          const label = feature.properties?.label;
+          const coordinates = feature.geometry?.coordinates;
+          if (!label || !Array.isArray(coordinates) || coordinates.length < 2) return;
+
+          const option = document.createElement('button');
+          option.type = 'button';
+          option.className = 'adresse-suggestion';
+          option.setAttribute('role', 'option');
+          option.setAttribute('aria-selected', 'false');
+          option.textContent = label;
+          option.addEventListener('click', () => {
+            input.dataset.latitude = String(coordinates[1]);
+            input.dataset.longitude = String(coordinates[0]);
+            input.dataset.codePostal = feature.properties?.postcode || input.value.match(/\d{5}/)?.[0] || '';
+            input.dataset.selectionValide = 'true';
+            resultats.replaceChildren();
+            resultats.hidden = true;
+            input.setAttribute('aria-expanded', 'false');
+          });
+          resultats.appendChild(option);
+        });
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+        resultats.textContent = 'Impossible de rechercher cette adresse pour le moment.';
+      }
+    }, 300);
+  });
+}
+
+function basculerCarteAdressePoste(posteId, button) {
+  const panel = document.getElementById(`carteAdressePoste-${posteId}`);
+  const ouverte = panel.hidden;
+  panel.hidden = !ouverte;
+  button.setAttribute('aria-expanded', String(ouverte));
+  button.textContent = ouverte ? 'Masquer la carte de positionnement' : 'Positionner le point sur la carte';
+  if (ouverte) initialiserCarteAdressePoste(posteId);
+}
+
+function initialiserCarteAdressePoste(posteId) {
+  const existante = cartesAdressesPostes.get(posteId);
+  if (existante) {
+    setTimeout(() => existante.map.invalidateSize(), 0);
+    return;
+  }
+
+  const poste = state.postes.find((element) => element.id === posteId);
+  const latitude = Number(poste?.latitude);
+  const longitude = Number(poste?.longitude);
+  const coordonneesExistantes = poste?.latitude !== null && poste?.latitude !== undefined
+    && poste?.longitude !== null && poste?.longitude !== undefined;
+  const positionExistante = coordonneesExistantes
+    && Number.isFinite(latitude) && Number.isFinite(longitude)
+    && latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180
+    ? [latitude, longitude]
+    : null;
+  const map = L.map(`mapAdressePoste-${posteId}`).setView(positionExistante || [46.6, 2.4], positionExistante ? 16 : 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
+
+  const entry = { map, marker: null };
+  if (positionExistante) {
+    entry.marker = L.marker(positionExistante, { draggable: true }).addTo(map);
+  }
+
+  const panel = document.getElementById(`carteAdressePoste-${posteId}`);
+  const coordonnees = panel.querySelector('.adresse-coordonnees');
+
+  function enregistrerPoint(latlng) {
+    const inputAdresse = document.getElementById(`adressePoste-${posteId}`);
+    inputAdresse.dataset.latitude = String(latlng.lat);
+    inputAdresse.dataset.longitude = String(latlng.lng);
+    inputAdresse.dataset.positionManuelle = 'true';
+    coordonnees.value = `Point choisi : ${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`;
+    coordonnees.textContent = coordonnees.value;
+  }
+
+  if (entry.marker) entry.marker.on('dragend', () => enregistrerPoint(entry.marker.getLatLng()));
+  map.on('click', (event) => {
+    if (entry.marker) {
+      entry.marker.setLatLng(event.latlng);
+    } else {
+      entry.marker = L.marker(event.latlng, { draggable: true }).addTo(map);
+      entry.marker.on('dragend', () => enregistrerPoint(entry.marker.getLatLng()));
+    }
+    enregistrerPoint(event.latlng);
+  });
+
+  cartesAdressesPostes.set(posteId, entry);
+  if (positionExistante) {
+    coordonnees.value = `Position actuelle : ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+    coordonnees.textContent = coordonnees.value;
+  }
+  setTimeout(() => map.invalidateSize(), 0);
+}
+
+function initialiserRechercheCentrageCarte(input) {
+  const resultats = input.nextElementSibling;
+  let minuteur = null;
+  let requete = null;
+
+  input.addEventListener('input', () => {
+    clearTimeout(minuteur);
+    requete?.abort();
+    const recherche = input.value.trim();
+    resultats.replaceChildren();
+    if (recherche.length < 3) {
+      resultats.hidden = true;
+      return;
+    }
+
+    resultats.hidden = false;
+    resultats.textContent = 'Recherche…';
+    minuteur = setTimeout(async () => {
+      requete = new AbortController();
+      try {
+        const url = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(recherche)}&limit=5`;
+        const response = await fetch(url, { signal: requete.signal });
+        if (!response.ok) throw new Error('Recherche indisponible');
+        const { features = [] } = await response.json();
+        resultats.replaceChildren();
+        if (!features.length) {
+          resultats.textContent = 'Aucun résultat trouvé.';
+          return;
+        }
+
+        features.forEach((feature) => {
+          const label = feature.properties?.label;
+          const coordinates = feature.geometry?.coordinates;
+          if (!label || !Array.isArray(coordinates) || coordinates.length < 2) return;
+          const option = document.createElement('button');
+          option.type = 'button';
+          option.className = 'adresse-suggestion';
+          option.setAttribute('role', 'option');
+          option.textContent = label;
+          option.addEventListener('click', () => {
+            const entry = cartesAdressesPostes.get(input.dataset.posteId);
+            const position = [coordinates[1], coordinates[0]];
+            entry.map.setView(position, feature.properties?.type === 'municipality' ? 13 : 16, { animate: true });
+            resultats.replaceChildren();
+            resultats.hidden = true;
+          });
+          resultats.appendChild(option);
+        });
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+        resultats.textContent = 'Impossible de rechercher cette adresse pour le moment.';
+      }
+    }, 300);
+  });
+}
+
+async function enregistrerAdressePoste(posteId, button) {
+  const poste = state.postes.find((element) => element.id === posteId);
+  const input = document.getElementById(`adressePoste-${posteId}`);
+  const adresse = input?.value.trim() || '';
+  if (!poste || !input) return;
+
+  let latitude = null;
+  let longitude = null;
+  let codePostal = null;
+  if (adresse) {
+    const adresseInchangee = adresse === input.dataset.adresseInitiale;
+    const selectionValide = input.dataset.selectionValide === 'true';
+    const positionManuelle = input.dataset.positionManuelle === 'true';
+    if (!selectionValide && !adresseInchangee && !positionManuelle) {
+      toast('Choisissez une suggestion ou positionnez le point sur la carte.', true);
+      input.focus();
+      return;
+    }
+
+    latitude = Number(positionManuelle || selectionValide ? input.dataset.latitude : input.dataset.latitudeInitiale);
+    longitude = Number(positionManuelle || selectionValide ? input.dataset.longitude : input.dataset.longitudeInitiale);
+    codePostal = selectionValide
+      ? input.dataset.codePostal
+      : input.dataset.codePostalInitial || adresse.match(/\d{5}/)?.[0] || null;
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      toast('Sélectionnez à nouveau cette adresse dans les suggestions.', true);
+      input.focus();
+      return;
+    }
+  }
+
+  button.disabled = true;
+  const { error } = await supabase.from('postes_pieges').update({
+    adresse: adresse || null,
+    latitude,
+    longitude,
+    code_postal: codePostal || null
+  }).eq('id', posteId).eq('user_id', session.user.id);
+
+  button.disabled = false;
+  if (error) {
+    toast('Erreur : ' + error.message, true);
+    return;
+  }
+
+  poste.adresse = adresse || null;
+  poste.latitude = latitude;
+  poste.longitude = longitude;
+  poste.code_postal = codePostal || null;
+  renderPostes();
+  toast(adresse ? 'Adresse du poste enregistrée ✓' : 'Adresse du poste supprimée');
+}
+
+function normaliserMethodesPoste(methodes) {
+  if (!Array.isArray(methodes)) return [];
+  const normalisees = methodes
+    .filter((methode) => methode && typeof methode.nom === 'string' && methode.nom.trim())
+    .map((methode) => ({ nom: methode.nom.trim(), defaut: methode.defaut === true }));
+  const indexDefaut = normalisees.findIndex((methode) => methode.defaut);
+  if (normalisees.length && indexDefaut === -1) normalisees[0].defaut = true;
+  return normalisees.map((methode, index) => ({ ...methode, defaut: index === (indexDefaut === -1 ? 0 : indexDefaut) }));
+}
+
+async function enregistrerMethodesPoste(id, methodes) {
+  const { error } = await supabase.from('postes_pieges')
+    .update({ methodes_piegeage: methodes })
+    .eq('id', id)
+    .eq('user_id', session.user.id);
+
+  if (error) {
+    toast('Erreur : ' + error.message, true);
+    return false;
+  }
+
+  const poste = state.postes.find((element) => element.id === id);
+  if (poste) poste.methodes_piegeage = methodes;
+  renderPostes();
+  return true;
+}
+
+async function ajouterMethodePoste(id, input) {
+  const nom = input?.value;
+  const methodeStandard = (window.CONFIG?.METHODES || []).find((methode) => methode.valeur === nom);
+  if (!methodeStandard) {
+    toast('Choisissez une méthode dans la liste.', true);
+    return;
+  }
+
+  const poste = state.postes.find((element) => element.id === id);
+  const methodes = normaliserMethodesPoste(poste?.methodes_piegeage);
+  if (methodes.some((methode) => methode.nom === methodeStandard.valeur)) {
+    toast('Cette méthode existe déjà pour ce poste.', true);
+    return;
+  }
+
+  methodes.push({ nom: methodeStandard.valeur, defaut: methodes.length === 0 });
+  if (await enregistrerMethodesPoste(id, methodes)) toast('Méthode ajoutée ✓');
+}
+
+async function definirMethodeDefaut(id, indexDefaut) {
+  const poste = state.postes.find((element) => element.id === id);
+  const methodes = normaliserMethodesPoste(poste?.methodes_piegeage)
+    .map((methode, index) => ({ ...methode, defaut: index === indexDefaut }));
+  if (await enregistrerMethodesPoste(id, methodes)) toast('Méthode par défaut mise à jour ✓');
+}
+
+async function supprimerMethodePoste(id, indexSuppression) {
+  const poste = state.postes.find((element) => element.id === id);
+  const methodes = normaliserMethodesPoste(poste?.methodes_piegeage);
+  const etaitDefaut = methodes[indexSuppression]?.defaut;
+  methodes.splice(indexSuppression, 1);
+  if (etaitDefaut && methodes.length) methodes[0].defaut = true;
+  if (await enregistrerMethodesPoste(id, methodes)) toast('Méthode supprimée');
 }
 
 async function setDefautPoste(id) {
@@ -921,8 +1312,6 @@ async function ajouterAppat() {
 
 async function ajouterPoste() {
   const nom = document.getElementById(DOM_IDS.SETTINGS.INPUT_NOM_POSTE)?.value.trim();
-  const typePiege = document.getElementById(DOM_IDS.SETTINGS.INPUT_TYPE_PIEGE)?.value.trim();
-  const nombre = parseInt(document.getElementById(DOM_IDS.SETTINGS.INPUT_NOMBRE_POSTES)?.value, 10) || 1;
 
   if (!nom) {
     toast(UI_MESSAGES.settings.requireName, true);
@@ -933,8 +1322,9 @@ async function ajouterPoste() {
   const { data, error } = await supabase.from('postes_pieges').insert({
     user_id: session.user.id,
     nom,
-    type_piege: typePiege,
-    nombre,
+    type_piege: '',
+    nombre: 1,
+    methodes_piegeage: [],
     actif: true,
     defaut: premierDefaut
   }).select('*').single();
@@ -946,8 +1336,6 @@ async function ajouterPoste() {
 
   state.postes.push(data);
   document.getElementById(DOM_IDS.SETTINGS.INPUT_NOM_POSTE).value = '';
-  document.getElementById(DOM_IDS.SETTINGS.INPUT_TYPE_PIEGE).value = '';
-  document.getElementById(DOM_IDS.SETTINGS.INPUT_NOMBRE_POSTES).value = 1;
   renderPostes();
   toast(UI_MESSAGES.settings.posteAdded);
 }

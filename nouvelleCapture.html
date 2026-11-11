@@ -31,38 +31,29 @@
                 </div>
             </div>
             <div class="capture-field">
-                <label class="required-field">Méthode</label>
-                <select id="methode" required>
-                    <option value="" disabled>Sélectionnez une méthode</option>
-                    <option value="DPR">DPR</option>
-                    <option value="Piège">Piège</option>
-                    <option value="Raquette électrique" selected>Raquette électrique</option>
-                    <option value="Harpe">Harpe</option>
+                <label class="required-field" for="selectPoste">Poste de piégeage</label>
+                <select id="selectPoste" required>
+                    <option value="" selected disabled>Choisissez un poste</option>
                 </select>
-            </div>
-        </section>
-
-        <!-- ── Détails piège ── -->
-        <div id="detailsPiege" style="display:none;">
-            <h4>🪤 Détails du piège</h4>
-
-            <div class="capture-field">
-                <label>Poste de piégeage</label>
-                <select id="selectPoste">
-                    <option value="">Chargement…</option>
-                </select>
-                <!-- Fiche récap du poste sélectionné -->
-                <div class="fiche-poste" id="fichePoste">
-                    <div class="fiche-poste-titre">📍 Informations du poste</div>
-                    <div class="fiche-poste-ligne" id="fichePosteLigne1"></div>
-                    <div class="fiche-poste-ligne" id="fichePosteLigne2"></div>
-                    <div class="fiche-poste-ligne" id="fichePosteLigne3"></div>
-                </div>
                 <div id="hintPasDePoste" class="no-postes-hint" style="display:none;">
                     Aucun poste actif. <a href="settings.html">Créez vos postes dans les paramètres →</a>
                 </div>
             </div>
 
+            <div class="capture-field">
+                <label class="required-field" for="methode">Méthode de piégeage</label>
+                <select id="methode" required disabled>
+                    <option value="" selected disabled>Choisissez d'abord un poste</option>
+                </select>
+                <div id="hintPasDeMethode" class="no-postes-hint" style="display:none;">
+                    Aucune méthode configurée pour ce poste. <a href="settings.html">Ajoutez-en dans les paramètres →</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Détails méthode piège ── -->
+        <div id="detailsPiege" style="display:none;">
+            <h4>🪤 Détails du piège</h4>
             <div class="capture-field">
                 <label>
                     Appât utilisé
@@ -73,11 +64,6 @@
                     <div class="fiche-recette-titre">📖 Recette</div>
                     <div id="ficheRecetteTexte"></div>
                 </div>
-            </div>
-
-            <div class="capture-field">
-                <label>Nombre de pièges relevés</label>
-                <input type="number" id="nombrePieges" min="1" max="99" value="1">
             </div>
 
             <div class="capture-field">

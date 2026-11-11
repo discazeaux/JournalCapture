@@ -50,8 +50,6 @@ export const DOM_IDS = {
     BTN_AJOUTER_APPAT: 'btnAjouterAppat',
     LIST_POSTES: 'listPostes',
     INPUT_NOM_POSTE: 'inputNomPoste',
-    INPUT_TYPE_PIEGE: 'inputTypePiege',
-    INPUT_NOMBRE_POSTES: 'inputNombrePostes',
     BTN_AJOUTER_POSTE: 'btnAjouterPoste',
     TOAST: 'toast'
   }

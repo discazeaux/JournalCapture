@@ -43,24 +43,26 @@ function remplirSelectPoste() {
   sel.innerHTML = '';
 
   if (!postes.length) {
-    sel.innerHTML = '<option value="">— aucun poste actif —</option>';
-    sel.style.display = 'none';
+    sel.innerHTML = '<option value="" selected disabled>— aucun poste actif —</option>';
+    sel.disabled = true;
     if (hint) hint.style.display = 'block';
+    mettreAJourMethodePoste();
     return;
   }
 
   if (hint) hint.style.display = 'none';
-  sel.style.display = '';
+  sel.disabled = false;
 
   const optVide = document.createElement('option');
   optVide.value = '';
-  optVide.textContent = '— sélectionner un poste —';
+  optVide.textContent = '— choisir un poste —';
+  optVide.disabled = true;
   sel.appendChild(optVide);
 
   postes.forEach((p) => {
     const opt = document.createElement('option');
     opt.value = p.id;
-    opt.textContent = `${p.nom}  (×${p.nombre})`;
+    opt.textContent = p.nom;
     sel.appendChild(opt);
   });
 
@@ -69,7 +71,7 @@ function remplirSelectPoste() {
     sel.value = posteDefaut.id;
   }
 
-  mettreAJourFichePoste();
+  mettreAJourMethodePoste();
 }
 
 function remplirSelectAppat(appat_id_defaut) {
@@ -108,24 +110,6 @@ function remplirSelectAppat(appat_id_defaut) {
   mettreAJourFicheRecette();
 }
 
-function mettreAJourFichePoste() {
-  const posteId = document.getElementById('selectPoste').value;
-  const fiche = document.getElementById('fichePoste');
-  const poste = postes.find((p) => p.id === posteId);
-
-  if (!poste) {
-    fiche.classList.remove('visible');
-    document.getElementById('nombrePieges').value = 1;
-    return;
-  }
-
-  document.getElementById('nombrePieges').value = poste.nombre;
-  document.getElementById('fichePosteLigne1').textContent = `🪤 Type : ${poste.type_piege || '—'}`;
-  document.getElementById('fichePosteLigne2').textContent = `× ${poste.nombre} piège(s) sur ce poste`;
-  document.getElementById('fichePosteLigne3').textContent = '';
-  fiche.classList.add('visible');
-}
-
 function mettreAJourFicheRecette() {
   const sel = document.getElementById('appat');
   const appId = sel.value;
@@ -152,10 +136,15 @@ function mettreAJourFicheRecette() {
   }
 }
 
+const selectPoste = document.getElementById('selectPoste');
 remplirSelectPoste();
 remplirSelectAppat(appats.find((a) => a.defaut)?.id);
 
-document.getElementById('selectPoste').addEventListener('change', mettreAJourFichePoste);
+selectPoste.addEventListener('change', () => {
+  mettreAJourMethodePoste();
+  mettreAJourAffichagePiege();
+  mettreAJourAffichageDuree();
+});
 document.getElementById('appat').addEventListener('change', mettreAJourFicheRecette);
 
 const selectMethode = document.getElementById('methode');
@@ -170,6 +159,35 @@ const resetButton = document.getElementById('resetChrono');
 let chronoInterval = null;
 let secondes = 0;
 let chronoEnCours = false;
+
+function mettreAJourMethodePoste() {
+  const methode = document.getElementById('methode');
+  const hint = document.getElementById('hintPasDeMethode');
+  const poste = postes.find((element) => element.id === selectPoste.value);
+  const methodes = Array.isArray(poste?.methodes_piegeage)
+    ? poste.methodes_piegeage.filter((element) => element && typeof element.nom === 'string' && element.nom.trim())
+    : [];
+
+  methode.innerHTML = '';
+  const optionVide = document.createElement('option');
+  optionVide.value = '';
+  optionVide.disabled = true;
+  optionVide.textContent = poste ? '— choisir une méthode —' : '— choisir d’abord un poste —';
+  methode.appendChild(optionVide);
+
+  methodes.forEach((element) => {
+    const option = document.createElement('option');
+    option.value = element.nom.trim();
+    option.textContent = option.value;
+    methode.appendChild(option);
+  });
+
+  methode.disabled = methodes.length === 0;
+  if (hint) hint.style.display = poste && methodes.length === 0 ? 'block' : 'none';
+
+  const methodeDefaut = methodes.find((element) => element.defaut) || methodes[0];
+  methode.value = methodeDefaut?.nom.trim() || '';
+}
 
 function mettreAJourAffichagePiege() {
   detailsPiege.style.display = selectMethode.value === 'Piège' ? 'block' : 'none';
@@ -203,6 +221,7 @@ selectMethode.addEventListener('change', () => {
   mettreAJourAffichageDuree();
 });
 
+mettreAJourMethodePoste();
 mettreAJourAffichagePiege();
 mettreAJourAffichageDuree();
 
@@ -291,14 +310,20 @@ initialiserValeursParDefaut();
 
 document.getElementById('captureForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const posteId = selectPoste.value || null;
+  const methodeChoisie = selectMethode.value;
+
+  if (!posteId || !methodeChoisie) {
+    alert('Sélectionnez un poste puis une méthode de piégeage.');
+    return;
+  }
+
   const submitBtn = e.target.querySelector('button[type="submit"]');
   submitBtn.disabled = true;
   submitBtn.textContent = 'Enregistrement…';
 
-  const methodeChoisie = document.getElementById('methode').value;
   const estPiege = methodeChoisie === 'Piège';
   const estRaquette = methodeChoisie === 'Raquette électrique';
-  const posteId = estPiege ? (document.getElementById('selectPoste').value || null) : null;
   const appatId = estPiege ? (document.getElementById('appat').value || null) : null;
 
   if (!estRaquette) {
@@ -340,15 +365,16 @@ document.getElementById('captureForm').addEventListener('submit', async (e) => {
 
   alert('Capture enregistrée !');
 
-  document.getElementById('methode').value = 'Raquette électrique';
+  document.getElementById('methode').value = '';
   document.getElementById('nombre').value = 0;
   document.getElementById('nombre_europeen').value = 0;
   document.getElementById('nombre_autres').value = 0;
   document.getElementById('notes').value = '';
   document.getElementById('notesPiege').value = '';
   document.getElementById('selectPoste').value = '';
-  mettreAJourFichePoste();
+  mettreAJourMethodePoste();
   mettreAJourAffichagePiege();
+  mettreAJourAffichageDuree();
   clearInterval(chronoInterval);
   chronoInterval = null;
   chronoEnCours = false;

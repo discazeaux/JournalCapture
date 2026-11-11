@@ -30,6 +30,7 @@
       { label: 'Stat communauté', href: 'stat.html', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 6-7"/></svg>' },
       { label: 'Mes stats', href: 'stat.html?onglet=mesStats', authRequired: true, icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 6-7"/></svg>' },
       { label: 'Nouvelle capture', href: 'nouvelleCapture.html', authRequired: true, icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>' },
+      { label: 'Lieux des postes', href: 'carteCaptures.html', authRequired: true, icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z"/><path d="M9 3v15m6-12v15"/><circle cx="15" cy="9" r="1.5"/></svg>' },
       { label: 'Réglages', href: 'settings.html', authRequired: true, icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1a1.7 1.7 0 0 1-2.4 2.4l-.1-.1a1.7 1.7 0 0 0-2.9 1.2v.2a1.7 1.7 0 0 1-3.4 0v-.2a1.7 1.7 0 0 0-2.9-1.2l-.1.1a1.7 1.7 0 0 1-2.4-2.4l.1-.1a1.7 1.7 0 0 0-1.2-2.9H4a1.7 1.7 0 0 1 0-3.4h.2a1.7 1.7 0 0 0 1.2-2.9l-.1-.1a1.7 1.7 0 0 1 2.4-2.4l.1.1a1.7 1.7 0 0 0 2.9-1.2V2a1.7 1.7 0 0 1 3.4 0v.2a1.7 1.7 0 0 0 2.9 1.2l.1-.1a1.7 1.7 0 0 1 2.4 2.4l-.1.1a1.7 1.7 0 0 0 1.2 2.9h.2a1.7 1.7 0 0 1 0 3.4h-.2a1.7 1.7 0 0 0-1.2 2.9Z"/></svg>' }
     ],
     rucher: [
@@ -42,6 +43,7 @@
   const SECTIONS_ACTIVES = {
     stat: 'pressure',
     nouvelleCapture: 'pressure',
+    carteCaptures: 'pressure',
     settings: 'pressure',
     profil: 'pressure',
     blog: 'blog',
@@ -56,6 +58,7 @@
   const ROUTES_ACTIVES = {
     'stat.html': 'pressure',
     'nouvelleCapture.html': 'pressure',
+    'carteCaptures.html': 'pressure',
     'settings.html': 'pressure',
     'profil.html': 'pressure',
     'login.html': 'pressure',
